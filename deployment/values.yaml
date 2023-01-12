@@ -156,7 +156,7 @@ vault:
       #
       # etcd:
       #   address: ""
-      #   path: "github.com/deqode/dq-vault/"
+      #   path: "github.com/ryadavDeqode/dq-vault/"
       #
       # s3:
       #   bucket: ""

@@ -95,6 +95,28 @@ Returns randomly generated user UUID
 				},
 			},
 
+						// api/test
+			&framework.Path{
+				Pattern:      "test",
+				HelpSynopsis: "test",
+				HelpDescription: `
+
+test new path
+
+`,
+				Fields: map[string]*framework.FieldSchema{
+					"randomDataA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "randomVal",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathTest,
+				},
+			},
+			
+
 			// api/sign
 			&framework.Path{
 				Pattern:         "sign",

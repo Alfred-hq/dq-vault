@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	log "github.com/mgutz/logxi/v1"
-	"github.com/deqode/dq-vault/lib/adapter"
+	"github.com/ryadavDeqode/dq-vault/lib/adapter"
 )
 
 var logger = log.New("tests")

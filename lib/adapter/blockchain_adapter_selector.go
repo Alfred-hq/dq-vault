@@ -3,8 +3,8 @@ package adapter
 import (
 	"fmt"
 
-	"github.com/deqode/dq-vault/lib/adapter/baseadapter"
-	"github.com/deqode/dq-vault/lib/bip44coins"
+	"github.com/ryadavDeqode/dq-vault/lib/adapter/baseadapter"
+	"github.com/ryadavDeqode/dq-vault/lib/bip44coins"
 )
 
 // GetAdapter returns suitable adapter depending on coin type

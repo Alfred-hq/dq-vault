@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/vault/sdk/framework"
 	"github.com/hashicorp/vault/sdk/logical"
 	"github.com/rs/xid"
-	"github.com/deqode/dq-vault/config"
+	"github.com/ryadavDeqode/dq-vault/config"
 )
 
 // User -- stores data related to user
@@ -18,6 +18,10 @@ type User struct {
 	UUID       string `json:"uuid"`
 	Mnemonic   string `json:"mnemonic"`
 	Passphrase string `json:"passphrase"`
+}
+
+type TestData struct {
+	randomDataA string `json:"randomDataA"`
 }
 
 // NewUUID returns a globally unique random generated guid

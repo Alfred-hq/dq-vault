@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/deqode/dq-vault/lib/bip44coins"
+	"github.com/ryadavDeqode/dq-vault/lib/bip44coins"
 )
 
 // DecodeRawTransaction decodes input payload into suitable raw transaction
