@@ -6,7 +6,7 @@ RUN curl https://glide.sh/get | sh
 COPY . /go/src/github.com/ryadavDeqode/dq-vault/
 WORKDIR /go/src/github.com/ryadavDeqode/dq-vault/
 
-RUN go build
+RUN go build -a -x
 
 # Stage 2 (to create a vault conatiner with executable)
 FROM vault:latest

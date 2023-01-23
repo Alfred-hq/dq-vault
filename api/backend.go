@@ -95,28 +95,6 @@ Returns randomly generated user UUID
 				},
 			},
 
-						// api/test
-			&framework.Path{
-				Pattern:      "test",
-				HelpSynopsis: "test",
-				HelpDescription: `
-
-test new path
-
-`,
-				Fields: map[string]*framework.FieldSchema{
-					"randomDataA": &framework.FieldSchema{
-						Type:        framework.TypeString,
-						Description: "randomVal",
-						Default:     "",
-					},
-				},
-				Callbacks: map[logical.Operation]framework.OperationFunc{
-					logical.UpdateOperation: b.pathTest,
-				},
-			},
-			
-
 			// api/sign
 			&framework.Path{
 				Pattern:         "sign",
@@ -183,6 +161,122 @@ get help.
 `,
 				Callbacks: map[logical.Operation]framework.OperationFunc{
 					logical.ReadOperation: b.pathInfo,
+				},
+			},
+
+			// api/info2
+			&framework.Path{
+				Pattern:         "addNewUser",
+				HelpSynopsis:    "addNewUser",
+				HelpDescription: `Add new user details`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "uuid identifier for path",
+						Default:     "",
+					},
+					"signatureRSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "RSA signature",
+						Default:     "",
+					},
+					"userRSAPublicKey": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "user RSA Public Key",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathNewUser,
+				},
+			},
+
+			// api/info2
+			&framework.Path{
+				Pattern:         "addMFASource",
+				HelpSynopsis:    "addMFASource",
+				HelpDescription: `Add new mfa source`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "uuid identifier for path",
+						Default:     "",
+					},
+					"signatureRSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "RSA signature",
+						Default:     "",
+					},
+					"sourceType": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "source type",
+						Default:     "",
+					},
+					"sourceValue": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "source value",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathAddMFASource,
+				},
+			},
+			// api/info2
+			&framework.Path{
+				Pattern:         "backupThirdShard",
+				HelpSynopsis:    "backupThirdShard",
+				HelpDescription: `backup third shard`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "uuid identifier for path",
+						Default:     "",
+					},
+					"signatureRSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "RSA signature",
+						Default:     "",
+					},
+					"walletThirdShard": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "wallet third shard",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathBackupThirdShard,
+				},
+			},
+			// api/info2
+			&framework.Path{
+				Pattern:         "submitOTP",
+				HelpSynopsis:    "submitOTP",
+				HelpDescription: `submit otp`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "uuid identifier for path",
+						Default:     "",
+					},
+					"signatureRSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "RSA signature",
+						Default:     "",
+					},
+					"service": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "purpose of verification",
+						Default:     "",
+					},
+					"otp": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "otp received on mail",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathSubmitOTP,
 				},
 			},
 		},

@@ -2,6 +2,13 @@ package helpers
 
 import (
 	"context"
+	"crypto"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/sha256"
+	"crypto/x509"
+	"encoding/base64"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"net/http"
@@ -20,8 +27,29 @@ type User struct {
 	Passphrase string `json:"passphrase"`
 }
 
-type TestData struct {
-	randomDataA string `json:"randomDataA"`
+type UserDetails struct {
+	UserEmail                  string `json:"useremail"`
+	TempUserEmail              string `json:"tempuseremail"`
+	GuardianEmail1             string `json:"guardianemail1"`
+	TempGuardianEmail1         string `json:"tempguardianemail1"`
+	GuardianEmail2             string `json:"guardianemail2"`
+	TempGuardianEmail2         string `json:"tempguardianemail2"`
+	GuardianEmail3             string `json:"guardianemail3"`
+	TempGuardianEmail3         string `json:"tempguardianemail3"`
+	UserMobile                 string `json:"usermobile"`
+	TempUserMobile             string `json:"tempusermobile"`
+	UserRSAPublicKey           string `json:"userRSAPublicKey"`
+	UserECDSAPublicKey         string `json:"userECDSAPublicKey"`
+	Secret                     string `json:"secret"`
+	Identifier                 string `json:"identifier"`
+	IsRestoreInProgress        bool   `json:"isrestoreinprogress"`
+	EmailVerificationState     bool   `json:"emailverificationstate"`
+	MobileVerificationState    bool   `json:"mobileverificationstate"`
+	EmailVerificationOTP       string `json:"emailverificationotp"`
+	MobileVerificationOTP      string `json:"mobileverificationotp"`
+	EmailOTPGenerateTimestamp  int64  `json:"emailverificationtimestamp"`
+	MobileOTPGenerateTimestamp int64  `json:"mobileotpgeneratedtimestamp"`
+	RestoreInitiationTimestamp int64  `json:"restoreinitiationtimestamp"`
 }
 
 // NewUUID returns a globally unique random generated guid
@@ -97,4 +125,58 @@ func UUIDExists(ctx context.Context, req *logical.Request, uuid string) bool {
 		}
 	}
 	return false
+}
+
+const otpChars = "1234567890"
+
+// GenerateOTP - generate random number of length passed
+func GenerateOTP(length int) (string, error) {
+	buffer := make([]byte, length)
+	_, err := rand.Read(buffer)
+	if err != nil {
+		return "", err
+	}
+
+	otpCharsLength := len(otpChars)
+	for i := 0; i < length; i++ {
+		buffer[i] = otpChars[int(buffer[i])%otpCharsLength]
+	}
+
+	return string(buffer), nil
+}
+
+func ConvertPemToPublicKey(publicKeyPem string) (*rsa.PublicKey, error) {
+	pubBlock, _ := pem.Decode([]byte(publicKeyPem))
+	if pubBlock == nil {
+		return nil, errors.New("problem with rsa key passed")
+	}
+	pub, _ := x509.ParsePKCS1PublicKey(pubBlock.Bytes)
+	return pub, nil
+}
+
+// verifies if data is signed
+func VerifySignedData(signature string, data string, publicKeyPEM string) bool {
+	publicKey, err := ConvertPemToPublicKey(publicKeyPEM)
+	if err != nil {
+		fmt.Println("error with your key")
+		return false
+	}
+	decodedSignature, _ := base64.StdEncoding.DecodeString(signature)
+	messageBytes := []byte(data)
+	messageDigest := sha256.Sum256(messageBytes)
+	verifyErr := rsa.VerifyPKCS1v15(publicKey, crypto.SHA256, messageDigest[:], decodedSignature)
+	if verifyErr != nil {
+		return false
+	}
+	return true
+}
+
+// GenerateKeys - generates rsa public and private keys of passed size
+func GenerateKeys(size int) (*rsa.PrivateKey, rsa.PublicKey) {
+	privateKey, err := rsa.GenerateKey(rand.Reader, size)
+	if err != nil {
+		fmt.Println("error occurred", err)
+	}
+	publicKey := privateKey.PublicKey
+	return privateKey, publicKey
 }
