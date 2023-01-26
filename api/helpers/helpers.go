@@ -8,9 +8,12 @@ import (
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	goCrypt "github.com/ethereum/go-ethereum/crypto"
 	"net/http"
 
 	"github.com/hashicorp/vault/sdk/framework"
@@ -145,6 +148,7 @@ func GenerateOTP(length int) (string, error) {
 	return string(buffer), nil
 }
 
+// converts pem format to rsa public key
 func ConvertPemToPublicKey(publicKeyPem string) (*rsa.PublicKey, error) {
 	pubBlock, _ := pem.Decode([]byte(publicKeyPem))
 	if pubBlock == nil {
@@ -154,7 +158,7 @@ func ConvertPemToPublicKey(publicKeyPem string) (*rsa.PublicKey, error) {
 	return pub, nil
 }
 
-// verifies if data is signed
+// verifies if data is signed using passed public key
 func VerifySignedData(signature string, data string, publicKeyPEM string) bool {
 	publicKey, err := ConvertPemToPublicKey(publicKeyPEM)
 	if err != nil {
@@ -169,6 +173,22 @@ func VerifySignedData(signature string, data string, publicKeyPEM string) bool {
 		return false
 	}
 	return true
+}
+
+func verifyECDSASignedMessage(signature string, publickKeyHash string, rawData string) bool {
+	rawDataBytes := []byte(rawData)
+	messageHash := goCrypt.Keccak256Hash(rawDataBytes)
+	decodedSignatureBytesFromHash, err := hexutil.Decode(signature)
+	if err != nil {
+		return false
+	}
+	signatureBytesWithNoRecoverID := decodedSignatureBytesFromHash[:len(decodedSignatureBytesFromHash)-1]
+	pubKeyBytes, err := hex.DecodeString(publickKeyHash[2:])
+	if err != nil {
+		return false
+	}
+	verified := goCrypt.VerifySignature(pubKeyBytes, messageHash.Bytes(), signatureBytesWithNoRecoverID)
+	return verified
 }
 
 // GenerateKeys - generates rsa public and private keys of passed size
