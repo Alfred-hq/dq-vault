@@ -164,7 +164,7 @@ get help.
 				},
 			},
 
-			// api/info2
+			// api/addNewUser
 			&framework.Path{
 				Pattern:         "addNewUser",
 				HelpSynopsis:    "addNewUser",
@@ -185,13 +185,23 @@ get help.
 						Description: "user RSA Public Key",
 						Default:     "",
 					},
+					"signatureECDSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "ECDSA signature",
+						Default:     "",
+					},
+					"userECDSAPublicKey": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "user ECDSA Public Key",
+						Default:     "",
+					},
 				},
 				Callbacks: map[logical.Operation]framework.OperationFunc{
 					logical.UpdateOperation: b.pathNewUser,
 				},
 			},
 
-			// api/info2
+			// api/addMFASource
 			&framework.Path{
 				Pattern:         "addMFASource",
 				HelpSynopsis:    "addMFASource",
@@ -205,6 +215,11 @@ get help.
 					"signatureRSA": &framework.FieldSchema{
 						Type:        framework.TypeString,
 						Description: "RSA signature",
+						Default:     "",
+					},
+					"signatureECDSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "ECDSA signature",
 						Default:     "",
 					},
 					"sourceType": &framework.FieldSchema{
@@ -222,7 +237,8 @@ get help.
 					logical.UpdateOperation: b.pathAddMFASource,
 				},
 			},
-			// api/info2
+
+			// api/backupThirdShard
 			&framework.Path{
 				Pattern:         "backupThirdShard",
 				HelpSynopsis:    "backupThirdShard",
@@ -238,6 +254,11 @@ get help.
 						Description: "RSA signature",
 						Default:     "",
 					},
+					"signatureECDSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "ECDSA signature",
+						Default:     "",
+					},
 					"walletThirdShard": &framework.FieldSchema{
 						Type:        framework.TypeString,
 						Description: "wallet third shard",
@@ -248,7 +269,7 @@ get help.
 					logical.UpdateOperation: b.pathBackupThirdShard,
 				},
 			},
-			// api/info2
+			// api/submitOTP
 			&framework.Path{
 				Pattern:         "submitOTP",
 				HelpSynopsis:    "submitOTP",
@@ -264,7 +285,12 @@ get help.
 						Description: "RSA signature",
 						Default:     "",
 					},
-					"service": &framework.FieldSchema{
+					"signatureECDSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "ECDSA signature",
+						Default:     "",
+					},
+					"purpose": &framework.FieldSchema{
 						Type:        framework.TypeString,
 						Description: "purpose of verification",
 						Default:     "",
@@ -277,6 +303,71 @@ get help.
 				},
 				Callbacks: map[logical.Operation]framework.OperationFunc{
 					logical.UpdateOperation: b.pathSubmitOTP,
+				},
+			},
+
+			// api/initiateWalletRestoration
+			&framework.Path{
+				Pattern:         "initiateWalletRestoration",
+				HelpSynopsis:    "initiateWalletRestoration",
+				HelpDescription: `initiate wallet restoration`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "uuid identifier for path",
+						Default:     "",
+					},
+					"signatureRSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "RSA signature",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathInitiateWalletRestoration,
+				},
+			},
+
+			// api/cancelWalletRestoration
+			&framework.Path{
+				Pattern:         "cancelWalletRestoration",
+				HelpSynopsis:    "cancelWalletRestoration",
+				HelpDescription: `cancel wallet restoration`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "uuid identifier for path",
+						Default:     "",
+					},
+					"signatureRSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "RSA signature",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathCancelWalletRestoration,
+				},
+			},
+			// api/getThirdShard
+			&framework.Path{
+				Pattern:         "getThirdShard",
+				HelpSynopsis:    "getThirdShard",
+				HelpDescription: `returns third wallet shard for restoration`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "uuid identifier for path",
+						Default:     "",
+					},
+					"signatureRSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "RSA signature",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathGetThirdShard,
 				},
 			},
 		},

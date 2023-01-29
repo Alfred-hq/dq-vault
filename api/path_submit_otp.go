@@ -26,8 +26,9 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 
 	// obtain details:
 	identifier := d.Get("identifier").(string)
-	service := d.Get("purpose").(string)
+	purpose := d.Get("purpose").(string)
 	signatureRSA := d.Get("signatureRSA").(string)
+	signatureECDSA := d.Get("signatureECDSA").(string)
 	otp := d.Get("otp").(string)
 
 	// path where user data is stored
@@ -47,20 +48,31 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 	}
 
 	// Generate unsigned data
-	unsignedData := identifier + service
+	unsignedData := identifier + purpose + otp
 
 	// verify if request is valid
-	verificationStatus := helpers.VerifySignedData(signatureRSA, string(unsignedData), userData.UserRSAPublicKey)
-	if verificationStatus == false {
+	rsaVerificationState := helpers.VerifyRSASignedMessage(signatureRSA, unsignedData, userData.UserRSAPublicKey)
+	if rsaVerificationState == false {
 		return &logical.Response{
 			Data: map[string]interface{}{
-				"status": "verification failed",
+				"status": false,
+				"reason": "rsa signature verification failed",
 			},
-		}, errors.New("could not verify your signature")
+		}, nil
 	}
 
-	switch service {
+	ecdsaVerificationState := helpers.VerifyECDSASignedMessage(signatureECDSA, unsignedData, userData.UserECDSAPublicKey)
+
+	switch purpose {
 	case "ADD_OR_UPDATE_PRIMARY_EMAIL":
+		if ecdsaVerificationState == false {
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status": false,
+					"reason": "ecdsa signature verification failed",
+				},
+			}, nil
+		}
 		currentUnixTime := time.Now().Unix()
 		if userData.EmailVerificationOTP != otp {
 			return nil, errors.New("OTP DID NOT MATCH")
@@ -68,11 +80,19 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			return nil, errors.New("OTP EXPIRED")
 		} else {
 			userData.EmailVerificationState = false
-			userData.UserEmail = userData.TempUserEmail
+			userData.UserEmail = userData.UnverifiedUserEmail
 			userData.EmailVerificationOTP = "xxxxxx"
 
 		}
 	case "ADD_OR_UPDATE_GUARDIAN_EMAIL_1":
+		if ecdsaVerificationState == false {
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status": false,
+					"reason": "ecdsa signature verification failed",
+				},
+			}, nil
+		}
 		currentUnixTime := time.Now().Unix()
 		if userData.EmailVerificationOTP != otp {
 			return nil, errors.New("OTP DID NOT MATCH")
@@ -80,11 +100,19 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			return nil, errors.New("OTP EXPIRED")
 		} else {
 			userData.EmailVerificationState = false
-			userData.GuardianEmail1 = userData.TempGuardianEmail1
+			userData.GuardianEmail1 = userData.UnverifiedGuardianEmail1
 			userData.EmailVerificationOTP = "xxxxxx"
 
 		}
 	case "ADD_OR_UPDATE_GUARDIAN_EMAIL_2":
+		if ecdsaVerificationState == false {
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status": false,
+					"reason": "ecdsa signature verification failed",
+				},
+			}, nil
+		}
 		currentUnixTime := time.Now().Unix()
 		if userData.EmailVerificationOTP != otp {
 			return nil, errors.New("OTP DID NOT MATCH")
@@ -92,11 +120,19 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			return nil, errors.New("OTP EXPIRED")
 		} else {
 			userData.EmailVerificationState = false
-			userData.GuardianEmail2 = userData.TempGuardianEmail2
+			userData.GuardianEmail2 = userData.UnverifiedGuardianEmail2
 			userData.EmailVerificationOTP = "xxxxxx"
 
 		}
 	case "ADD_OR_UPDATE_GUARDIAN_EMAIL_3":
+		if ecdsaVerificationState == false {
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status": false,
+					"reason": "ecdsa signature verification failed",
+				},
+			}, nil
+		}
 		currentUnixTime := time.Now().Unix()
 		if userData.EmailVerificationOTP != otp {
 			return nil, errors.New("OTP DID NOT MATCH")
@@ -104,11 +140,19 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			return nil, errors.New("OTP EXPIRED")
 		} else {
 			userData.EmailVerificationState = false
-			userData.GuardianEmail3 = userData.TempGuardianEmail3
+			userData.GuardianEmail3 = userData.UnverifiedGuardianEmail3
 			userData.EmailVerificationOTP = "xxxxxx"
 
 		}
 	case "ADD_OR_UPDATE_MOBILE_NUMBER":
+		if ecdsaVerificationState == false {
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status": false,
+					"reason": "ecdsa signature verification failed",
+				},
+			}, nil
+		}
 		currentUnixTime := time.Now().Unix()
 		if userData.MobileVerificationOTP != otp {
 			return nil, errors.New("OTP DID NOT MATCH")
@@ -116,10 +160,31 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			return nil, errors.New("OTP EXPIRED")
 		} else {
 			userData.MobileVerificationState = false
-			userData.UserMobile = userData.TempUserMobile
+			userData.UserMobile = userData.UnverifiedUserMobile
 			userData.EmailVerificationOTP = "xxxxxx"
 		}
+	case "VERIFY_EMAIL_FOR_WALLET_RESTORATION":
+		currentUnixTime := time.Now().Unix()
+		if userData.EmailVerificationOTP != otp {
+			return nil, errors.New("OTP DID NOT MATCH")
+		} else if currentUnixTime-userData.EmailOTPGenerateTimestamp > 300 { // 5 minute time based otp
+			return nil, errors.New("OTP EXPIRED")
+		} else {
+			userData.IsRestoreInProgress = true
+			userData.RestoreInitiationTimestamp = time.Now().Unix()
+			userData.EmailVerificationState = false
+			userData.EmailVerificationOTP = "xxxxxx"
+		}
+
 	case "VERIFY_EMAIL_OTP":
+		if ecdsaVerificationState == false {
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status": false,
+					"reason": "ecdsa signature verification failed",
+				},
+			}, nil
+		}
 		currentUnixTime := time.Now().Unix()
 		if userData.EmailVerificationOTP != otp {
 			return nil, errors.New("OTP DID NOT MATCH")
@@ -130,6 +195,14 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			userData.EmailVerificationOTP = "xxxxxx"
 		}
 	case "VERIFY_MOBILE_OTP":
+		if ecdsaVerificationState == false {
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status": false,
+					"reason": "ecdsa signature verification failed",
+				},
+			}, nil
+		}
 		currentUnixTime := time.Now().Unix()
 		if userData.MobileVerificationOTP != otp {
 			return nil, errors.New("OTP DID NOT MATCH")

@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	// "errors"
@@ -28,8 +27,8 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 	identifier := d.Get("identifier").(string)
 	sourceType := d.Get("sourceType").(string)
 	signatureRSA := d.Get("signatureRSA").(string)
+	signatureECDSA := d.Get("signatureECDSA").(string)
 	sourceValue := d.Get("sourceValue").(string)
-	//signatureECDSA := d.Get("signatureECDSA").(string)
 
 	// path where user data is stored
 	path := config.StorageBasePath + identifier
@@ -48,16 +47,28 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 	}
 
 	// Generate unsigned data
-	unsignedData := identifier + sourceType
+	unsignedData := identifier + sourceType + sourceValue
 
 	// verify if request is valid
-	verificationErr := helpers.VerifySignedData(signatureRSA, string(unsignedData), userData.UserRSAPublicKey)
-	if verificationErr == false {
+	rsaVerificationState := helpers.VerifyRSASignedMessage(signatureRSA, unsignedData, userData.UserRSAPublicKey)
+	if rsaVerificationState == false {
 		return &logical.Response{
 			Data: map[string]interface{}{
-				"status": "verification failed",
+				"status": false,
+				"reason": "rsa signature verification failed",
 			},
-		}, errors.New("could not verify your signature")
+		}, nil
+	}
+
+	ecdsaVerificationState := helpers.VerifyECDSASignedMessage(signatureECDSA, unsignedData, userData.UserECDSAPublicKey)
+
+	if ecdsaVerificationState == false {
+		return &logical.Response{
+			Data: map[string]interface{}{
+				"status": false,
+				"reason": "ecdsa signature verification failed",
+			},
+		}, nil
 	}
 
 	otp, err := helpers.GenerateOTP(6)
@@ -68,27 +79,27 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 
 	switch sourceType {
 	case "primaryEmail":
-		userData.TempUserEmail = sourceValue
+		userData.UnverifiedUserEmail = sourceValue
 		userData.EmailVerificationOTP = otp
 		userData.EmailOTPGenerateTimestamp = time.Now().Unix()
 		userData.EmailVerificationState = true
 	case "guardianEmail1":
-		userData.TempGuardianEmail1 = sourceValue
+		userData.UnverifiedGuardianEmail1 = sourceValue
 		userData.EmailVerificationOTP = otp
 		userData.EmailOTPGenerateTimestamp = time.Now().Unix()
 		userData.EmailVerificationState = true
 	case "guardianEmail2":
-		userData.TempGuardianEmail2 = sourceValue
+		userData.UnverifiedGuardianEmail2 = sourceValue
 		userData.EmailVerificationOTP = otp
 		userData.EmailOTPGenerateTimestamp = time.Now().Unix()
 		userData.EmailVerificationState = true
 	case "guardianEmail3":
-		userData.TempGuardianEmail3 = sourceValue
+		userData.UnverifiedGuardianEmail3 = sourceValue
 		userData.EmailVerificationOTP = otp
 		userData.EmailOTPGenerateTimestamp = time.Now().Unix()
 		userData.EmailVerificationState = true
 	case "userMobileNumber":
-		userData.TempUserMobile = sourceValue
+		userData.UnverifiedUserMobile = sourceValue
 		userData.MobileVerificationOTP = otp
 		userData.MobileOTPGenerateTimestamp = time.Now().Unix()
 		userData.MobileVerificationState = true

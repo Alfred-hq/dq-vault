@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"errors"
 	// "encoding/json"
 	// "fmt"
 	"net/http"
@@ -20,24 +19,27 @@ func (b *backend) pathNewUser(ctx context.Context, req *logical.Request, d *fram
 	backendLogger := b.logger
 
 	// obtain user details:
-	userRSAPublicKey := d.Get("userRSAPublicKey").(string) // pem
+	userRSAPublicKey := d.Get("userRSAPublicKey").(string)     // pem
+	userECDSAPublicKey := d.Get("userECDSAPublicKey").(string) // hex
 	identifier := d.Get("identifier").(string)
 	signatureRSA := d.Get("signatureRSA").(string)
+	signatureECDSA := d.Get("signatureECDSA").(string)
 
 	// create new user
 	userData := &helpers.UserDetails{
 		UserEmail:                  "",
-		TempUserEmail:              "",
+		UnverifiedUserEmail:        "",
 		GuardianEmail1:             "",
-		TempGuardianEmail1:         "",
+		UnverifiedGuardianEmail1:   "",
 		GuardianEmail2:             "",
-		TempGuardianEmail2:         "",
+		UnverifiedGuardianEmail2:   "",
 		GuardianEmail3:             "",
-		TempGuardianEmail3:         "",
+		UnverifiedGuardianEmail3:   "",
 		UserMobile:                 "",
-		TempUserMobile:             "",
+		UnverifiedUserMobile:       "",
 		UserRSAPublicKey:           userRSAPublicKey,
-		Secret:                     "",
+		UserECDSAPublicKey:         userECDSAPublicKey,
+		WalletThirdShard:           "",
 		Identifier:                 identifier,
 		IsRestoreInProgress:        false,
 		EmailVerificationState:     false,
@@ -53,13 +55,25 @@ func (b *backend) pathNewUser(ctx context.Context, req *logical.Request, d *fram
 	unsignedData := identifier
 
 	// verify if request is valid
-	verificationErr := helpers.VerifySignedData(signatureRSA, string(unsignedData), userRSAPublicKey)
-	if verificationErr == false {
+	rsaVerificationState := helpers.VerifyRSASignedMessage(signatureRSA, unsignedData, userRSAPublicKey)
+	if rsaVerificationState == false {
 		return &logical.Response{
 			Data: map[string]interface{}{
-				"status": "verification failed",
+				"status": false,
+				"reason": "rsa signature verification failed",
 			},
-		}, errors.New("could not verify your signature")
+		}, nil
+	}
+
+	ecdsaVerificationState := helpers.VerifyECDSASignedMessage(signatureECDSA, unsignedData, userECDSAPublicKey)
+
+	if ecdsaVerificationState == false {
+		return &logical.Response{
+			Data: map[string]interface{}{
+				"status": false,
+				"reason": "ecdsa signature verification failed",
+			},
+		}, nil
 	}
 
 	// creates strorage entry with user JSON encoded value

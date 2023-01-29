@@ -32,18 +32,18 @@ type User struct {
 
 type UserDetails struct {
 	UserEmail                  string `json:"useremail"`
-	TempUserEmail              string `json:"tempuseremail"`
+	UnverifiedUserEmail        string `json:"tempuseremail"`
 	GuardianEmail1             string `json:"guardianemail1"`
-	TempGuardianEmail1         string `json:"tempguardianemail1"`
+	UnverifiedGuardianEmail1   string `json:"tempguardianemail1"`
 	GuardianEmail2             string `json:"guardianemail2"`
-	TempGuardianEmail2         string `json:"tempguardianemail2"`
+	UnverifiedGuardianEmail2   string `json:"tempguardianemail2"`
 	GuardianEmail3             string `json:"guardianemail3"`
-	TempGuardianEmail3         string `json:"tempguardianemail3"`
+	UnverifiedGuardianEmail3   string `json:"tempguardianemail3"`
 	UserMobile                 string `json:"usermobile"`
-	TempUserMobile             string `json:"tempusermobile"`
+	UnverifiedUserMobile       string `json:"tempusermobile"`
 	UserRSAPublicKey           string `json:"userRSAPublicKey"`
 	UserECDSAPublicKey         string `json:"userECDSAPublicKey"`
-	Secret                     string `json:"secret"`
+	WalletThirdShard           string `json:"secret"`
 	Identifier                 string `json:"identifier"`
 	IsRestoreInProgress        bool   `json:"isrestoreinprogress"`
 	EmailVerificationState     bool   `json:"emailverificationstate"`
@@ -159,7 +159,7 @@ func ConvertPemToPublicKey(publicKeyPem string) (*rsa.PublicKey, error) {
 }
 
 // verifies if data is signed using passed public key
-func VerifySignedData(signature string, data string, publicKeyPEM string) bool {
+func VerifyRSASignedMessage(signature string, data string, publicKeyPEM string) bool {
 	publicKey, err := ConvertPemToPublicKey(publicKeyPEM)
 	if err != nil {
 		fmt.Println("error with your key")
@@ -175,7 +175,7 @@ func VerifySignedData(signature string, data string, publicKeyPEM string) bool {
 	return true
 }
 
-func verifyECDSASignedMessage(signature string, publickKeyHash string, rawData string) bool {
+func VerifyECDSASignedMessage(signature string, rawData string, publickKeyHash string) bool {
 	rawDataBytes := []byte(rawData)
 	messageHash := goCrypt.Keccak256Hash(rawDataBytes)
 	decodedSignatureBytesFromHash, err := hexutil.Decode(signature)
@@ -189,14 +189,4 @@ func verifyECDSASignedMessage(signature string, publickKeyHash string, rawData s
 	}
 	verified := goCrypt.VerifySignature(pubKeyBytes, messageHash.Bytes(), signatureBytesWithNoRecoverID)
 	return verified
-}
-
-// GenerateKeys - generates rsa public and private keys of passed size
-func GenerateKeys(size int) (*rsa.PrivateKey, rsa.PublicKey) {
-	privateKey, err := rsa.GenerateKey(rand.Reader, size)
-	if err != nil {
-		fmt.Println("error occurred", err)
-	}
-	publicKey := privateKey.PublicKey
-	return privateKey, publicKey
 }
