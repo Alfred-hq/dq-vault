@@ -19,10 +19,10 @@ func (b *backend) pathNewUser(ctx context.Context, req *logical.Request, d *fram
 	backendLogger := b.logger
 
 	// obtain user details:
-	userRSAPublicKey := d.Get("userRSAPublicKey").(string)     // pem
+	userRSAPublicKey := d.Get("userRSAPublicKey").(string)     // base64 encoded pem key
 	userECDSAPublicKey := d.Get("userECDSAPublicKey").(string) // hex
-	identifier := d.Get("identifier").(string)
-	signatureRSA := d.Get("signatureRSA").(string)
+	identifier := d.Get("identifier").(string)                 // uuid
+	signatureRSA := d.Get("signatureRSA").(string)             // base64 encoded signature
 	signatureECDSA := d.Get("signatureECDSA").(string)
 
 	// create new user
@@ -59,8 +59,8 @@ func (b *backend) pathNewUser(ctx context.Context, req *logical.Request, d *fram
 	if rsaVerificationState == false {
 		return &logical.Response{
 			Data: map[string]interface{}{
-				"status": false,
-				"reason": "rsa signature verification failed",
+				"status":  false,
+				"remarks": "rsa signature verification failed",
 			},
 		}, nil
 	}
@@ -70,8 +70,8 @@ func (b *backend) pathNewUser(ctx context.Context, req *logical.Request, d *fram
 	if ecdsaVerificationState == false {
 		return &logical.Response{
 			Data: map[string]interface{}{
-				"status": false,
-				"reason": "ecdsa signature verification failed",
+				"status":  false,
+				"remarks": "ecdsa signature verification failed",
 			},
 		}, nil
 	}
@@ -93,7 +93,8 @@ func (b *backend) pathNewUser(ctx context.Context, req *logical.Request, d *fram
 	// return response
 	return &logical.Response{
 		Data: map[string]interface{}{
-			"status": true,
+			"status":  true,
+			"remarks": "successfully registered wallet!",
 		},
 	}, nil
 }

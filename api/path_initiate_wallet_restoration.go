@@ -1,7 +1,10 @@
 package api
 
 import (
+	"cloud.google.com/go/pubsub"
 	"context"
+	"encoding/json"
+	"strconv"
 	"time"
 
 	// "errors"
@@ -51,13 +54,14 @@ func (b *backend) pathInitiateWalletRestoration(ctx context.Context, req *logica
 	if rsaVerificationState == false {
 		return &logical.Response{
 			Data: map[string]interface{}{
-				"status": false,
-				"reason": "rsa signature verification failed",
+				"status":  false,
+				"remarks": "rsa signature verification failed",
 			},
 		}, nil
 	}
 
 	otp, err := helpers.GenerateOTP(6)
+	otpn, err := strconv.Atoi(otp)
 	if err != nil {
 		logger.Log(backendLogger, config.Error, "initiateWalletRestoration:", err.Error())
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
@@ -79,11 +83,26 @@ func (b *backend) pathInitiateWalletRestoration(ctx context.Context, req *logica
 		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
 	}
 
+	mailFormat := &helpers.MailFormatVerification{userData.UserEmail, otpn, "VERIFICATION", "mobile"}
+	mailFormatJson, _ := json.Marshal(mailFormat)
+
+	newCtx := context.Background()
+	client, err := pubsub.NewClient(ctx, "ethos-dev-deqode")
+	if err != nil {
+		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+	}
+	t := client.Topic("twilio-service")
+	res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
+	_, pubsubErr := res.Get(newCtx)
+	if err != nil {
+		return nil, logical.CodedError(http.StatusUnprocessableEntity, pubsubErr.Error())
+	}
+
 	// return response
 	return &logical.Response{
 		Data: map[string]interface{}{
-			"otp":    otp,
-			"status": true,
+			"status":  true,
+			"remarks": "rsa signature verification failed",
 		},
 	}, nil
 }

@@ -51,8 +51,8 @@ func (b *backend) pathGetThirdShard(ctx context.Context, req *logical.Request, d
 	if rsaVerificationState == false {
 		return &logical.Response{
 			Data: map[string]interface{}{
-				"status": false,
-				"reason": "rsa signature verification failed",
+				"status":  false,
+				"remarks": "rsa signature verification failed",
 			},
 		}, nil
 	}
@@ -60,8 +60,8 @@ func (b *backend) pathGetThirdShard(ctx context.Context, req *logical.Request, d
 	if userData.IsRestoreInProgress == false {
 		return &logical.Response{
 			Data: map[string]interface{}{
-				"status": false,
-				"reason": "restoration is not started or vetoed by guardian",
+				"status":  false,
+				"remarks": "restoration is not started or vetoed by guardian",
 			},
 		}, nil
 	}
@@ -70,8 +70,8 @@ func (b *backend) pathGetThirdShard(ctx context.Context, req *logical.Request, d
 	if currentUnixTime-userData.RestoreInitiationTimestamp < 300 {
 		return &logical.Response{
 			Data: map[string]interface{}{
-				"status": false,
-				"reason": "wait period not over, please wait",
+				"status":  false,
+				"remarks": "wait period not over, please wait",
 			},
 		}, nil
 	}
@@ -91,8 +91,8 @@ func (b *backend) pathGetThirdShard(ctx context.Context, req *logical.Request, d
 	// return response
 	return &logical.Response{
 		Data: map[string]interface{}{
-			"Third Shard": userData.WalletThirdShard,
-			"status":      true,
+			"remarks": userData.WalletThirdShard,
+			"status":  true,
 		},
 	}, nil
 }

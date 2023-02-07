@@ -49,8 +49,8 @@ func (b *backend) pathCancelWalletRestoration(ctx context.Context, req *logical.
 	if rsaVerificationState == false {
 		return &logical.Response{
 			Data: map[string]interface{}{
-				"status": false,
-				"reason": "rsa signature verification failed",
+				"status":  false,
+				"remarks": "rsa signature verification failed",
 			},
 		}, nil
 	}
@@ -72,7 +72,8 @@ func (b *backend) pathCancelWalletRestoration(ctx context.Context, req *logical.
 	// return response
 	return &logical.Response{
 		Data: map[string]interface{}{
-			"status": true,
+			"status":  true,
+			"remarks": "wallet restoration cancelled",
 		},
 	}, nil
 }

@@ -1,8 +1,11 @@
 package api
 
 import (
+	"cloud.google.com/go/pubsub"
 	"context"
+	"encoding/json"
 	"errors"
+	"os"
 	"time"
 
 	// "errors"
@@ -39,6 +42,16 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
+	workDir, _ := os.Getwd()
+	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", workDir+"/key.json")
+
+	newCtx := context.Background()
+	client, err := pubsub.NewClient(ctx, "ethos-dev-deqode")
+	if err != nil {
+		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+	}
+	t := client.Topic("twilio-service")
+
 	// Get User data
 	var userData helpers.UserDetails
 	err = entry.DecodeJSON(&userData)
@@ -55,8 +68,8 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 	if rsaVerificationState == false {
 		return &logical.Response{
 			Data: map[string]interface{}{
-				"status": false,
-				"reason": "rsa signature verification failed",
+				"status":  false,
+				"remarks": "rsa signature verification failed",
 			},
 		}, nil
 	}
@@ -68,8 +81,8 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 		if ecdsaVerificationState == false {
 			return &logical.Response{
 				Data: map[string]interface{}{
-					"status": false,
-					"reason": "ecdsa signature verification failed",
+					"status":  false,
+					"remarks": "ecdsa signature verification failed",
 				},
 			}, nil
 		}
@@ -88,8 +101,8 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 		if ecdsaVerificationState == false {
 			return &logical.Response{
 				Data: map[string]interface{}{
-					"status": false,
-					"reason": "ecdsa signature verification failed",
+					"status":  false,
+					"remarks": "ecdsa signature verification failed",
 				},
 			}, nil
 		}
@@ -108,8 +121,8 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 		if ecdsaVerificationState == false {
 			return &logical.Response{
 				Data: map[string]interface{}{
-					"status": false,
-					"reason": "ecdsa signature verification failed",
+					"status":  false,
+					"remarks": "ecdsa signature verification failed",
 				},
 			}, nil
 		}
@@ -128,8 +141,8 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 		if ecdsaVerificationState == false {
 			return &logical.Response{
 				Data: map[string]interface{}{
-					"status": false,
-					"reason": "ecdsa signature verification failed",
+					"status":  false,
+					"remarks": "ecdsa signature verification failed",
 				},
 			}, nil
 		}
@@ -148,8 +161,8 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 		if ecdsaVerificationState == false {
 			return &logical.Response{
 				Data: map[string]interface{}{
-					"status": false,
-					"reason": "ecdsa signature verification failed",
+					"status":  false,
+					"remarks": "ecdsa signature verification failed",
 				},
 			}, nil
 		}
@@ -174,14 +187,21 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			userData.RestoreInitiationTimestamp = time.Now().Unix()
 			userData.EmailVerificationState = false
 			userData.EmailVerificationOTP = "xxxxxx"
+			mailFormatUser := &helpers.MAILFormatUpdates{userData.UserEmail, "RESTORATION_INITIATED", "email"}
+			mailFormatUserJson, _ := json.Marshal(mailFormatUser)
+			res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatUserJson})
+			_, err := res.Get(newCtx)
+			if err != nil {
+				return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+			}
 		}
 
 	case "VERIFY_EMAIL_OTP":
 		if ecdsaVerificationState == false {
 			return &logical.Response{
 				Data: map[string]interface{}{
-					"status": false,
-					"reason": "ecdsa signature verification failed",
+					"status":  false,
+					"remarks": "ecdsa signature verification failed",
 				},
 			}, nil
 		}
@@ -198,8 +218,8 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 		if ecdsaVerificationState == false {
 			return &logical.Response{
 				Data: map[string]interface{}{
-					"status": false,
-					"reason": "ecdsa signature verification failed",
+					"status":  false,
+					"remarks": "ecdsa signature verification failed",
 				},
 			}, nil
 		}
@@ -227,7 +247,8 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 	}
 	return &logical.Response{
 		Data: map[string]interface{}{
-			"status": true,
+			"status":  true,
+			"remarks": "Verified",
 		},
 	}, nil
 }

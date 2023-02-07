@@ -24,7 +24,7 @@ func (b *backend) pathBackupThirdShard(ctx context.Context, req *logical.Request
 	// obtain details:
 	identifier := d.Get("identifier").(string)
 	walletThirdShard := d.Get("walletThirdShard").(string)
-	signatureRSA := d.Get("signatureRSA").(string)
+	signatureRSA := d.Get("signatureRSA").(string) // base64 encoded
 	signatureECDSA := d.Get("signatureECDSA").(string)
 
 	// path where user data is stored
@@ -51,8 +51,8 @@ func (b *backend) pathBackupThirdShard(ctx context.Context, req *logical.Request
 	if rsaVerificationState == false {
 		return &logical.Response{
 			Data: map[string]interface{}{
-				"status": false,
-				"reason": "rsa signature verification failed",
+				"status":  false,
+				"remarks": "rsa signature verification failed",
 			},
 		}, nil
 	}
@@ -62,8 +62,8 @@ func (b *backend) pathBackupThirdShard(ctx context.Context, req *logical.Request
 	if ecdsaVerificationState == false {
 		return &logical.Response{
 			Data: map[string]interface{}{
-				"status": false,
-				"reason": "ecdsa signature verification failed",
+				"status":  false,
+				"remarks": "ecdsa signature verification failed",
 			},
 		}, nil
 	}
@@ -85,7 +85,8 @@ func (b *backend) pathBackupThirdShard(ctx context.Context, req *logical.Request
 	// return response
 	return &logical.Response{
 		Data: map[string]interface{}{
-			"status": true,
+			"status":  true,
+			"remarks": "successfully backed up shard",
 		},
 	}, nil
 }

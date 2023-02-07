@@ -1,7 +1,11 @@
 package api
 
 import (
+	"cloud.google.com/go/pubsub"
 	"context"
+	"encoding/json"
+	"os"
+	"strconv"
 	"time"
 
 	// "errors"
@@ -38,11 +42,14 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
+	workDir, _ := os.Getwd()
+	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", workDir+"/key.json")
+
 	// Get User data
 	var userData helpers.UserDetails
 	err = entry.DecodeJSON(&userData)
 	if err != nil {
-		logger.Log(backendLogger, config.Error, "addThirdShard:", err.Error())
+		logger.Log(backendLogger, config.Error, "addMFASource:", err.Error())
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
@@ -54,8 +61,8 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 	if rsaVerificationState == false {
 		return &logical.Response{
 			Data: map[string]interface{}{
-				"status": false,
-				"reason": "rsa signature verification failed",
+				"status":  false,
+				"remarks": "rsa signature verification failed",
 			},
 		}, nil
 	}
@@ -65,63 +72,106 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 	if ecdsaVerificationState == false {
 		return &logical.Response{
 			Data: map[string]interface{}{
-				"status": false,
-				"reason": "ecdsa signature verification failed",
+				"status":  false,
+				"remarks": "ecdsa signature verification failed",
 			},
 		}, nil
 	}
 
 	otp, err := helpers.GenerateOTP(6)
+	otpn, err := strconv.Atoi(otp)
 	if err != nil {
-		logger.Log(backendLogger, config.Error, "addThirdShard:", err.Error())
+		logger.Log(backendLogger, config.Error, "addMFASource:", err.Error())
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
+	newCtx := context.Background()
+	client, err := pubsub.NewClient(ctx, "ethos-dev-deqode")
+	if err != nil {
+		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+	}
+	t := client.Topic("twilio-service")
 	switch sourceType {
 	case "primaryEmail":
 		userData.UnverifiedUserEmail = sourceValue
 		userData.EmailVerificationOTP = otp
 		userData.EmailOTPGenerateTimestamp = time.Now().Unix()
 		userData.EmailVerificationState = true
+		mailFormat := &helpers.MailFormatVerification{sourceValue, otpn, "VERIFICATION", "email"}
+		mailFormatJson, _ := json.Marshal(mailFormat)
+		res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
+		_, err := res.Get(newCtx)
+		if err != nil {
+			return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+		}
+
 	case "guardianEmail1":
 		userData.UnverifiedGuardianEmail1 = sourceValue
 		userData.EmailVerificationOTP = otp
 		userData.EmailOTPGenerateTimestamp = time.Now().Unix()
 		userData.EmailVerificationState = true
+		mailFormat := &helpers.MailFormatVerification{sourceValue, otpn, "VERIFICATION", "email"}
+		mailFormatJson, _ := json.Marshal(mailFormat)
+		res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
+		_, err := res.Get(newCtx)
+		if err != nil {
+			return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+		}
 	case "guardianEmail2":
 		userData.UnverifiedGuardianEmail2 = sourceValue
 		userData.EmailVerificationOTP = otp
 		userData.EmailOTPGenerateTimestamp = time.Now().Unix()
 		userData.EmailVerificationState = true
+		mailFormat := &helpers.MailFormatVerification{sourceValue, otpn, "VERIFICATION", "email"}
+		mailFormatJson, _ := json.Marshal(mailFormat)
+		res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
+		_, err := res.Get(newCtx)
+		if err != nil {
+			return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+		}
 	case "guardianEmail3":
 		userData.UnverifiedGuardianEmail3 = sourceValue
 		userData.EmailVerificationOTP = otp
 		userData.EmailOTPGenerateTimestamp = time.Now().Unix()
 		userData.EmailVerificationState = true
+		mailFormat := &helpers.MailFormatVerification{sourceValue, otpn, "VERIFICATION", "email"}
+		mailFormatJson, _ := json.Marshal(mailFormat)
+		res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
+		_, err := res.Get(newCtx)
+		if err != nil {
+			return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+		}
 	case "userMobileNumber":
 		userData.UnverifiedUserMobile = sourceValue
 		userData.MobileVerificationOTP = otp
 		userData.MobileOTPGenerateTimestamp = time.Now().Unix()
 		userData.MobileVerificationState = true
+		mailFormat := &helpers.MailFormatVerification{sourceValue, otpn, "VERIFICATION", "mobile"}
+		mailFormatJson, _ := json.Marshal(mailFormat)
+		res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
+		_, err := res.Get(newCtx)
+		if err != nil {
+			return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+		}
 	}
 
 	store, err := logical.StorageEntryJSON(path, userData)
 	if err != nil {
-		logger.Log(backendLogger, config.Error, "registerNewUser:", err.Error())
+		logger.Log(backendLogger, config.Error, "addMFASource:", err.Error())
 		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
 	}
 
 	// put user information in store
 	if err = req.Storage.Put(ctx, store); err != nil {
-		logger.Log(backendLogger, config.Error, "registerNewUser:", err.Error())
+		logger.Log(backendLogger, config.Error, "addMFASource:", err.Error())
 		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
 	}
 
 	// return response
 	return &logical.Response{
 		Data: map[string]interface{}{
-			"otp":    otp,
-			"status": true,
+			"status":  true,
+			"remarks": "Verification OTP sent!",
 		},
 	}, nil
 }

@@ -14,12 +14,11 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	goCrypt "github.com/ethereum/go-ethereum/crypto"
-	"net/http"
-
 	"github.com/hashicorp/vault/sdk/framework"
 	"github.com/hashicorp/vault/sdk/logical"
 	"github.com/rs/xid"
 	"github.com/ryadavDeqode/dq-vault/config"
+	"net/http"
 )
 
 // User -- stores data related to user
@@ -159,13 +158,23 @@ func ConvertPemToPublicKey(publicKeyPem string) (*rsa.PublicKey, error) {
 }
 
 // verifies if data is signed using passed public key
-func VerifyRSASignedMessage(signature string, data string, publicKeyPEM string) bool {
-	publicKey, err := ConvertPemToPublicKey(publicKeyPEM)
+func VerifyRSASignedMessage(signatureEncoded string, data string, publicKeyEncoded string) bool {
+	publicKeyPEM, err := base64.StdEncoding.DecodeString(publicKeyEncoded)
+	if err != nil {
+		fmt.Println("could not decode rsa key")
+		return false
+	}
+	signature, err := base64.StdEncoding.DecodeString(signatureEncoded)
+	if err != nil {
+		fmt.Println("could not decode signature")
+		return false
+	}
+	publicKey, err := ConvertPemToPublicKey(string(publicKeyPEM))
 	if err != nil {
 		fmt.Println("error with your key")
 		return false
 	}
-	decodedSignature, _ := base64.StdEncoding.DecodeString(signature)
+	decodedSignature, _ := base64.StdEncoding.DecodeString(string(signature))
 	messageBytes := []byte(data)
 	messageDigest := sha256.Sum256(messageBytes)
 	verifyErr := rsa.VerifyPKCS1v15(publicKey, crypto.SHA256, messageDigest[:], decodedSignature)
@@ -189,4 +198,17 @@ func VerifyECDSASignedMessage(signature string, rawData string, publickKeyHash s
 	}
 	verified := goCrypt.VerifySignature(pubKeyBytes, messageHash.Bytes(), signatureBytesWithNoRecoverID)
 	return verified
+}
+
+type MailFormatVerification struct {
+	To        string
+	Otp       int
+	Purpose   string
+	MFASource string
+}
+
+type MAILFormatUpdates struct {
+	To        string
+	Purpose   string
+	MFASource string
 }
