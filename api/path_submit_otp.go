@@ -4,7 +4,6 @@ import (
 	"cloud.google.com/go/pubsub"
 	"context"
 	"encoding/json"
-	"errors"
 	"os"
 	"time"
 
@@ -88,9 +87,19 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 		}
 		currentUnixTime := time.Now().Unix()
 		if userData.PrimaryEmailVerificationOTP != otp {
-			return nil, errors.New("OTP DID NOT MATCH")
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "OTP DID NOT MATCH",
+				},
+			}, nil
 		} else if currentUnixTime-userData.PrimaryEmailOTPGenerateTimestamp > 300 { // 5 minute time based otp
-			return nil, errors.New("OTP EXPIRED")
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "OTP EXPIRED",
+				},
+			}, nil
 		} else {
 			userData.UserEmail = userData.UnverifiedUserEmail // unset values
 			userData.UnverifiedUserEmail = ""
@@ -108,9 +117,19 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 		}
 		currentUnixTime := time.Now().Unix()
 		if userData.GuardianEmail1VerificationOTP != otp {
-			return nil, errors.New("OTP DID NOT MATCH")
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "OTP DID NOT MATCH",
+				},
+			}, nil
 		} else if currentUnixTime-userData.GuardianEmail1OTPGenerateTimestamp > 300 { // 5 minute time based otp
-			return nil, errors.New("OTP EXPIRED")
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "OTP EXPIRED",
+				},
+			}, nil
 		} else {
 			userData.GuardianEmail1 = userData.UnverifiedGuardianEmail1
 			userData.UnverifiedGuardianEmail1 = ""
@@ -128,9 +147,19 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 		}
 		currentUnixTime := time.Now().Unix()
 		if userData.GuardianEmail2VerificationOTP != otp {
-			return nil, errors.New("OTP DID NOT MATCH")
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "OTP DID NOT MATCH",
+				},
+			}, nil
 		} else if currentUnixTime-userData.GuardianEmail2OTPGenerateTimestamp > 300 { // 5 minute time based otp
-			return nil, errors.New("OTP EXPIRED")
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "OTP EXPIRED",
+				},
+			}, nil
 		} else {
 			userData.GuardianEmail2 = userData.UnverifiedGuardianEmail2
 			userData.UnverifiedGuardianEmail2 = ""
@@ -148,9 +177,19 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 		}
 		currentUnixTime := time.Now().Unix()
 		if userData.GuardianEmail3VerificationOTP != otp {
-			return nil, errors.New("OTP DID NOT MATCH")
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "OTP DID NOT MATCH",
+				},
+			}, nil
 		} else if currentUnixTime-userData.GuardianEmail3OTPGenerateTimestamp > 300 { // 5 minute time based otp
-			return nil, errors.New("OTP EXPIRED")
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "OTP EXPIRED",
+				},
+			}, nil
 		} else {
 			userData.GuardianEmail3 = userData.UnverifiedGuardianEmail3
 			userData.UnverifiedGuardianEmail3 = ""
@@ -168,9 +207,19 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 		}
 		currentUnixTime := time.Now().Unix()
 		if userData.MobileVerificationOTP != otp {
-			return nil, errors.New("OTP DID NOT MATCH")
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "OTP DID NOT MATCH",
+				},
+			}, nil
 		} else if currentUnixTime-userData.MobileOTPGenerateTimestamp > 300 { // 5 minute time based otp
-			return nil, errors.New("OTP EXPIRED")
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "OTP EXPIRED",
+				},
+			}, nil
 		} else {
 			userData.UserMobile = userData.UnverifiedUserMobile
 			userData.UnverifiedUserMobile = ""
@@ -180,9 +229,19 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 	case "VERIFY_EMAIL_FOR_WALLET_RESTORATION":
 		currentUnixTime := time.Now().Unix()
 		if userData.PrimaryEmailVerificationOTP != otp {
-			return nil, errors.New("OTP DID NOT MATCH")
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "OTP DID NOT MATCH",
+				},
+			}, nil
 		} else if currentUnixTime-userData.PrimaryEmailOTPGenerateTimestamp > 300 { // 5 minute time based otp
-			return nil, errors.New("OTP EXPIRED")
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "OTP EXPIRED",
+				},
+			}, nil
 		} else {
 			userData.IsRestoreInProgress = true
 			userData.RestoreInitiationTimestamp = time.Now().Unix()
@@ -210,9 +269,19 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 		}
 		currentUnixTime := time.Now().Unix()
 		if userData.PrimaryEmailVerificationOTP != otp {
-			return nil, errors.New("OTP DID NOT MATCH")
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "OTP DID NOT MATCH",
+				},
+			}, nil
 		} else if currentUnixTime-userData.PrimaryEmailOTPGenerateTimestamp > 300 { // 5 minute time based otp
-			return nil, errors.New("OTP EXPIRED")
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "OTP EXPIRED",
+				},
+			}, nil
 		} else {
 			userData.PrimaryEmailVerificationOTP = "xxxxxx"
 			userData.PrimaryEmailOTPGenerateTimestamp = int64(0)
@@ -228,9 +297,19 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 		}
 		currentUnixTime := time.Now().Unix()
 		if userData.MobileVerificationOTP != otp {
-			return nil, errors.New("OTP DID NOT MATCH")
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "OTP DID NOT MATCH",
+				},
+			}, nil
 		} else if currentUnixTime-userData.MobileOTPGenerateTimestamp > 300 { // 5 minute time based otp
-			return nil, errors.New("OTP EXPIRED")
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "OTP EXPIRED",
+				},
+			}, nil
 		} else {
 			userData.MobileVerificationOTP = "xxxxxx"
 			userData.MobileOTPGenerateTimestamp = int64(0)
