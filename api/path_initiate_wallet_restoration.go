@@ -4,7 +4,6 @@ import (
 	"cloud.google.com/go/pubsub"
 	"context"
 	"encoding/json"
-	"strconv"
 	"time"
 
 	// "errors"
@@ -61,16 +60,13 @@ func (b *backend) pathInitiateWalletRestoration(ctx context.Context, req *logica
 	}
 
 	otp, err := helpers.GenerateOTP(6)
-	otpn, err := strconv.Atoi(otp)
 	if err != nil {
 		logger.Log(backendLogger, config.Error, "initiateWalletRestoration:", err.Error())
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
-	userData.EmailVerificationOTP = otp
-	userData.EmailVerificationOTPPurpose = "VERIFY_EMAIL_FOR_WALLET_RESTORATION"
-	userData.EmailOTPGenerateTimestamp = time.Now().Unix()
-	userData.EmailVerificationState = true
+	userData.PrimaryEmailVerificationOTP = otp
+	userData.PrimaryEmailOTPGenerateTimestamp = time.Now().Unix()
 
 	store, err := logical.StorageEntryJSON(path, userData)
 	if err != nil {
@@ -84,7 +80,7 @@ func (b *backend) pathInitiateWalletRestoration(ctx context.Context, req *logica
 		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
 	}
 
-	mailFormat := &helpers.MailFormatVerification{userData.UserEmail, otpn, "VERIFICATION", "email"}
+	mailFormat := &helpers.MailFormatVerification{userData.UserEmail, otp, "VERIFICATION", "email"}
 	mailFormatJson, _ := json.Marshal(mailFormat)
 
 	newCtx := context.Background()

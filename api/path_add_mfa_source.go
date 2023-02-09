@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"os"
-	"strconv"
 	"time"
 
 	// "errors"
@@ -79,7 +78,6 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 	}
 
 	otp, err := helpers.GenerateOTP(6)
-	otpn, err := strconv.Atoi(otp)
 	if err != nil {
 		logger.Log(backendLogger, config.Error, "addMFASource:", err.Error())
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
@@ -92,8 +90,8 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 	}
 	t := client.Topic("twilio-service") // To-Do: add cons
 	switch sourceType {
-	case "primaryEmail":
-		mailFormat := &helpers.MailFormatVerification{sourceValue, otpn, "VERIFICATION", "email"}
+	case "userEmail":
+		mailFormat := &helpers.MailFormatVerification{sourceValue, otp, "VERIFICATION", "email"}
 		mailFormatJson, _ := json.Marshal(mailFormat)
 		res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
 		_, err := res.Get(newCtx)
@@ -101,26 +99,22 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 			return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 		}
 		userData.UnverifiedUserEmail = sourceValue
-		userData.EmailVerificationOTP = otp
-		userData.EmailVerificationOTPPurpose = "ADD_OR_UPDATE_PRIMARY_EMAIL"
-		userData.EmailOTPGenerateTimestamp = time.Now().Unix()
-		userData.EmailVerificationState = true
+		userData.PrimaryEmailVerificationOTP = otp
+		userData.PrimaryEmailOTPGenerateTimestamp = time.Now().Unix()
 
 	case "guardianEmail1":
-		userData.UnverifiedGuardianEmail1 = sourceValue // verify email
-		userData.EmailVerificationOTP = otp             // diffent place holders
-		userData.EmailVerificationOTPPurpose = "ADD_OR_UPDATE_GUARDIAN_EMAIL_1"
-		userData.EmailOTPGenerateTimestamp = time.Now().Unix()
-		userData.EmailVerificationState = true
-		mailFormat := &helpers.MailFormatVerification{sourceValue, otpn, "VERIFICATION", "email"}
+		mailFormat := &helpers.MailFormatVerification{sourceValue, otp, "VERIFICATION", "email"}
 		mailFormatJson, _ := json.Marshal(mailFormat)
 		res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
 		_, err := res.Get(newCtx)
 		if err != nil {
 			return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 		}
+		userData.UnverifiedGuardianEmail1 = sourceValue
+		userData.GuardianEmail1VerificationOTP = otp
+		userData.GuardianEmail1OTPGenerateTimestamp = time.Now().Unix()
 	case "guardianEmail2":
-		mailFormat := &helpers.MailFormatVerification{sourceValue, otpn, "VERIFICATION", "email"}
+		mailFormat := &helpers.MailFormatVerification{sourceValue, otp, "VERIFICATION", "email"}
 		mailFormatJson, _ := json.Marshal(mailFormat)
 		res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
 		_, err := res.Get(newCtx)
@@ -128,13 +122,11 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 			return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 		}
 		userData.UnverifiedGuardianEmail2 = sourceValue
-		userData.EmailVerificationOTP = otp
-		userData.EmailVerificationOTPPurpose = "ADD_OR_UPDATE_GUARDIAN_EMAIL_2"
-		userData.EmailOTPGenerateTimestamp = time.Now().Unix()
-		userData.EmailVerificationState = true
+		userData.GuardianEmail2VerificationOTP = otp
+		userData.GuardianEmail2OTPGenerateTimestamp = time.Now().Unix()
 
 	case "guardianEmail3":
-		mailFormat := &helpers.MailFormatVerification{sourceValue, otpn, "VERIFICATION", "email"}
+		mailFormat := &helpers.MailFormatVerification{sourceValue, otp, "VERIFICATION", "email"}
 		mailFormatJson, _ := json.Marshal(mailFormat)
 		res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
 		_, err := res.Get(newCtx)
@@ -142,13 +134,11 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 			return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 		}
 		userData.UnverifiedGuardianEmail3 = sourceValue
-		userData.EmailVerificationOTP = otp
-		userData.EmailVerificationOTPPurpose = "ADD_OR_UPDATE_GUARDIAN_EMAIL_3"
-		userData.EmailOTPGenerateTimestamp = time.Now().Unix()
-		userData.EmailVerificationState = true
+		userData.GuardianEmail3VerificationOTP = otp
+		userData.GuardianEmail3OTPGenerateTimestamp = time.Now().Unix()
 
 	case "userMobileNumber":
-		mailFormat := &helpers.MailFormatVerification{sourceValue, otpn, "VERIFICATION", "mobile"}
+		mailFormat := &helpers.MailFormatVerification{sourceValue, otp, "VERIFICATION", "mobile"}
 		mailFormatJson, _ := json.Marshal(mailFormat)
 		res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
 		_, err := res.Get(newCtx)
@@ -157,7 +147,6 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 		}
 		userData.UnverifiedUserMobile = sourceValue
 		userData.MobileVerificationOTP = otp
-		userData.MobileVerificationOTPPurpose = "ADD_OR_UPDATE_MOBILE_NUMBER"
 		userData.MobileOTPGenerateTimestamp = time.Now().Unix()
 		userData.MobileVerificationState = true
 	}
