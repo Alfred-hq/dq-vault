@@ -30,28 +30,30 @@ type User struct {
 }
 
 type UserDetails struct {
-	UserEmail                  string `json:"useremail"`
-	UnverifiedUserEmail        string `json:"tempuseremail"`
-	GuardianEmail1             string `json:"guardianemail1"`
-	UnverifiedGuardianEmail1   string `json:"tempguardianemail1"`
-	GuardianEmail2             string `json:"guardianemail2"`
-	UnverifiedGuardianEmail2   string `json:"tempguardianemail2"`
-	GuardianEmail3             string `json:"guardianemail3"`
-	UnverifiedGuardianEmail3   string `json:"tempguardianemail3"`
-	UserMobile                 string `json:"usermobile"`
-	UnverifiedUserMobile       string `json:"tempusermobile"`
-	UserRSAPublicKey           string `json:"userRSAPublicKey"`
-	UserECDSAPublicKey         string `json:"userECDSAPublicKey"`
-	WalletThirdShard           string `json:"secret"`
-	Identifier                 string `json:"identifier"`
-	IsRestoreInProgress        bool   `json:"isrestoreinprogress"`
-	EmailVerificationState     bool   `json:"emailverificationstate"`
-	MobileVerificationState    bool   `json:"mobileverificationstate"`
-	EmailVerificationOTP       string `json:"emailverificationotp"`
-	MobileVerificationOTP      string `json:"mobileverificationotp"`
-	EmailOTPGenerateTimestamp  int64  `json:"emailverificationtimestamp"`
-	MobileOTPGenerateTimestamp int64  `json:"mobileotpgeneratedtimestamp"`
-	RestoreInitiationTimestamp int64  `json:"restoreinitiationtimestamp"`
+	UserEmail                    string `json:"useremail"`
+	UnverifiedUserEmail          string `json:"tempuseremail"`
+	GuardianEmail1               string `json:"guardianemail1"`
+	UnverifiedGuardianEmail1     string `json:"tempguardianemail1"`
+	GuardianEmail2               string `json:"guardianemail2"`
+	UnverifiedGuardianEmail2     string `json:"tempguardianemail2"`
+	GuardianEmail3               string `json:"guardianemail3"`
+	UnverifiedGuardianEmail3     string `json:"tempguardianemail3"`
+	UserMobile                   string `json:"usermobile"`
+	UnverifiedUserMobile         string `json:"tempusermobile"`
+	UserRSAPublicKey             string `json:"userRSAPublicKey"`
+	UserECDSAPublicKey           string `json:"userECDSAPublicKey"`
+	WalletThirdShard             string `json:"secret"`
+	Identifier                   string `json:"identifier"`
+	IsRestoreInProgress          bool   `json:"isrestoreinprogress"`
+	EmailVerificationState       bool   `json:"emailverificationstate"`
+	EmailVerificationOTPPurpose  string `json:"emailVerificationOTPPurpose"`
+	MobileVerificationOTPPurpose string `json:"mobileVerificationOTPPurpose"`
+	MobileVerificationState      bool   `json:"mobileverificationstate"`
+	EmailVerificationOTP         string `json:"emailverificationotp"`
+	MobileVerificationOTP        string `json:"mobileverificationotp"`
+	EmailOTPGenerateTimestamp    int64  `json:"emailverificationtimestamp"`
+	MobileOTPGenerateTimestamp   int64  `json:"mobileotpgeneratedtimestamp"`
+	RestoreInitiationTimestamp   int64  `json:"restoreinitiationtimestamp"`
 }
 
 // NewUUID returns a globally unique random generated guid
@@ -208,7 +210,8 @@ type MailFormatVerification struct {
 }
 
 type MAILFormatUpdates struct {
-	To        string
-	Purpose   string
-	MFASource string
+	To               string
+	Purpose          string
+	MFASource        string
+	TimeOfInitiation string
 }

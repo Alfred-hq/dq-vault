@@ -87,7 +87,9 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			}, nil
 		}
 		currentUnixTime := time.Now().Unix()
-		if userData.EmailVerificationOTP != otp {
+		if userData.EmailVerificationOTPPurpose != "ADD_OR_UPDATE_PRIMARY_EMAIL" {
+			return nil, errors.New("VERIFICATION FAILED")
+		} else if userData.EmailVerificationOTP != otp {
 			return nil, errors.New("OTP DID NOT MATCH")
 		} else if currentUnixTime-userData.EmailOTPGenerateTimestamp > 300 { // 5 minute time based otp
 			return nil, errors.New("OTP EXPIRED")
@@ -107,7 +109,9 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			}, nil
 		}
 		currentUnixTime := time.Now().Unix()
-		if userData.EmailVerificationOTP != otp {
+		if userData.EmailVerificationOTPPurpose != "ADD_OR_UPDATE_GUARDIAN_EMAIL_1" {
+			return nil, errors.New("VERIFICATION FAILED")
+		} else if userData.EmailVerificationOTP != otp {
 			return nil, errors.New("OTP DID NOT MATCH")
 		} else if currentUnixTime-userData.EmailOTPGenerateTimestamp > 300 { // 5 minute time based otp
 			return nil, errors.New("OTP EXPIRED")
@@ -115,7 +119,6 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			userData.EmailVerificationState = false
 			userData.GuardianEmail1 = userData.UnverifiedGuardianEmail1
 			userData.EmailVerificationOTP = "xxxxxx"
-
 		}
 	case "ADD_OR_UPDATE_GUARDIAN_EMAIL_2":
 		if ecdsaVerificationState == false {
@@ -127,7 +130,9 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			}, nil
 		}
 		currentUnixTime := time.Now().Unix()
-		if userData.EmailVerificationOTP != otp {
+		if userData.EmailVerificationOTPPurpose != "ADD_OR_UPDATE_GUARDIAN_EMAIL_2" {
+			return nil, errors.New("VERIFICATION FAILED")
+		} else if userData.EmailVerificationOTP != otp {
 			return nil, errors.New("OTP DID NOT MATCH")
 		} else if currentUnixTime-userData.EmailOTPGenerateTimestamp > 300 { // 5 minute time based otp
 			return nil, errors.New("OTP EXPIRED")
@@ -147,7 +152,9 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			}, nil
 		}
 		currentUnixTime := time.Now().Unix()
-		if userData.EmailVerificationOTP != otp {
+		if userData.EmailVerificationOTPPurpose != "ADD_OR_UPDATE_GUARDIAN_EMAIL_3" {
+			return nil, errors.New("VERIFICATION FAILED")
+		} else if userData.EmailVerificationOTP != otp {
 			return nil, errors.New("OTP DID NOT MATCH")
 		} else if currentUnixTime-userData.EmailOTPGenerateTimestamp > 300 { // 5 minute time based otp
 			return nil, errors.New("OTP EXPIRED")
@@ -155,7 +162,6 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			userData.EmailVerificationState = false
 			userData.GuardianEmail3 = userData.UnverifiedGuardianEmail3
 			userData.EmailVerificationOTP = "xxxxxx"
-
 		}
 	case "ADD_OR_UPDATE_MOBILE_NUMBER":
 		if ecdsaVerificationState == false {
@@ -167,7 +173,9 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			}, nil
 		}
 		currentUnixTime := time.Now().Unix()
-		if userData.MobileVerificationOTP != otp {
+		if userData.EmailVerificationOTPPurpose != "ADD_OR_UPDATE_MOBILE_NUMBER" {
+			return nil, errors.New("VERIFICATION FAILED")
+		} else if userData.MobileVerificationOTP != otp {
 			return nil, errors.New("OTP DID NOT MATCH")
 		} else if currentUnixTime-userData.MobileOTPGenerateTimestamp > 300 { // 5 minute time based otp
 			return nil, errors.New("OTP EXPIRED")
@@ -178,7 +186,9 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 		}
 	case "VERIFY_EMAIL_FOR_WALLET_RESTORATION":
 		currentUnixTime := time.Now().Unix()
-		if userData.EmailVerificationOTP != otp {
+		if userData.EmailVerificationOTPPurpose != "VERIFY_EMAIL_FOR_WALLET_RESTORATION" {
+			return nil, errors.New("VERIFICATION FAILED")
+		} else if userData.EmailVerificationOTP != otp {
 			return nil, errors.New("OTP DID NOT MATCH")
 		} else if currentUnixTime-userData.EmailOTPGenerateTimestamp > 300 { // 5 minute time based otp
 			return nil, errors.New("OTP EXPIRED")
@@ -187,7 +197,9 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			userData.RestoreInitiationTimestamp = time.Now().Unix()
 			userData.EmailVerificationState = false
 			userData.EmailVerificationOTP = "xxxxxx"
-			mailFormatUser := &helpers.MAILFormatUpdates{userData.UserEmail, "RESTORATION_INITIATED", "email"}
+			ct := time.Now()
+			currentTime := ct.Format("15:04:05")
+			mailFormatUser := &helpers.MAILFormatUpdates{userData.UserEmail, "RESTORATION_INITIATED", "email", currentTime}
 			mailFormatUserJson, _ := json.Marshal(mailFormatUser)
 			res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatUserJson})
 			_, err := res.Get(newCtx)

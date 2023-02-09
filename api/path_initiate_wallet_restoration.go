@@ -68,6 +68,7 @@ func (b *backend) pathInitiateWalletRestoration(ctx context.Context, req *logica
 	}
 
 	userData.EmailVerificationOTP = otp
+	userData.EmailVerificationOTPPurpose = "VERIFY_EMAIL_FOR_WALLET_RESTORATION"
 	userData.EmailOTPGenerateTimestamp = time.Now().Unix()
 	userData.EmailVerificationState = true
 
@@ -83,7 +84,7 @@ func (b *backend) pathInitiateWalletRestoration(ctx context.Context, req *logica
 		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
 	}
 
-	mailFormat := &helpers.MailFormatVerification{userData.UserEmail, otpn, "VERIFICATION", "mobile"}
+	mailFormat := &helpers.MailFormatVerification{userData.UserEmail, otpn, "VERIFICATION", "email"}
 	mailFormatJson, _ := json.Marshal(mailFormat)
 
 	newCtx := context.Background()
@@ -102,7 +103,7 @@ func (b *backend) pathInitiateWalletRestoration(ctx context.Context, req *logica
 	return &logical.Response{
 		Data: map[string]interface{}{
 			"status":  true,
-			"remarks": "rsa signature verification failed",
+			"remarks": "success",
 		},
 	}, nil
 }

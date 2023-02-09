@@ -93,10 +93,6 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 	t := client.Topic("twilio-service")
 	switch sourceType {
 	case "primaryEmail":
-		userData.UnverifiedUserEmail = sourceValue
-		userData.EmailVerificationOTP = otp
-		userData.EmailOTPGenerateTimestamp = time.Now().Unix()
-		userData.EmailVerificationState = true
 		mailFormat := &helpers.MailFormatVerification{sourceValue, otpn, "VERIFICATION", "email"}
 		mailFormatJson, _ := json.Marshal(mailFormat)
 		res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
@@ -104,10 +100,16 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 		if err != nil {
 			return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 		}
+		userData.UnverifiedUserEmail = sourceValue
+		userData.EmailVerificationOTP = otp
+		userData.EmailVerificationOTPPurpose = "ADD_OR_UPDATE_PRIMARY_EMAIL"
+		userData.EmailOTPGenerateTimestamp = time.Now().Unix()
+		userData.EmailVerificationState = true
 
 	case "guardianEmail1":
 		userData.UnverifiedGuardianEmail1 = sourceValue
 		userData.EmailVerificationOTP = otp
+		userData.EmailVerificationOTPPurpose = "ADD_OR_UPDATE_GUARDIAN_EMAIL_1"
 		userData.EmailOTPGenerateTimestamp = time.Now().Unix()
 		userData.EmailVerificationState = true
 		mailFormat := &helpers.MailFormatVerification{sourceValue, otpn, "VERIFICATION", "email"}
@@ -118,10 +120,20 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 			return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 		}
 	case "guardianEmail2":
+		mailFormat := &helpers.MailFormatVerification{sourceValue, otpn, "VERIFICATION", "email"}
+		mailFormatJson, _ := json.Marshal(mailFormat)
+		res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
+		_, err := res.Get(newCtx)
+		if err != nil {
+			return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+		}
 		userData.UnverifiedGuardianEmail2 = sourceValue
 		userData.EmailVerificationOTP = otp
+		userData.EmailVerificationOTPPurpose = "ADD_OR_UPDATE_GUARDIAN_EMAIL_2"
 		userData.EmailOTPGenerateTimestamp = time.Now().Unix()
 		userData.EmailVerificationState = true
+
+	case "guardianEmail3":
 		mailFormat := &helpers.MailFormatVerification{sourceValue, otpn, "VERIFICATION", "email"}
 		mailFormatJson, _ := json.Marshal(mailFormat)
 		res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
@@ -129,23 +141,13 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 		if err != nil {
 			return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 		}
-	case "guardianEmail3":
 		userData.UnverifiedGuardianEmail3 = sourceValue
 		userData.EmailVerificationOTP = otp
+		userData.EmailVerificationOTPPurpose = "ADD_OR_UPDATE_GUARDIAN_EMAIL_3"
 		userData.EmailOTPGenerateTimestamp = time.Now().Unix()
 		userData.EmailVerificationState = true
-		mailFormat := &helpers.MailFormatVerification{sourceValue, otpn, "VERIFICATION", "email"}
-		mailFormatJson, _ := json.Marshal(mailFormat)
-		res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
-		_, err := res.Get(newCtx)
-		if err != nil {
-			return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
-		}
+
 	case "userMobileNumber":
-		userData.UnverifiedUserMobile = sourceValue
-		userData.MobileVerificationOTP = otp
-		userData.MobileOTPGenerateTimestamp = time.Now().Unix()
-		userData.MobileVerificationState = true
 		mailFormat := &helpers.MailFormatVerification{sourceValue, otpn, "VERIFICATION", "mobile"}
 		mailFormatJson, _ := json.Marshal(mailFormat)
 		res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
@@ -153,6 +155,11 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 		if err != nil {
 			return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 		}
+		userData.UnverifiedUserMobile = sourceValue
+		userData.MobileVerificationOTP = otp
+		userData.MobileVerificationOTPPurpose = "ADD_OR_UPDATE_MOBILE_NUMBER"
+		userData.MobileOTPGenerateTimestamp = time.Now().Unix()
+		userData.MobileVerificationState = true
 	}
 
 	store, err := logical.StorageEntryJSON(path, userData)
