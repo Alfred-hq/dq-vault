@@ -61,7 +61,7 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 	}
 
 	// Generate unsigned data
-	unsignedData := identifier + purpose + otp
+	unsignedData := identifier + otp + purpose // alphabetical
 
 	// verify if request is valid
 	rsaVerificationState := helpers.VerifyRSASignedMessage(signatureRSA, unsignedData, userData.UserRSAPublicKey)
@@ -95,7 +95,7 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			return nil, errors.New("OTP EXPIRED")
 		} else {
 			userData.EmailVerificationState = false
-			userData.UserEmail = userData.UnverifiedUserEmail
+			userData.UserEmail = userData.UnverifiedUserEmail // unset values
 			userData.EmailVerificationOTP = "xxxxxx"
 
 		}

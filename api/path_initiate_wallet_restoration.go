@@ -88,7 +88,7 @@ func (b *backend) pathInitiateWalletRestoration(ctx context.Context, req *logica
 	mailFormatJson, _ := json.Marshal(mailFormat)
 
 	newCtx := context.Background()
-	client, err := pubsub.NewClient(ctx, "ethos-dev-deqode")
+	client, err := pubsub.NewClient(ctx, "ethos-dev-deqode") // env var
 	if err != nil {
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}

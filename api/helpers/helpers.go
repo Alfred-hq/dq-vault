@@ -206,7 +206,7 @@ type MailFormatVerification struct {
 	To        string
 	Otp       int
 	Purpose   string
-	MFASource string
+	MFASource string // enum
 }
 
 type MAILFormatUpdates struct {

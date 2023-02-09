@@ -222,7 +222,7 @@ get help.
 						Description: "ECDSA signature",
 						Default:     "",
 					},
-					"sourceType": &framework.FieldSchema{
+					"sourceType": &framework.FieldSchema{ // enum
 						Type:        framework.TypeString,
 						Description: "source type",
 						Default:     "",
@@ -243,7 +243,7 @@ get help.
 				Pattern:         "backupThirdShard",
 				HelpSynopsis:    "backupThirdShard",
 				HelpDescription: `backup third shard`,
-				Fields: map[string]*framework.FieldSchema{
+				Fields: map[string]*framework.FieldSchema{ // doubt
 					"identifier": &framework.FieldSchema{
 						Type:        framework.TypeString,
 						Description: "uuid identifier for path",
@@ -290,7 +290,7 @@ get help.
 						Description: "ECDSA signature",
 						Default:     "",
 					},
-					"purpose": &framework.FieldSchema{
+					"purpose": &framework.FieldSchema{ // enum
 						Type:        framework.TypeString,
 						Description: "purpose of verification",
 						Default:     "",

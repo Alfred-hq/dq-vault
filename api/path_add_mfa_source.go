@@ -90,7 +90,7 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 	if err != nil {
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
-	t := client.Topic("twilio-service")
+	t := client.Topic("twilio-service") // To-Do: add cons
 	switch sourceType {
 	case "primaryEmail":
 		mailFormat := &helpers.MailFormatVerification{sourceValue, otpn, "VERIFICATION", "email"}
@@ -107,8 +107,8 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 		userData.EmailVerificationState = true
 
 	case "guardianEmail1":
-		userData.UnverifiedGuardianEmail1 = sourceValue
-		userData.EmailVerificationOTP = otp
+		userData.UnverifiedGuardianEmail1 = sourceValue // verify email
+		userData.EmailVerificationOTP = otp             // diffent place holders
 		userData.EmailVerificationOTPPurpose = "ADD_OR_UPDATE_GUARDIAN_EMAIL_1"
 		userData.EmailOTPGenerateTimestamp = time.Now().Unix()
 		userData.EmailVerificationState = true

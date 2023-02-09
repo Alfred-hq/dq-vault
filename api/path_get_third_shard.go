@@ -61,17 +61,17 @@ func (b *backend) pathGetThirdShard(ctx context.Context, req *logical.Request, d
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,
-				"remarks": "restoration is not started or vetoed by guardian",
+				"remarks": "restoration is not started or vetoed by guardian", // who vetoed? when vetoed
 			},
 		}, nil
 	}
 
 	currentUnixTime := time.Now().Unix()
-	if currentUnixTime-userData.RestoreInitiationTimestamp < 300 {
+	if currentUnixTime-userData.RestoreInitiationTimestamp < 300 { // 24 hrs and env
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,
-				"remarks": "wait period not over, please wait",
+				"remarks": "wait period not over, please wait", // at what time ?
 			},
 		}, nil
 	}
