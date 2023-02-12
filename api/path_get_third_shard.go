@@ -88,6 +88,9 @@ func (b *backend) pathGetThirdShard(ctx context.Context, req *logical.Request, d
 		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
 	}
 
+	userData.IsRestoreInProgress = false
+	userData.RestoreInitiationTimestamp = int64(0)
+
 	// return response
 	return &logical.Response{
 		Data: map[string]interface{}{

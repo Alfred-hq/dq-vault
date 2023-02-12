@@ -6,7 +6,7 @@ require (
 	github.com/btcsuite/btcd v0.22.0-beta
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce
 	github.com/ethereum/go-ethereum v1.10.6
-	github.com/hashicorp/vault/api v1.8.2
+	github.com/hashicorp/vault/api v1.8.3
 	github.com/hashicorp/vault/sdk v0.7.0
 	github.com/mgutz/logxi v0.0.0-20161027140823-aebf8a7d67ab
 	github.com/pkg/errors v0.9.1
