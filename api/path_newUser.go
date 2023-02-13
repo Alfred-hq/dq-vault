@@ -22,7 +22,7 @@ func (b *backend) pathNewUser(ctx context.Context, req *logical.Request, d *fram
 	userRSAPublicKey := d.Get("userRSAPublicKey").(string)     // base64 encoded pem key
 	userECDSAPublicKey := d.Get("userECDSAPublicKey").(string) // hex
 	identifier := d.Get("identifier").(string)                 // uuid
-	signatureRSA := d.Get("signatureRSA").(string)             // base64 encoded signature
+	signatureRSA := d.Get("signatureRSA").(string)             // JWT token
 	signatureECDSA := d.Get("signatureECDSA").(string)
 
 	// create new user
@@ -57,27 +57,28 @@ func (b *backend) pathNewUser(ctx context.Context, req *logical.Request, d *fram
 		RestoreInitiationTimestamp:         int64(0),
 	}
 
-	// Generate unsigned data
-	unsignedData := identifier
+	dataToValidate := map[string]string{
+		"identifier": identifier,
+	}
 
-	// verify if request is valid
-	rsaVerificationState := helpers.VerifyRSASignedMessage(signatureRSA, unsignedData, userRSAPublicKey)
+	rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userRSAPublicKey, "RS256")
+
 	if rsaVerificationState == false {
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,
-				"remarks": "rsa signature verification failed",
+				"remarks": remarks,
 			},
 		}, nil
 	}
 
-	ecdsaVerificationState := helpers.VerifyECDSASignedMessage(signatureECDSA, unsignedData, userECDSAPublicKey)
+	ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userECDSAPublicKey, "ES256")
 
 	if ecdsaVerificationState == false {
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,
-				"remarks": "ecdsa signature verification failed",
+				"remarks": remarks,
 			},
 		}, nil
 	}

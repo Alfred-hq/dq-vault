@@ -52,27 +52,30 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
-	// Generate unsigned data
-	unsignedData := identifier + sourceType + sourceValue
+	dataToValidate := map[string]string{
+		"identifier":  identifier,
+		"sourceType":  sourceType,
+		"sourceValue": sourceValue,
+	}
 
-	// verify if request is valid
-	rsaVerificationState := helpers.VerifyRSASignedMessage(signatureRSA, unsignedData, userData.UserRSAPublicKey)
+	rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userData.UserRSAPublicKey, "RS256")
+
 	if rsaVerificationState == false {
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,
-				"remarks": "rsa signature verification failed",
+				"remarks": remarks,
 			},
 		}, nil
 	}
 
-	ecdsaVerificationState := helpers.VerifyECDSASignedMessage(signatureECDSA, unsignedData, userData.UserECDSAPublicKey)
+	ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 
 	if ecdsaVerificationState == false {
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,
-				"remarks": "ecdsa signature verification failed",
+				"remarks": remarks,
 			},
 		}, nil
 	}
