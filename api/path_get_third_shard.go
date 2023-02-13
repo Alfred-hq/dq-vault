@@ -77,6 +77,9 @@ func (b *backend) pathGetThirdShard(ctx context.Context, req *logical.Request, d
 		}, nil
 	}
 
+	userData.IsRestoreInProgress = false
+	userData.RestoreInitiationTimestamp = int64(0)
+
 	store, err := logical.StorageEntryJSON(path, userData)
 	if err != nil {
 		logger.Log(backendLogger, config.Error, "getThirdShard:", err.Error())
@@ -88,9 +91,6 @@ func (b *backend) pathGetThirdShard(ctx context.Context, req *logical.Request, d
 		logger.Log(backendLogger, config.Error, "getThirdShard:", err.Error())
 		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
 	}
-
-	userData.IsRestoreInProgress = false
-	userData.RestoreInitiationTimestamp = int64(0)
 
 	// return response
 	return &logical.Response{
