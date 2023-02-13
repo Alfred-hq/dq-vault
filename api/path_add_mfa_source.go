@@ -52,6 +52,15 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
+	if userData.IsRestoreInProgress == true {
+		return &logical.Response{
+			Data: map[string]interface{}{
+				"status":  false,
+				"remarks": "Permission Denied, wallet restoration in progress!!",
+			},
+		}, nil
+	}
+
 	dataToValidate := map[string]string{
 		"identifier":  identifier,
 		"sourceType":  sourceType,
