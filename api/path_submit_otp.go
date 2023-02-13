@@ -267,11 +267,12 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			}
 		}
 	case "ADD_WALLET_THIRD_SHARD":
+		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 		if ecdsaVerificationState == false {
 			return &logical.Response{
 				Data: map[string]interface{}{
 					"status":  false,
-					"remarks": "ecdsa signature verification failed",
+					"remarks": remarks,
 				},
 			}, nil
 		}
