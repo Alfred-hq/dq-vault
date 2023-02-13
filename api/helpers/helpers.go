@@ -43,6 +43,7 @@ type UserDetails struct {
 	UserRSAPublicKey                   string `json:"userRSAPublicKey"`
 	UserECDSAPublicKey                 string `json:"userECDSAPublicKey"`
 	WalletThirdShard                   string `json:"secret"`
+	UnverifiedWalletThirdShard         string `json:"unverifiedSecret"`
 	Identifier                         string `json:"identifier"`
 	IsRestoreInProgress                bool   `json:"isrestoreinprogress"`
 	EmailVerificationState             bool   `json:"emailverificationstate"`
