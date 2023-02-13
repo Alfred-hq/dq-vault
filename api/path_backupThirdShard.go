@@ -1,7 +1,12 @@
 package api
 
 import (
+	"cloud.google.com/go/pubsub"
 	"context"
+	"encoding/json"
+	"os"
+	"time"
+
 	// "errors"
 	// "fmt"
 
@@ -72,23 +77,60 @@ func (b *backend) pathBackupThirdShard(ctx context.Context, req *logical.Request
 
 	userData.WalletThirdShard = walletThirdShard
 
+	workDir, _ := os.Getwd()
+	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", workDir+"/key.json")
+
 	store, err := logical.StorageEntryJSON(path, userData)
 	if err != nil {
-		logger.Log(backendLogger, config.Error, "registerNewUser:", err.Error())
+		logger.Log(backendLogger, config.Error, "addThirdShard:", err.Error())
 		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
 	}
 
 	// put user information in store
 	if err = req.Storage.Put(ctx, store); err != nil {
-		logger.Log(backendLogger, config.Error, "registerNewUser:", err.Error())
+		logger.Log(backendLogger, config.Error, "addThirdShard:", err.Error())
 		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
 	}
 
+	otp, err := helpers.GenerateOTP(6)
+	if err != nil {
+		logger.Log(backendLogger, config.Error, "addThirdShard:", err.Error())
+		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+	}
+
+	newCtx := context.Background()
+	client, err := pubsub.NewClient(ctx, "ethos-dev-deqode")
+	if err != nil {
+		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+	}
+	t := client.Topic("twilio-service") // To-Do: add cons
+
+	mailFormat := &helpers.MailFormatVerification{userData.UserEmail, otp, "VERIFICATION", "email"}
+	mailFormatJson, _ := json.Marshal(mailFormat)
+	res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
+	_, err = res.Get(newCtx)
+	if err != nil {
+		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+	}
+	userData.UnverifiedWalletThirdShard = walletThirdShard
+	userData.PrimaryEmailVerificationOTP = otp
+	userData.PrimaryEmailOTPGenerateTimestamp = time.Now().Unix()
+	store, storageErr := logical.StorageEntryJSON(path, userData)
+	if storageErr != nil {
+		logger.Log(backendLogger, config.Error, "addThirdShard:", err.Error())
+		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
+	}
+
+	// put user information in store
+	if err = req.Storage.Put(ctx, store); err != nil {
+		logger.Log(backendLogger, config.Error, "addThirdShard:", err.Error())
+		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
+	}
 	// return response
 	return &logical.Response{
 		Data: map[string]interface{}{
 			"status":  true,
-			"remarks": "successfully backed up shard",
+			"remarks": "verification for backup pending, otp sent!",
 		},
 	}, nil
 }

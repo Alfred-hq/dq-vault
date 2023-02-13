@@ -266,7 +266,36 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 				return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 			}
 		}
-
+	case "ADD_WALLET_THIRD_SHARD":
+		if ecdsaVerificationState == false {
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "ecdsa signature verification failed",
+				},
+			}, nil
+		}
+		currentUnixTime := time.Now().Unix()
+		if userData.PrimaryEmailVerificationOTP != otp {
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "OTP DID NOT MATCH",
+				},
+			}, nil
+		} else if currentUnixTime-userData.PrimaryEmailOTPGenerateTimestamp > 300 { // 5 minute time based otp
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "OTP EXPIRED",
+				},
+			}, nil
+		} else {
+			userData.WalletThirdShard = userData.UnverifiedWalletThirdShard // unset values
+			userData.UnverifiedWalletThirdShard = ""
+			userData.PrimaryEmailOTPGenerateTimestamp = int64(0)
+			userData.PrimaryEmailVerificationOTP = "xxxxxx"
+		}
 	case "VERIFY_EMAIL_OTP":
 		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 		if ecdsaVerificationState == false {

@@ -39,6 +39,7 @@ func (b *backend) pathNewUser(ctx context.Context, req *logical.Request, d *fram
 		UnverifiedUserMobile:               "",
 		UserRSAPublicKey:                   userRSAPublicKey,
 		UserECDSAPublicKey:                 userECDSAPublicKey,
+		UnverifiedWalletThirdShard:         "",
 		WalletThirdShard:                   "",
 		Identifier:                         identifier,
 		IsRestoreInProgress:                false,
