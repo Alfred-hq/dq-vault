@@ -41,16 +41,17 @@ func (b *backend) pathCancelWalletRestoration(ctx context.Context, req *logical.
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
-	// Generate unsigned data
-	unsignedData := identifier
+	dataToValidate := map[string]string{
+		"identifier": identifier,
+	}
 
-	// verify if request is valid
-	rsaVerificationState := helpers.VerifyRSASignedMessage(signatureRSA, unsignedData, userData.UserRSAPublicKey)
+	rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userData.UserRSAPublicKey, "RS256")
+
 	if rsaVerificationState == false {
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,
-				"remarks": "rsa signature verification failed",
+				"remarks": remarks,
 			},
 		}, nil
 	}

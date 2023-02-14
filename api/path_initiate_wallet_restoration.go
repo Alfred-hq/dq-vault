@@ -4,6 +4,7 @@ import (
 	"cloud.google.com/go/pubsub"
 	"context"
 	"encoding/json"
+	"os"
 	"time"
 
 	// "errors"
@@ -24,6 +25,8 @@ import (
 func (b *backend) pathInitiateWalletRestoration(ctx context.Context, req *logical.Request, d *framework.FieldData) (*logical.Response, error) {
 	// var err error
 	backendLogger := b.logger
+	workDir, _ := os.Getwd()
+	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", workDir+"/key.json")
 
 	// obtain details:
 	identifier := d.Get("identifier").(string)
@@ -45,16 +48,17 @@ func (b *backend) pathInitiateWalletRestoration(ctx context.Context, req *logica
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
-	// Generate unsigned data
-	unsignedData := identifier
+	dataToValidate := map[string]string{
+		"identifier": identifier,
+	}
 
-	// verify if request is valid
-	rsaVerificationState := helpers.VerifyRSASignedMessage(signatureRSA, unsignedData, userData.UserRSAPublicKey)
+	rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userData.UserRSAPublicKey, "RS256")
+
 	if rsaVerificationState == false {
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,
-				"remarks": "rsa signature verification failed",
+				"remarks": remarks,
 			},
 		}, nil
 	}

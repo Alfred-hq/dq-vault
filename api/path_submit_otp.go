@@ -60,28 +60,33 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 	}
 
 	// Generate unsigned data
-	unsignedData := identifier + otp + purpose // alphabetical
+	//unsignedData := identifier + otp + purpose // alphabetical
 
-	// verify if request is valid
-	rsaVerificationState := helpers.VerifyRSASignedMessage(signatureRSA, unsignedData, userData.UserRSAPublicKey)
+	dataToValidate := map[string]string{
+		"identifier": identifier,
+		"otp":        otp,
+		"purpose":    purpose,
+	}
+
+	rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userData.UserRSAPublicKey, "RS256")
+
 	if rsaVerificationState == false {
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,
-				"remarks": "rsa signature verification failed",
+				"remarks": remarks,
 			},
 		}, nil
 	}
 
-	ecdsaVerificationState := helpers.VerifyECDSASignedMessage(signatureECDSA, unsignedData, userData.UserECDSAPublicKey)
-
 	switch purpose {
 	case "ADD_OR_UPDATE_PRIMARY_EMAIL":
+		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 		if ecdsaVerificationState == false {
 			return &logical.Response{
 				Data: map[string]interface{}{
 					"status":  false,
-					"remarks": "ecdsa signature verification failed",
+					"remarks": remarks,
 				},
 			}, nil
 		}
@@ -107,11 +112,12 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			userData.PrimaryEmailVerificationOTP = "xxxxxx"
 		}
 	case "ADD_OR_UPDATE_GUARDIAN_EMAIL_1":
+		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 		if ecdsaVerificationState == false {
 			return &logical.Response{
 				Data: map[string]interface{}{
 					"status":  false,
-					"remarks": "ecdsa signature verification failed",
+					"remarks": remarks,
 				},
 			}, nil
 		}
@@ -137,11 +143,12 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			userData.GuardianEmail1VerificationOTP = "xxxxxx"
 		}
 	case "ADD_OR_UPDATE_GUARDIAN_EMAIL_2":
+		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 		if ecdsaVerificationState == false {
 			return &logical.Response{
 				Data: map[string]interface{}{
 					"status":  false,
-					"remarks": "ecdsa signature verification failed",
+					"remarks": remarks,
 				},
 			}, nil
 		}
@@ -167,11 +174,12 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			userData.GuardianEmail2VerificationOTP = "xxxxxx"
 		}
 	case "ADD_OR_UPDATE_GUARDIAN_EMAIL_3":
+		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 		if ecdsaVerificationState == false {
 			return &logical.Response{
 				Data: map[string]interface{}{
 					"status":  false,
-					"remarks": "ecdsa signature verification failed",
+					"remarks": remarks,
 				},
 			}, nil
 		}
@@ -197,11 +205,12 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			userData.GuardianEmail3VerificationOTP = "xxxxxx"
 		}
 	case "ADD_OR_UPDATE_MOBILE_NUMBER":
+		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 		if ecdsaVerificationState == false {
 			return &logical.Response{
 				Data: map[string]interface{}{
 					"status":  false,
-					"remarks": "ecdsa signature verification failed",
+					"remarks": remarks,
 				},
 			}, nil
 		}
@@ -258,11 +267,12 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			}
 		}
 	case "ADD_WALLET_THIRD_SHARD":
+		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 		if ecdsaVerificationState == false {
 			return &logical.Response{
 				Data: map[string]interface{}{
 					"status":  false,
-					"remarks": "ecdsa signature verification failed",
+					"remarks": remarks,
 				},
 			}, nil
 		}
@@ -288,11 +298,12 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			userData.PrimaryEmailVerificationOTP = "xxxxxx"
 		}
 	case "VERIFY_EMAIL_OTP":
+		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 		if ecdsaVerificationState == false {
 			return &logical.Response{
 				Data: map[string]interface{}{
 					"status":  false,
-					"remarks": "ecdsa signature verification failed",
+					"remarks": remarks,
 				},
 			}, nil
 		}
@@ -316,11 +327,12 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			userData.PrimaryEmailOTPGenerateTimestamp = int64(0)
 		}
 	case "VERIFY_MOBILE_OTP":
+		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 		if ecdsaVerificationState == false {
 			return &logical.Response{
 				Data: map[string]interface{}{
 					"status":  false,
-					"remarks": "ecdsa signature verification failed",
+					"remarks": remarks,
 				},
 			}, nil
 		}

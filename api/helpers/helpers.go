@@ -12,6 +12,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	goCrypt "github.com/ethereum/go-ethereum/crypto"
 	"github.com/hashicorp/vault/sdk/framework"
@@ -19,6 +20,8 @@ import (
 	"github.com/rs/xid"
 	"github.com/ryadavDeqode/dq-vault/config"
 	"net/http"
+	"strings"
+	"time"
 )
 
 // User -- stores data related to user
@@ -205,6 +208,59 @@ func VerifyECDSASignedMessage(signature string, rawData string, publickKeyHash s
 	}
 	verified := goCrypt.VerifySignature(pubKeyBytes, messageHash.Bytes(), signatureBytesWithNoRecoverID)
 	return verified
+}
+
+func VerifyTokenClaims(tokenClaims jwt.MapClaims, unsignedData map[string]string) bool {
+	for k, v := range unsignedData {
+		if tokenClaims[k] != v {
+			return false
+		}
+	}
+	return true
+}
+
+func VerifyJWTSignature(jwtToken string, dataToValidate map[string]string, publicKeyEncoded string, algorithm string) (bool, string) {
+	jwtParsedToken, er := jwt.Parse(jwtToken, nil)
+	if er.Error() == "token contains an invalid number of segments" {
+		return false, er.Error()
+	}
+	parts := strings.Split(jwtToken, ".")
+	jwtTokenClaims := jwtParsedToken.Claims.(jwt.MapClaims)
+	isTokenExpired := !(jwtTokenClaims.VerifyExpiresAt(time.Now().Unix(), true))
+	tokenClaimsVerification := VerifyTokenClaims(jwtTokenClaims, dataToValidate)
+	if algorithm == "RS256" {
+		if isTokenExpired == true {
+			return false, "RSA signature verification failed, token expired"
+		}
+		if tokenClaimsVerification == false {
+			return false, "rsa signature verification failed, payload mismatches with signed data"
+		}
+		publicKeyPEM, err := base64.StdEncoding.DecodeString(publicKeyEncoded)
+		if err != nil {
+			return false, "issue with Public RSA Key"
+		}
+		pubBlock, _ := pem.Decode(publicKeyPEM)
+		pub, _ := x509.ParsePKCS1PublicKey(pubBlock.Bytes)
+		err = jwt.SigningMethodRS256.Verify(strings.Join(parts[0:2], "."), parts[2], pub)
+		if err != nil {
+			return false, "RSA signature verification failed"
+		}
+		return true, "RSA Signature Verified"
+	} else {
+		if isTokenExpired == true {
+			return false, "ECDSA signature verification failed, token expired"
+		}
+		if tokenClaimsVerification == false {
+			return false, "ECDSA signature verification failed, payload mismatches with signed data"
+		}
+
+		signatureDecoded, _ := base64.StdEncoding.DecodeString(parts[2])
+		ecdsaVerificationState := VerifyECDSASignedMessage(string(signatureDecoded), strings.Join(parts[0:2], "."), publicKeyEncoded)
+		if ecdsaVerificationState == false {
+			return false, "ECDSA signature verification failed"
+		}
+		return true, "ECDSA Signature Verified"
+	}
 }
 
 type MailFormatVerification struct {
