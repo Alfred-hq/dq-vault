@@ -220,7 +220,10 @@ func VerifyTokenClaims(tokenClaims jwt.MapClaims, unsignedData map[string]string
 }
 
 func VerifyJWTSignature(jwtToken string, dataToValidate map[string]string, publicKeyEncoded string, algorithm string) (bool, string) {
-	jwtParsedToken, _ := jwt.Parse(jwtToken, nil)
+	jwtParsedToken, er := jwt.Parse(jwtToken, nil)
+	if er.Error() == "token contains an invalid number of segments" {
+		return false, er.Error()
+	}
 	parts := strings.Split(jwtToken, ".")
 	jwtTokenClaims := jwtParsedToken.Claims.(jwt.MapClaims)
 	isTokenExpired := !(jwtTokenClaims.VerifyExpiresAt(time.Now().Unix(), true))
