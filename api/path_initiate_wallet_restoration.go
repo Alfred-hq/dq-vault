@@ -4,7 +4,6 @@ import (
 	"cloud.google.com/go/pubsub"
 	"context"
 	"encoding/json"
-	"os"
 	"time"
 
 	// "errors"
@@ -25,8 +24,6 @@ import (
 func (b *backend) pathInitiateWalletRestoration(ctx context.Context, req *logical.Request, d *framework.FieldData) (*logical.Response, error) {
 	// var err error
 	backendLogger := b.logger
-	workDir, _ := os.Getwd()
-	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", workDir+"/key.json")
 
 	// obtain details:
 	identifier := d.Get("identifier").(string)

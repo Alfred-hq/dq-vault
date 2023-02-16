@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"os"
+	"time"
 
 	// "errors"
 	// "fmt"
@@ -45,31 +46,40 @@ func (b *backend) pathVeto(ctx context.Context, req *logical.Request, d *framewo
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
-	workDir, _ := os.Getwd()
-	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", workDir+"/key.json")
-
+	pubsubTopic := os.Getenv("PUBSUB_TOPIC")
+	gcpProject := os.Getenv("GCP_PROJECT")
 	newCtx := context.Background()
-	client, err := pubsub.NewClient(ctx, "ethos-dev-deqode")
+	client, err := pubsub.NewClient(ctx, gcpProject)
 	if err != nil {
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
-	t := client.Topic("twilio-service")
+	t := client.Topic(pubsubTopic)
 
 	for index, guardian := range userData.GuardianIdentifiers {
-		guardianMail := ""
 		if guardian == guardianIdentifier {
-			if index == 0 {
-				guardianMail = userData.GuardianEmail1
-			} else if index == 1 {
-				guardianMail = userData.GuardianEmail2
-			} else {
-				guardianMail = userData.GuardianEmail3
+			if userData.IsRestoreInProgress == false {
+				return &logical.Response{
+					Data: map[string]interface{}{
+						"status":  false,
+						"remarks": "Either wallet restored or vetoed by other guardian",
+					},
+				}, nil
+			}
+
+			currentUnixTime := time.Now().Unix()
+			if userData.IsRestoreInProgress == true && userData.RestoreInitiationTimestamp+86400 >= currentUnixTime {
+				return &logical.Response{
+					Data: map[string]interface{}{
+						"status":  false,
+						"remarks": "wallet already restored",
+					},
+				}, nil
 			}
 			userData.IsRestoreInProgress = false
 			userData.RestoreInitiationTimestamp = int64(0)
 			store, err := logical.StorageEntryJSON(path, userData)
 
-			mailFormatUser := &helpers.MailFormatVetoed{userData.UserEmail, "RESTORATION_VETOED", guardianMail, "email"}
+			mailFormatUser := &helpers.MailFormatVetoed{userData.UserEmail, "RESTORATION_VETOED", userData.Guardians[index], "email"}
 			mailFormatUserJson, _ := json.Marshal(mailFormatUser)
 			res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatUserJson})
 			_, err = res.Get(newCtx)

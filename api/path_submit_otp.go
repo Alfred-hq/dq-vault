@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"os"
+	"strconv"
 	"time"
 
 	// "errors"
@@ -42,15 +43,14 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
-	workDir, _ := os.Getwd()
-	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", workDir+"/key.json")
-
 	newCtx := context.Background()
-	client, err := pubsub.NewClient(ctx, "ethos-dev-deqode")
+	pubsubTopic := os.Getenv("PUBSUB_TOPIC")
+	gcpProject := os.Getenv("GCP_PROJECT")
+	client, err := pubsub.NewClient(ctx, gcpProject)
 	if err != nil {
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
-	t := client.Topic("twilio-service")
+	t := client.Topic(pubsubTopic)
 
 	// Get User data
 	var userData helpers.UserDetails
@@ -79,7 +79,12 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			},
 		}, nil
 	}
-
+	otpTTLStr := os.Getenv("OTP_TTL")
+	otpTTL, err := strconv.Atoi(otpTTLStr)
+	if err != nil {
+		logger.Log(backendLogger, config.Error, "submitOTP:", err.Error())
+		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+	}
 	switch purpose {
 	case "ADD_OR_UPDATE_PRIMARY_EMAIL":
 		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
@@ -99,7 +104,7 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 					"remarks": "OTP DID NOT MATCH",
 				},
 			}, nil
-		} else if currentUnixTime-userData.PrimaryEmailOTPGenerateTimestamp > 300 { // 5 minute time based otp
+		} else if currentUnixTime-userData.PrimaryEmailOTPGenerateTimestamp > int64(otpTTL) { // 5 minute time based otp
 			return &logical.Response{
 				Data: map[string]interface{}{
 					"status":  false,
@@ -123,14 +128,14 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			}, nil
 		}
 		currentUnixTime := time.Now().Unix()
-		if userData.GuardianEmail1VerificationOTP != otp {
+		if userData.GuardianEmailVerificationOTP[0] != otp {
 			return &logical.Response{
 				Data: map[string]interface{}{
 					"status":  false,
 					"remarks": "OTP DID NOT MATCH",
 				},
 			}, nil
-		} else if currentUnixTime-userData.GuardianEmail1OTPGenerateTimestamp > 300 { // 5 minute time based otp
+		} else if currentUnixTime-userData.GuardianEmailOTPGenerateTimestamp[0] > int64(otpTTL) { // 5 minute time based otp
 			return &logical.Response{
 				Data: map[string]interface{}{
 					"status":  false,
@@ -141,10 +146,10 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			id := uuid.New()
 			guardianId := id.String()
 			userData.GuardianIdentifiers[0] = guardianId
-			userData.GuardianEmail1 = userData.UnverifiedGuardianEmail1
-			userData.UnverifiedGuardianEmail1 = ""
-			userData.GuardianEmail1OTPGenerateTimestamp = int64(0)
-			userData.GuardianEmail1VerificationOTP = "xxxxxx"
+			userData.Guardians[0] = userData.UnverifiedGuardians[0]
+			userData.UnverifiedGuardians[0] = ""
+			userData.GuardianEmailOTPGenerateTimestamp[0] = int64(0)
+			userData.GuardianEmailVerificationOTP[0] = "xxxxxx"
 		}
 	case "ADD_OR_UPDATE_GUARDIAN_EMAIL_2":
 		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
@@ -157,14 +162,14 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			}, nil
 		}
 		currentUnixTime := time.Now().Unix()
-		if userData.GuardianEmail2VerificationOTP != otp {
+		if userData.GuardianEmailVerificationOTP[1] != otp {
 			return &logical.Response{
 				Data: map[string]interface{}{
 					"status":  false,
 					"remarks": "OTP DID NOT MATCH",
 				},
 			}, nil
-		} else if currentUnixTime-userData.GuardianEmail2OTPGenerateTimestamp > 300 { // 5 minute time based otp
+		} else if currentUnixTime-userData.GuardianEmailOTPGenerateTimestamp[1] > int64(otpTTL) { // 5 minute time based otp
 			return &logical.Response{
 				Data: map[string]interface{}{
 					"status":  false,
@@ -175,10 +180,10 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			id := uuid.New()
 			guardianId := id.String()
 			userData.GuardianIdentifiers[1] = guardianId
-			userData.GuardianEmail2 = userData.UnverifiedGuardianEmail2
-			userData.UnverifiedGuardianEmail2 = ""
-			userData.GuardianEmail2OTPGenerateTimestamp = int64(0)
-			userData.GuardianEmail2VerificationOTP = "xxxxxx"
+			userData.Guardians[1] = userData.UnverifiedGuardians[1]
+			userData.UnverifiedGuardians[1] = ""
+			userData.GuardianEmailOTPGenerateTimestamp[1] = int64(0)
+			userData.GuardianEmailVerificationOTP[1] = "xxxxxx"
 		}
 	case "ADD_OR_UPDATE_GUARDIAN_EMAIL_3":
 		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
@@ -191,14 +196,14 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			}, nil
 		}
 		currentUnixTime := time.Now().Unix()
-		if userData.GuardianEmail3VerificationOTP != otp {
+		if userData.GuardianEmailVerificationOTP[2] != otp {
 			return &logical.Response{
 				Data: map[string]interface{}{
 					"status":  false,
 					"remarks": "OTP DID NOT MATCH",
 				},
 			}, nil
-		} else if currentUnixTime-userData.GuardianEmail3OTPGenerateTimestamp > 300 { // 5 minute time based otp
+		} else if currentUnixTime-userData.GuardianEmailOTPGenerateTimestamp[2] > int64(otpTTL) { // 5 minute time based otp
 			return &logical.Response{
 				Data: map[string]interface{}{
 					"status":  false,
@@ -209,10 +214,10 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			id := uuid.New()
 			guardianId := id.String()
 			userData.GuardianIdentifiers[2] = guardianId
-			userData.GuardianEmail3 = userData.UnverifiedGuardianEmail3
-			userData.UnverifiedGuardianEmail3 = ""
-			userData.GuardianEmail3OTPGenerateTimestamp = int64(0)
-			userData.GuardianEmail3VerificationOTP = "xxxxxx"
+			userData.Guardians[2] = userData.UnverifiedGuardians[2]
+			userData.UnverifiedGuardians[2] = ""
+			userData.GuardianEmailOTPGenerateTimestamp[2] = int64(0)
+			userData.GuardianEmailVerificationOTP[2] = "xxxxxx"
 		}
 	case "ADD_OR_UPDATE_MOBILE_NUMBER":
 		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
@@ -232,7 +237,7 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 					"remarks": "OTP DID NOT MATCH",
 				},
 			}, nil
-		} else if currentUnixTime-userData.MobileOTPGenerateTimestamp > 300 { // 5 minute time based otp
+		} else if currentUnixTime-userData.MobileOTPGenerateTimestamp > int64(otpTTL) { // 5 minute time based otp
 			return &logical.Response{
 				Data: map[string]interface{}{
 					"status":  false,
@@ -254,7 +259,7 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 					"remarks": "OTP DID NOT MATCH",
 				},
 			}, nil
-		} else if currentUnixTime-userData.PrimaryEmailOTPGenerateTimestamp > 300 { // 5 minute time based otp
+		} else if currentUnixTime-userData.PrimaryEmailOTPGenerateTimestamp > int64(otpTTL) { // 5 minute time based otp
 			return &logical.Response{
 				Data: map[string]interface{}{
 					"status":  false,
@@ -272,18 +277,18 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			mailFormatUser := &helpers.MAILFormatUpdates{userData.UserEmail, "RESTORATION_INITIATED", "email", currentTime}
 			mailFormatUserJson, _ := json.Marshal(mailFormatUser)
 			res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatUserJson})
-			if userData.GuardianEmail1 != "" {
-				mailFormatGuardian := &helpers.MailFormatGuardian{userData.GuardianEmail1, "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[0], "email", currentTime, timeOfRestoration}
+			if userData.Guardians[0] != "" {
+				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[0], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[0], "email", currentTime, timeOfRestoration}
 				mailFormatGuardianJson, _ := json.Marshal(mailFormatGuardian)
 				res = t.Publish(newCtx, &pubsub.Message{Data: mailFormatGuardianJson})
 			}
-			if userData.GuardianEmail2 != "" {
-				mailFormatGuardian := &helpers.MailFormatGuardian{userData.GuardianEmail2, "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[1], "email", currentTime, timeOfRestoration}
+			if userData.Guardians[1] != "" {
+				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[1], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[1], "email", currentTime, timeOfRestoration}
 				mailFormatGuardianJson, _ := json.Marshal(mailFormatGuardian)
 				res = t.Publish(newCtx, &pubsub.Message{Data: mailFormatGuardianJson})
 			}
-			if userData.GuardianEmail3 != "" {
-				mailFormatGuardian := &helpers.MailFormatGuardian{userData.GuardianEmail3, "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[2], "email", currentTime, timeOfRestoration}
+			if userData.Guardians[2] != "" {
+				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[2], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[2], "email", currentTime, timeOfRestoration}
 				mailFormatGuardianJson, _ := json.Marshal(mailFormatGuardian)
 				res = t.Publish(newCtx, &pubsub.Message{Data: mailFormatGuardianJson})
 			}
@@ -311,7 +316,7 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 					"remarks": "OTP DID NOT MATCH",
 				},
 			}, nil
-		} else if currentUnixTime-userData.PrimaryEmailOTPGenerateTimestamp > 300 { // 5 minute time based otp
+		} else if currentUnixTime-userData.PrimaryEmailOTPGenerateTimestamp > int64(otpTTL) { // 5 minute time based otp
 			return &logical.Response{
 				Data: map[string]interface{}{
 					"status":  false,
@@ -342,7 +347,7 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 					"remarks": "OTP DID NOT MATCH",
 				},
 			}, nil
-		} else if currentUnixTime-userData.PrimaryEmailOTPGenerateTimestamp > 300 { // 5 minute time based otp
+		} else if currentUnixTime-userData.PrimaryEmailOTPGenerateTimestamp > int64(otpTTL) { // 5 minute time based otp
 			return &logical.Response{
 				Data: map[string]interface{}{
 					"status":  false,
@@ -371,7 +376,7 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 					"remarks": "OTP DID NOT MATCH",
 				},
 			}, nil
-		} else if currentUnixTime-userData.MobileOTPGenerateTimestamp > 300 { // 5 minute time based otp
+		} else if currentUnixTime-userData.MobileOTPGenerateTimestamp > int64(otpTTL) { // 5 minute time based otp
 			return &logical.Response{
 				Data: map[string]interface{}{
 					"status":  false,
