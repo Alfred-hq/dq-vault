@@ -53,10 +53,11 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 	}
 
 	if userData.IsRestoreInProgress == true {
+
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,
-				"remarks": "Permission Denied, wallet restoration in progress!!",
+				"remarks": "Permission Denied because wallet restoration in progress!!",
 			},
 		}, nil
 	}

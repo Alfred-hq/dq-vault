@@ -68,11 +68,12 @@ func (b *backend) pathGetThirdShard(ctx context.Context, req *logical.Request, d
 	}
 
 	currentUnixTime := time.Now().Unix()
-	if currentUnixTime-userData.RestoreInitiationTimestamp < 300 { // 24 hrs and env
+	if currentUnixTime-userData.RestoreInitiationTimestamp < 300 { // 24 hrs and env4
+		waitUntil := time.Unix(userData.RestoreInitiationTimestamp+86400, 0).Format(time.RFC3339)
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,
-				"remarks": "wait period not over, please wait", // at what time ?
+				"remarks": "wait period not over, wait till " + waitUntil, // at what time ?
 			},
 		}, nil
 	}

@@ -49,6 +49,7 @@ func (b *backend) pathNewUser(ctx context.Context, req *logical.Request, d *fram
 		GuardianEmail1VerificationOTP:      "xxxxxx",
 		GuardianEmail2VerificationOTP:      "xxxxxx",
 		GuardianEmail3VerificationOTP:      "xxxxxx",
+		GuardianIdentifiers:                []string{"", "", ""},
 		MobileVerificationOTP:              "xxxxxx",
 		PrimaryEmailOTPGenerateTimestamp:   int64(0),
 		GuardianEmail1OTPGenerateTimestamp: int64(0),

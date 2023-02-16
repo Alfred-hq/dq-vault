@@ -14,6 +14,7 @@ import (
 	// "fmt"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/vault/sdk/framework"
 	"github.com/hashicorp/vault/sdk/logical"
 	"github.com/ryadavDeqode/dq-vault/api/helpers"
@@ -137,6 +138,9 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 				},
 			}, nil
 		} else {
+			id := uuid.New()
+			guardianId := id.String()
+			userData.GuardianIdentifiers[0] = guardianId
 			userData.GuardianEmail1 = userData.UnverifiedGuardianEmail1
 			userData.UnverifiedGuardianEmail1 = ""
 			userData.GuardianEmail1OTPGenerateTimestamp = int64(0)
@@ -168,6 +172,9 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 				},
 			}, nil
 		} else {
+			id := uuid.New()
+			guardianId := id.String()
+			userData.GuardianIdentifiers[1] = guardianId
 			userData.GuardianEmail2 = userData.UnverifiedGuardianEmail2
 			userData.UnverifiedGuardianEmail2 = ""
 			userData.GuardianEmail2OTPGenerateTimestamp = int64(0)
@@ -199,6 +206,9 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 				},
 			}, nil
 		} else {
+			id := uuid.New()
+			guardianId := id.String()
+			userData.GuardianIdentifiers[2] = guardianId
 			userData.GuardianEmail3 = userData.UnverifiedGuardianEmail3
 			userData.UnverifiedGuardianEmail3 = ""
 			userData.GuardianEmail3OTPGenerateTimestamp = int64(0)
@@ -258,9 +268,26 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			userData.PrimaryEmailOTPGenerateTimestamp = int64(0)
 			ct := time.Now()
 			currentTime := ct.Format("15:04:05")
+			timeOfRestoration := time.Unix(time.Now().Unix(), 0).Format(time.RFC3339)
 			mailFormatUser := &helpers.MAILFormatUpdates{userData.UserEmail, "RESTORATION_INITIATED", "email", currentTime}
 			mailFormatUserJson, _ := json.Marshal(mailFormatUser)
 			res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatUserJson})
+			if userData.GuardianEmail1 != "" {
+				mailFormatGuardian := &helpers.MailFormatGuardian{userData.GuardianEmail1, "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[0], "email", currentTime, timeOfRestoration}
+				mailFormatGuardianJson, _ := json.Marshal(mailFormatGuardian)
+				res = t.Publish(newCtx, &pubsub.Message{Data: mailFormatGuardianJson})
+			}
+			if userData.GuardianEmail2 != "" {
+				mailFormatGuardian := &helpers.MailFormatGuardian{userData.GuardianEmail2, "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[1], "email", currentTime, timeOfRestoration}
+				mailFormatGuardianJson, _ := json.Marshal(mailFormatGuardian)
+				res = t.Publish(newCtx, &pubsub.Message{Data: mailFormatGuardianJson})
+			}
+			if userData.GuardianEmail3 != "" {
+				mailFormatGuardian := &helpers.MailFormatGuardian{userData.GuardianEmail3, "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[2], "email", currentTime, timeOfRestoration}
+				mailFormatGuardianJson, _ := json.Marshal(mailFormatGuardian)
+				res = t.Publish(newCtx, &pubsub.Message{Data: mailFormatGuardianJson})
+			}
+
 			_, err := res.Get(newCtx)
 			if err != nil {
 				return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
