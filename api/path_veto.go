@@ -34,7 +34,7 @@ func (b *backend) pathVeto(ctx context.Context, req *logical.Request, d *framewo
 	path := config.StorageBasePath + identifier
 	entry, err := req.Storage.Get(ctx, path)
 	if err != nil {
-		logger.Log(backendLogger, config.Error, "cancelWalletRestoration:", err.Error())
+		logger.Log(backendLogger, config.Error, "veto: could not get storage entry", err.Error())
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
@@ -42,7 +42,7 @@ func (b *backend) pathVeto(ctx context.Context, req *logical.Request, d *framewo
 	var userData helpers.UserDetails
 	err = entry.DecodeJSON(&userData)
 	if err != nil {
-		logger.Log(backendLogger, config.Error, "cancelWalletRestoration:", err.Error())
+		logger.Log(backendLogger, config.Error, "veto: could not get user details", err.Error())
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
@@ -89,7 +89,7 @@ func (b *backend) pathVeto(ctx context.Context, req *logical.Request, d *framewo
 
 			// put user information in store
 			if err = req.Storage.Put(ctx, store); err != nil {
-				logger.Log(backendLogger, config.Error, "cancelWalletRestoration:", err.Error())
+				logger.Log(backendLogger, config.Error, "veto: could not store user info", err.Error())
 				return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
 			}
 

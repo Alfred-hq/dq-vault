@@ -40,7 +40,7 @@ func (b *backend) pathGuardians(ctx context.Context, req *logical.Request, d *fr
 	path := config.StorageBasePath + identifier
 	entry, err := req.Storage.Get(ctx, path)
 	if err != nil {
-		logger.Log(backendLogger, config.Error, "cancelWalletRestoration:", err.Error())
+		logger.Log(backendLogger, config.Error, "pathGuardians:", err.Error())
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
@@ -48,7 +48,7 @@ func (b *backend) pathGuardians(ctx context.Context, req *logical.Request, d *fr
 	var userData helpers.UserDetails
 	err = entry.DecodeJSON(&userData)
 	if err != nil {
-		logger.Log(backendLogger, config.Error, "cancelWalletRestoration:", err.Error())
+		logger.Log(backendLogger, config.Error, "pathGuardians:", err.Error())
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 

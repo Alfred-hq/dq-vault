@@ -32,6 +32,18 @@ type User struct {
 	Passphrase string `json:"passphrase"`
 }
 
+var PurposeType = []string{
+	"ADD_OR_UPDATE_PRIMARY_EMAIL",
+	"ADD_OR_UPDATE_GUARDIAN_EMAIL_1",
+	"ADD_OR_UPDATE_GUARDIAN_EMAIL_2",
+	"ADD_OR_UPDATE_GUARDIAN_EMAIL_3",
+	"ADD_OR_UPDATE_MOBILE_NUMBER",
+	"VERIFY_EMAIL_FOR_WALLET_RESTORATION",
+	"ADD_WALLET_THIRD_SHARD",
+	"VERIFY_EMAIL_OTP",
+	"VERIFY_MOBILE_OTP",
+}
+
 type UserDetails struct {
 	UserEmail                         string   `json:"useremail"`
 	UnverifiedUserEmail               string   `json:"tempuseremail"`

@@ -39,7 +39,7 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 	path := config.StorageBasePath + identifier
 	entry, err := req.Storage.Get(ctx, path)
 	if err != nil {
-		logger.Log(backendLogger, config.Error, "submitOTP:", err.Error())
+		logger.Log(backendLogger, config.Error, "submitOTP: could not get storage entry", err.Error())
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
@@ -56,12 +56,9 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 	var userData helpers.UserDetails
 	err = entry.DecodeJSON(&userData)
 	if err != nil {
-		logger.Log(backendLogger, config.Error, "submitOTP:", err.Error())
+		logger.Log(backendLogger, config.Error, "submitOTP: could not get user data", err.Error())
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
-
-	// Generate unsigned data
-	//unsignedData := identifier + otp + purpose // alphabetical
 
 	dataToValidate := map[string]string{
 		"identifier": identifier,
@@ -82,11 +79,11 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 	otpTTLStr := os.Getenv("OTP_TTL")
 	otpTTL, err := strconv.Atoi(otpTTLStr)
 	if err != nil {
-		logger.Log(backendLogger, config.Error, "submitOTP:", err.Error())
+		logger.Log(backendLogger, config.Error, "submitOTP: could not convert number to string", err.Error())
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 	switch purpose {
-	case "ADD_OR_UPDATE_PRIMARY_EMAIL":
+	case helpers.PurposeType[0]:
 		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 		if ecdsaVerificationState == false {
 			return &logical.Response{
@@ -117,7 +114,7 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			userData.PrimaryEmailOTPGenerateTimestamp = int64(0)
 			userData.PrimaryEmailVerificationOTP = "xxxxxx"
 		}
-	case "ADD_OR_UPDATE_GUARDIAN_EMAIL_1":
+	case helpers.PurposeType[1]:
 		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 		if ecdsaVerificationState == false {
 			return &logical.Response{
@@ -151,7 +148,7 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			userData.GuardianEmailOTPGenerateTimestamp[0] = int64(0)
 			userData.GuardianEmailVerificationOTP[0] = "xxxxxx"
 		}
-	case "ADD_OR_UPDATE_GUARDIAN_EMAIL_2":
+	case helpers.PurposeType[2]:
 		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 		if ecdsaVerificationState == false {
 			return &logical.Response{
@@ -185,7 +182,7 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			userData.GuardianEmailOTPGenerateTimestamp[1] = int64(0)
 			userData.GuardianEmailVerificationOTP[1] = "xxxxxx"
 		}
-	case "ADD_OR_UPDATE_GUARDIAN_EMAIL_3":
+	case helpers.PurposeType[3]:
 		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 		if ecdsaVerificationState == false {
 			return &logical.Response{
@@ -219,7 +216,7 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			userData.GuardianEmailOTPGenerateTimestamp[2] = int64(0)
 			userData.GuardianEmailVerificationOTP[2] = "xxxxxx"
 		}
-	case "ADD_OR_UPDATE_MOBILE_NUMBER":
+	case helpers.PurposeType[4]:
 		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 		if ecdsaVerificationState == false {
 			return &logical.Response{
@@ -250,7 +247,7 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			userData.MobileOTPGenerateTimestamp = int64(0)
 			userData.MobileVerificationOTP = "xxxxxx"
 		}
-	case "VERIFY_EMAIL_FOR_WALLET_RESTORATION":
+	case helpers.PurposeType[5]:
 		currentUnixTime := time.Now().Unix()
 		if userData.PrimaryEmailVerificationOTP != otp {
 			return &logical.Response{
@@ -298,7 +295,7 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 				return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 			}
 		}
-	case "ADD_WALLET_THIRD_SHARD":
+	case helpers.PurposeType[6]:
 		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 		if ecdsaVerificationState == false {
 			return &logical.Response{
@@ -329,7 +326,7 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			userData.PrimaryEmailOTPGenerateTimestamp = int64(0)
 			userData.PrimaryEmailVerificationOTP = "xxxxxx"
 		}
-	case "VERIFY_EMAIL_OTP":
+	case helpers.PurposeType[7]:
 		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 		if ecdsaVerificationState == false {
 			return &logical.Response{
@@ -358,7 +355,7 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			userData.PrimaryEmailVerificationOTP = "xxxxxx"
 			userData.PrimaryEmailOTPGenerateTimestamp = int64(0)
 		}
-	case "VERIFY_MOBILE_OTP":
+	case helpers.PurposeType[8]:
 		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 		if ecdsaVerificationState == false {
 			return &logical.Response{

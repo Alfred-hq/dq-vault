@@ -4,15 +4,9 @@ import (
 	"cloud.google.com/go/pubsub"
 	"context"
 	"encoding/json"
+	"net/http"
 	"os"
 	"time"
-
-	// "errors"
-	// "fmt"
-
-	// "encoding/json"
-	// "fmt"
-	"net/http"
 
 	"github.com/hashicorp/vault/sdk/framework"
 	"github.com/hashicorp/vault/sdk/logical"
@@ -29,14 +23,14 @@ func (b *backend) pathBackupThirdShard(ctx context.Context, req *logical.Request
 	// obtain details:
 	identifier := d.Get("identifier").(string)
 	walletThirdShard := d.Get("walletThirdShard").(string)
-	signatureRSA := d.Get("signatureRSA").(string) // base64 encoded
+	signatureRSA := d.Get("signatureRSA").(string)
 	signatureECDSA := d.Get("signatureECDSA").(string)
 
 	// path where user data is stored
 	path := config.StorageBasePath + identifier
 	entry, err := req.Storage.Get(ctx, path)
 	if err != nil {
-		logger.Log(backendLogger, config.Error, "addThirdShard:", err.Error())
+		logger.Log(backendLogger, config.Error, "addThirdShard: could not fetch data from storage", err.Error())
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
@@ -44,7 +38,7 @@ func (b *backend) pathBackupThirdShard(ctx context.Context, req *logical.Request
 	var userData helpers.UserDetails
 	err = entry.DecodeJSON(&userData)
 	if err != nil {
-		logger.Log(backendLogger, config.Error, "addThirdShard:", err.Error())
+		logger.Log(backendLogger, config.Error, "addThirdShard: could not encode JSON", err.Error())
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
@@ -79,19 +73,19 @@ func (b *backend) pathBackupThirdShard(ctx context.Context, req *logical.Request
 
 	store, err := logical.StorageEntryJSON(path, userData)
 	if err != nil {
-		logger.Log(backendLogger, config.Error, "addThirdShard:", err.Error())
+		logger.Log(backendLogger, config.Error, "addThirdShard: could not get storage entry", err.Error())
 		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
 	}
 
 	// put user information in store
 	if err = req.Storage.Put(ctx, store); err != nil {
-		logger.Log(backendLogger, config.Error, "addThirdShard:", err.Error())
+		logger.Log(backendLogger, config.Error, "addThirdShard: could not put user information in store", err.Error())
 		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
 	}
 
 	otp, err := helpers.GenerateOTP(6)
 	if err != nil {
-		logger.Log(backendLogger, config.Error, "addThirdShard:", err.Error())
+		logger.Log(backendLogger, config.Error, "addThirdShard: could not generate otp", err.Error())
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
@@ -102,9 +96,9 @@ func (b *backend) pathBackupThirdShard(ctx context.Context, req *logical.Request
 	if err != nil {
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
-	t := client.Topic(pubsubTopic) // To-Do: add cons
+	t := client.Topic(pubsubTopic)
 
-	mailFormat := &helpers.MailFormatVerification{userData.UserEmail, otp, "VERIFICATION", "email"}
+	mailFormat := &helpers.MailFormatVerification{To: userData.UserEmail, Otp: otp, Purpose: "VERIFICATION", MFASource: "email"}
 	mailFormatJson, _ := json.Marshal(mailFormat)
 	res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
 	_, err = res.Get(newCtx)
@@ -116,13 +110,13 @@ func (b *backend) pathBackupThirdShard(ctx context.Context, req *logical.Request
 	userData.PrimaryEmailOTPGenerateTimestamp = time.Now().Unix()
 	store, storageErr := logical.StorageEntryJSON(path, userData)
 	if storageErr != nil {
-		logger.Log(backendLogger, config.Error, "addThirdShard:", err.Error())
+		logger.Log(backendLogger, config.Error, "addThirdShard: could not get storage entry", err.Error())
 		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
 	}
 
 	// put user information in store
 	if err = req.Storage.Put(ctx, store); err != nil {
-		logger.Log(backendLogger, config.Error, "addThirdShard:", err.Error())
+		logger.Log(backendLogger, config.Error, "addThirdShard: could not put user info in storage", err.Error())
 		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
 	}
 	// return response
