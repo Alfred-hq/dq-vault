@@ -2,10 +2,6 @@ package api
 
 import (
 	"context"
-	"os"
-	"strconv"
-	"time"
-
 	// "errors"
 	// "fmt"
 
@@ -21,19 +17,30 @@ import (
 )
 
 // pathPassphrase corresponds to POST gen/passphrase.
-func (b *backend) pathGetThirdShard(ctx context.Context, req *logical.Request, d *framework.FieldData) (*logical.Response, error) {
+func (b *backend) pathGuardians(ctx context.Context, req *logical.Request, d *framework.FieldData) (*logical.Response, error) {
 	// var err error
 	backendLogger := b.logger
 
 	// obtain details:
 	identifier := d.Get("identifier").(string)
+	quest := d.Get("quest").(string)
 	signatureRSA := d.Get("signatureRSA").(string)
+	signatureECDSA := d.Get("signatureECDSA").(string)
+
+	if quest != "GET_GUARDIANS" {
+		return &logical.Response{
+			Data: map[string]interface{}{
+				"status":  false,
+				"remarks": "return proper quest",
+			},
+		}, nil
+	}
 
 	// path where user data is stored
 	path := config.StorageBasePath + identifier
 	entry, err := req.Storage.Get(ctx, path)
 	if err != nil {
-		logger.Log(backendLogger, config.Error, "getThirdShard:", err.Error())
+		logger.Log(backendLogger, config.Error, "cancelWalletRestoration:", err.Error())
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
@@ -41,12 +48,13 @@ func (b *backend) pathGetThirdShard(ctx context.Context, req *logical.Request, d
 	var userData helpers.UserDetails
 	err = entry.DecodeJSON(&userData)
 	if err != nil {
-		logger.Log(backendLogger, config.Error, "getThirdShard:", err.Error())
+		logger.Log(backendLogger, config.Error, "cancelWalletRestoration:", err.Error())
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
 	dataToValidate := map[string]string{
 		"identifier": identifier,
+		"quest":      quest,
 	}
 
 	rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userData.UserRSAPublicKey, "RS256")
@@ -60,48 +68,22 @@ func (b *backend) pathGetThirdShard(ctx context.Context, req *logical.Request, d
 		}, nil
 	}
 
-	if userData.IsRestoreInProgress == false {
+	ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
+	if ecdsaVerificationState == false {
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,
-				"remarks": "restoration is not started or vetoed by guardian", // who vetoed? when vetoed
+				"remarks": remarks,
 			},
 		}, nil
-	}
-
-	waitPeriodStr := os.Getenv("WAIT_PERIOD")
-	waitPeriod, _ := strconv.Atoi(waitPeriodStr)
-	currentUnixTime := time.Now().Unix()
-	if currentUnixTime-userData.RestoreInitiationTimestamp < int64(waitPeriod) { // 24 hrs and env4
-		waitUntil := time.Unix(userData.RestoreInitiationTimestamp+86400, 0).Format(time.RFC3339)
-		return &logical.Response{
-			Data: map[string]interface{}{
-				"status":  false,
-				"remarks": "wait period not over, wait till " + waitUntil,
-			},
-		}, nil
-	}
-
-	userData.IsRestoreInProgress = false
-	userData.RestoreInitiationTimestamp = int64(0)
-
-	store, err := logical.StorageEntryJSON(path, userData)
-	if err != nil {
-		logger.Log(backendLogger, config.Error, "getThirdShard:", err.Error())
-		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
-	}
-
-	// put user information in store
-	if err = req.Storage.Put(ctx, store); err != nil {
-		logger.Log(backendLogger, config.Error, "getThirdShard:", err.Error())
-		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
 	}
 
 	// return response
 	return &logical.Response{
 		Data: map[string]interface{}{
-			"remarks": userData.WalletThirdShard,
 			"status":  true,
+			"remarks": "success",
+			"data":    userData.Guardians,
 		},
 	}, nil
 }

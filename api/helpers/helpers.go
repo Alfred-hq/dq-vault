@@ -33,35 +33,28 @@ type User struct {
 }
 
 type UserDetails struct {
-	UserEmail                          string `json:"useremail"`
-	UnverifiedUserEmail                string `json:"tempuseremail"`
-	GuardianEmail1                     string `json:"guardianemail1"`
-	UnverifiedGuardianEmail1           string `json:"tempguardianemail1"`
-	GuardianEmail2                     string `json:"guardianemail2"`
-	UnverifiedGuardianEmail2           string `json:"tempguardianemail2"`
-	GuardianEmail3                     string `json:"guardianemail3"`
-	UnverifiedGuardianEmail3           string `json:"tempguardianemail3"`
-	UserMobile                         string `json:"usermobile"`
-	UnverifiedUserMobile               string `json:"tempusermobile"`
-	UserRSAPublicKey                   string `json:"userRSAPublicKey"`
-	UserECDSAPublicKey                 string `json:"userECDSAPublicKey"`
-	WalletThirdShard                   string `json:"secret"`
-	UnverifiedWalletThirdShard         string `json:"unverifiedSecret"`
-	Identifier                         string `json:"identifier"`
-	IsRestoreInProgress                bool   `json:"isrestoreinprogress"`
-	EmailVerificationState             bool   `json:"emailverificationstate"`
-	MobileVerificationState            bool   `json:"mobileverificationstate"`
-	PrimaryEmailVerificationOTP        string `json:"primaryEmailVerificationOTP"`
-	GuardianEmail1VerificationOTP      string `json:"guardianEmail1VerificationOTP"`
-	GuardianEmail2VerificationOTP      string `json:"guardianEmail2VerificationOTP"`
-	GuardianEmail3VerificationOTP      string `json:"guardianEmail3VerificationOTP"`
-	MobileVerificationOTP              string `json:"mobileverificationotp"`
-	GuardianEmail1OTPGenerateTimestamp int64  `json:"guardianEmail1OTPGenerateTimestamp"`
-	GuardianEmail2OTPGenerateTimestamp int64  `json:"guardianEmail2OTPGenerateTimestamp"`
-	GuardianEmail3OTPGenerateTimestamp int64  `json:"guardianEmail3OTPGenerateTimestamp"`
-	PrimaryEmailOTPGenerateTimestamp   int64  `json:"primaryEmailOTPGenerateTimestamp"`
-	MobileOTPGenerateTimestamp         int64  `json:"mobileotpgeneratedtimestamp"`
-	RestoreInitiationTimestamp         int64  `json:"restoreinitiationtimestamp"`
+	UserEmail                         string   `json:"useremail"`
+	UnverifiedUserEmail               string   `json:"tempuseremail"`
+	Guardians                         []string `json:"guardians"`
+	UnverifiedGuardians               []string `json:"unverifiedGuardians"`
+	GuardianEmailVerificationOTP      []string `json:"guardiansOTP"`
+	GuardianEmailOTPGenerateTimestamp []int64  `json:"guardianEmailOTPGenerateTimestamp"`
+	UserMobile                        string   `json:"usermobile"`
+	UnverifiedUserMobile              string   `json:"tempusermobile"`
+	UserRSAPublicKey                  string   `json:"userRSAPublicKey"`
+	UserECDSAPublicKey                string   `json:"userECDSAPublicKey"`
+	WalletThirdShard                  string   `json:"secret"`
+	UnverifiedWalletThirdShard        string   `json:"unverifiedSecret"`
+	Identifier                        string   `json:"identifier"`
+	IsRestoreInProgress               bool     `json:"isrestoreinprogress"`
+	EmailVerificationState            bool     `json:"emailverificationstate"`
+	MobileVerificationState           bool     `json:"mobileverificationstate"`
+	PrimaryEmailVerificationOTP       string   `json:"primaryEmailVerificationOTP"`
+	GuardianIdentifiers               []string `json:"guardianIdentifiers"`
+	MobileVerificationOTP             string   `json:"mobileverificationotp"`
+	PrimaryEmailOTPGenerateTimestamp  int64    `json:"primaryEmailOTPGenerateTimestamp"`
+	MobileOTPGenerateTimestamp        int64    `json:"mobileotpgeneratedtimestamp"`
+	RestoreInitiationTimestamp        int64    `json:"restoreinitiationtimestamp"`
 }
 
 // NewUUID returns a globally unique random generated guid
@@ -275,4 +268,21 @@ type MAILFormatUpdates struct {
 	Purpose          string
 	MFASource        string
 	TimeOfInitiation string
+}
+
+type MailFormatGuardian struct {
+	To                 string
+	Purpose            string
+	WalletIdentifier   string
+	GuardianIdentifier string
+	MFASource          string
+	TimeOfInitiation   string
+	TimeOfRestoration  string
+}
+
+type MailFormatVetoed struct {
+	To             string
+	Purpose        string
+	GuardianVetoed string
+	MFASource      string
 }

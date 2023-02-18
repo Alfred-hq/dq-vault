@@ -77,9 +77,6 @@ func (b *backend) pathBackupThirdShard(ctx context.Context, req *logical.Request
 
 	userData.WalletThirdShard = walletThirdShard
 
-	workDir, _ := os.Getwd()
-	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", workDir+"/key.json")
-
 	store, err := logical.StorageEntryJSON(path, userData)
 	if err != nil {
 		logger.Log(backendLogger, config.Error, "addThirdShard:", err.Error())
@@ -99,11 +96,13 @@ func (b *backend) pathBackupThirdShard(ctx context.Context, req *logical.Request
 	}
 
 	newCtx := context.Background()
-	client, err := pubsub.NewClient(ctx, "ethos-dev-deqode")
+	pubsubTopic := os.Getenv("PUBSUB_TOPIC")
+	gcpProject := os.Getenv("GCP_PROJECT")
+	client, err := pubsub.NewClient(ctx, gcpProject)
 	if err != nil {
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
-	t := client.Topic("twilio-service") // To-Do: add cons
+	t := client.Topic(pubsubTopic) // To-Do: add cons
 
 	mailFormat := &helpers.MailFormatVerification{userData.UserEmail, otp, "VERIFICATION", "email"}
 	mailFormatJson, _ := json.Marshal(mailFormat)

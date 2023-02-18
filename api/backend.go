@@ -349,6 +349,7 @@ get help.
 					logical.UpdateOperation: b.pathCancelWalletRestoration,
 				},
 			},
+
 			// api/getThirdShard
 			&framework.Path{
 				Pattern:         "getThirdShard",
@@ -368,6 +369,59 @@ get help.
 				},
 				Callbacks: map[logical.Operation]framework.OperationFunc{
 					logical.UpdateOperation: b.pathGetThirdShard,
+				},
+			},
+
+			// api/veto
+			&framework.Path{
+				Pattern:         "veto",
+				HelpSynopsis:    "veto",
+				HelpDescription: `vetoes wallet restoration`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "uuid identifier for path",
+						Default:     "",
+					},
+					"guardianIdentifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "uuid identifier for guardian",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathVeto,
+				},
+			},
+
+			&framework.Path{
+				Pattern:         "guardians",
+				HelpSynopsis:    "guardians",
+				HelpDescription: `gets guardians`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "uuid identifier for path",
+						Default:     "",
+					},
+					"quest": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "uuid identifier for guardian",
+						Default:     "",
+					},
+					"signatureRSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "RSA signature",
+						Default:     "",
+					},
+					"signatureECDSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "ECDSA signature",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathGuardians,
 				},
 			},
 		},
