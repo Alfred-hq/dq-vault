@@ -131,7 +131,7 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 		if userData.GuardiansUpdateStatus[index] == false {
 			return &logical.Response{
 				Data: map[string]interface{}{
-					"status":  true,
+					"status":  false,
 					"remarks": "Permission Denied!",
 				},
 			}, nil
