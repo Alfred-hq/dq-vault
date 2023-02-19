@@ -33,15 +33,14 @@ type User struct {
 }
 
 var PurposeType = []string{
-	"ADD_OR_UPDATE_PRIMARY_EMAIL",
-	"ADD_OR_UPDATE_GUARDIAN_EMAIL_1",
-	"ADD_OR_UPDATE_GUARDIAN_EMAIL_2",
-	"ADD_OR_UPDATE_GUARDIAN_EMAIL_3",
-	"ADD_OR_UPDATE_MOBILE_NUMBER",
+	"ADD_PRIMARY_EMAIL",
+	"ADD_GUARDIAN_EMAIL",
+	"ADD_MOBILE_NUMBER",
 	"VERIFY_EMAIL_FOR_WALLET_RESTORATION",
 	"ADD_WALLET_THIRD_SHARD",
 	"VERIFY_EMAIL_OTP",
 	"VERIFY_MOBILE_OTP",
+	"VERIFY_GUARDIAN_OTP_FOR_UPDATE",
 }
 
 type UserDetails struct {
@@ -51,6 +50,7 @@ type UserDetails struct {
 	UnverifiedGuardians               []string `json:"unverifiedGuardians"`
 	GuardianEmailVerificationOTP      []string `json:"guardiansOTP"`
 	GuardianEmailOTPGenerateTimestamp []int64  `json:"guardianEmailOTPGenerateTimestamp"`
+	GuardiansUpdateStatus             []bool   `json:"guardiansUpdateStatus"`
 	UserMobile                        string   `json:"usermobile"`
 	UnverifiedUserMobile              string   `json:"tempusermobile"`
 	UserRSAPublicKey                  string   `json:"userRSAPublicKey"`

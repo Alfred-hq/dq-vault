@@ -31,6 +31,7 @@ func (b *backend) pathNewUser(ctx context.Context, req *logical.Request, d *fram
 		UnverifiedUserEmail:               "",
 		Guardians:                         []string{"", "", ""},
 		UnverifiedGuardians:               []string{"", "", ""},
+		GuardiansUpdateStatus:             []bool{true, true, true},
 		UserMobile:                        "",
 		UnverifiedUserMobile:              "",
 		UserRSAPublicKey:                  userRSAPublicKey,

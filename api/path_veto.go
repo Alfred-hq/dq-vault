@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"os"
+	"strconv"
 	"time"
 
 	// "errors"
@@ -66,8 +67,11 @@ func (b *backend) pathVeto(ctx context.Context, req *logical.Request, d *framewo
 				}, nil
 			}
 
+			waitPeriod := os.Getenv("WAIT_PERIOD")
+			waitPeriodInt, err := strconv.Atoi(waitPeriod)
+
 			currentUnixTime := time.Now().Unix()
-			if userData.IsRestoreInProgress == true && userData.RestoreInitiationTimestamp+86400 >= currentUnixTime {
+			if userData.IsRestoreInProgress == true && userData.RestoreInitiationTimestamp+int64(waitPeriodInt) <= currentUnixTime {
 				return &logical.Response{
 					Data: map[string]interface{}{
 						"status":  false,
