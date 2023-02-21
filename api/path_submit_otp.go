@@ -61,10 +61,21 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
-	dataToValidate := map[string]string{
-		"identifier": identifier,
-		"otp":        otp,
-		"purpose":    purpose,
+	dataToValidate := map[string]string{}
+
+	if purpose == helpers.PurposeType[1] || purpose == helpers.PurposeType[7] {
+		dataToValidate = map[string]string{
+			"identifier":    identifier,
+			"otp":           otp,
+			"purpose":       purpose,
+			"guardianIndex": guardianIndex,
+		}
+	} else {
+		dataToValidate = map[string]string{
+			"identifier": identifier,
+			"otp":        otp,
+			"purpose":    purpose,
+		}
 	}
 
 	rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userData.UserRSAPublicKey, "RS256")
@@ -148,7 +159,7 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 					"remarks": "OTP DID NOT MATCH",
 				},
 			}, nil
-		} else if currentUnixTime-userData.GuardianEmailOTPGenerateTimestamp[0] > int64(otpTTL) { // 5 minute time based otp
+		} else if currentUnixTime-userData.GuardianEmailOTPGenerateTimestamp[index] > int64(otpTTL) { // 5 minute time based otp
 			return &logical.Response{
 				Data: map[string]interface{}{
 					"status":  false,

@@ -97,6 +97,15 @@ func ValidateFields(req *logical.Request, data *framework.FieldData) error {
 	return nil
 }
 
+func StringInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
+}
+
 // errorString is a trivial implementation of error.
 type errorString struct {
 	s string

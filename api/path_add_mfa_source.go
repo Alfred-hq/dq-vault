@@ -136,6 +136,25 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 				},
 			}, nil
 		}
+
+		if userData.UserEmail == sourceValue {
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "Primary email cannot be set as guardian!",
+				},
+			}, nil
+		}
+
+		if helpers.StringInSlice(sourceValue, userData.Guardians) {
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "Guardian already added!",
+				},
+			}, nil
+		}
+
 		mailFormat := &helpers.MailFormatVerification{sourceValue, otp, "VERIFICATION", "email"}
 		mailFormatJson, _ := json.Marshal(mailFormat)
 		res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
