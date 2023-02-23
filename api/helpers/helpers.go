@@ -67,6 +67,11 @@ type UserDetails struct {
 	PrimaryEmailOTPGenerateTimestamp  int64    `json:"primaryEmailOTPGenerateTimestamp"`
 	MobileOTPGenerateTimestamp        int64    `json:"mobileotpgeneratedtimestamp"`
 	RestoreInitiationTimestamp        int64    `json:"restoreinitiationtimestamp"`
+	WalletIdentifierStoredAt          string   `json:"walletIdentifierStoredAt"`
+}
+
+type WalletIdentifierStorage struct {
+	WalletIdentifier string `json:"walletIdentifier"`
 }
 
 // NewUUID returns a globally unique random generated guid

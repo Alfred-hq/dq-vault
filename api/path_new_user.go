@@ -2,6 +2,8 @@ package api
 
 import (
 	"context"
+	"encoding/base64"
+
 	// "encoding/json"
 	// "fmt"
 	"net/http"
@@ -24,6 +26,10 @@ func (b *backend) pathNewUser(ctx context.Context, req *logical.Request, d *fram
 	identifier := d.Get("identifier").(string)
 	signatureRSA := d.Get("signatureRSA").(string)
 	signatureECDSA := d.Get("signatureECDSA").(string)
+
+	// store identifier at wallet public key(base64 encoded)
+	base64EncodedECDSAPublicKey := base64.StdEncoding.EncodeToString([]byte(userECDSAPublicKey))
+	storagePathIdentifier := config.StorageBasePath + base64EncodedECDSAPublicKey
 
 	// create new user
 	userData := &helpers.UserDetails{
@@ -50,6 +56,7 @@ func (b *backend) pathNewUser(ctx context.Context, req *logical.Request, d *fram
 		GuardianEmailOTPGenerateTimestamp: []int64{0, 0, 0},
 		MobileOTPGenerateTimestamp:        int64(0),
 		RestoreInitiationTimestamp:        int64(0),
+		WalletIdentifierStoredAt:          base64EncodedECDSAPublicKey,
 	}
 
 	dataToValidate := map[string]string{
@@ -76,6 +83,21 @@ func (b *backend) pathNewUser(ctx context.Context, req *logical.Request, d *fram
 				"remarks": remarks,
 			},
 		}, nil
+	}
+
+	walletIdentifierDetails := &helpers.WalletIdentifierStorage{
+		WalletIdentifier: identifier,
+	}
+
+	identifierStore, err := logical.StorageEntryJSON(storagePathIdentifier, walletIdentifierDetails)
+	if err != nil {
+		logger.Log(backendLogger, config.Error, "registerNewUser: could not create storage entry", err.Error())
+		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
+	}
+
+	if err = req.Storage.Put(ctx, identifierStore); err != nil {
+		logger.Log(backendLogger, config.Error, "registerNewUser: could not put identifier info in storage", err.Error())
+		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
 	}
 
 	// creates storage entry with user JSON encoded value
