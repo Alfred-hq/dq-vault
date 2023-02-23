@@ -465,6 +465,53 @@ get help.
 					logical.UpdateOperation: b.pathUpdateGuardians,
 				},
 			},
+
+			&framework.Path{
+				Pattern:         "getIdentifier",
+				HelpSynopsis:    "provides the identifier of wallet",
+				HelpDescription: `provides the identifier of wallet`,
+				Fields: map[string]*framework.FieldSchema{
+					"userECDSAPublicKey": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "user ecdsa public key",
+						Default:     "",
+					},
+					"signatureECDSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "ECDSA signature",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathGetIdentifier,
+				},
+			},
+
+			&framework.Path{
+				Pattern:         "updateRSAKeys",
+				HelpSynopsis:    "updates user rsa key",
+				HelpDescription: `updates user rsa key`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "user identifier",
+						Default:     "",
+					},
+					"userRSAPublicKey": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "user rsa public key",
+						Default:     "",
+					},
+					"signatureECDSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "ECDSA signature",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathUpdateRSAKeys,
+				},
+			},
 		},
 	}
 	return &b
