@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/vault/sdk/framework"
@@ -26,6 +27,7 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 	signatureRSA := d.Get("signatureRSA").(string)
 	signatureECDSA := d.Get("signatureECDSA").(string)
 	sourceValue := d.Get("sourceValue").(string)
+	guardianIndex := d.Get("guardianIndex").(string)
 
 	// path where user data is stored
 	path := config.StorageBasePath + identifier
@@ -53,10 +55,21 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 		}, nil
 	}
 
-	dataToValidate := map[string]string{
-		"identifier":  identifier,
-		"sourceType":  sourceType,
-		"sourceValue": sourceValue,
+	dataToValidate := map[string]string{}
+
+	if sourceType == "guardianEmail" {
+		dataToValidate = map[string]string{
+			"identifier":    identifier,
+			"sourceType":    sourceType,
+			"sourceValue":   sourceValue,
+			"guardianIndex": guardianIndex,
+		}
+	} else {
+		dataToValidate = map[string]string{
+			"identifier":  identifier,
+			"sourceType":  sourceType,
+			"sourceValue": sourceValue,
+		}
 	}
 
 	rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userData.UserRSAPublicKey, "RS256")
@@ -108,40 +121,50 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 		userData.PrimaryEmailVerificationOTP = otp
 		userData.PrimaryEmailOTPGenerateTimestamp = time.Now().Unix()
 
-	case "guardianEmail1":
-		mailFormat := &helpers.MailFormatVerification{sourceValue, otp, "VERIFICATION", "email"}
-		mailFormatJson, _ := json.Marshal(mailFormat)
-		res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
-		_, err := res.Get(newCtx)
+	case "guardianEmail":
+		index, err := strconv.Atoi(guardianIndex)
 		if err != nil {
+			logger.Log(backendLogger, config.Error, "updateGuardian: could not convert str to int", err.Error())
 			return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 		}
-		userData.UnverifiedGuardians[0] = sourceValue
-		userData.GuardianEmailVerificationOTP[0] = otp
-		userData.GuardianEmailOTPGenerateTimestamp[0] = time.Now().Unix()
-	case "guardianEmail2":
-		mailFormat := &helpers.MailFormatVerification{sourceValue, otp, "VERIFICATION", "email"}
-		mailFormatJson, _ := json.Marshal(mailFormat)
-		res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
-		_, err := res.Get(newCtx)
-		if err != nil {
-			return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
-		}
-		userData.UnverifiedGuardians[1] = sourceValue
-		userData.GuardianEmailVerificationOTP[1] = otp
-		userData.GuardianEmailOTPGenerateTimestamp[1] = time.Now().Unix()
 
-	case "guardianEmail3":
+		if userData.GuardiansUpdateStatus[index] == false {
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "Permission Denied!",
+				},
+			}, nil
+		}
+
+		if userData.UserEmail == sourceValue {
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "Primary email cannot be set as guardian!",
+				},
+			}, nil
+		}
+
+		if helpers.StringInSlice(sourceValue, userData.Guardians) {
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "Guardian already added!",
+				},
+			}, nil
+		}
+
 		mailFormat := &helpers.MailFormatVerification{sourceValue, otp, "VERIFICATION", "email"}
 		mailFormatJson, _ := json.Marshal(mailFormat)
 		res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
-		_, err := res.Get(newCtx)
+		_, err = res.Get(newCtx)
 		if err != nil {
 			return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 		}
-		userData.UnverifiedGuardians[2] = sourceValue
-		userData.GuardianEmailVerificationOTP[2] = otp
-		userData.GuardianEmailOTPGenerateTimestamp[2] = time.Now().Unix()
+		userData.UnverifiedGuardians[index] = sourceValue
+		userData.GuardianEmailVerificationOTP[index] = otp
+		userData.GuardianEmailOTPGenerateTimestamp[index] = time.Now().Unix()
 
 	case "userMobileNumber":
 		mailFormat := &helpers.MailFormatVerification{sourceValue, otp, "VERIFICATION", "mobile"}

@@ -32,6 +32,17 @@ type User struct {
 	Passphrase string `json:"passphrase"`
 }
 
+var PurposeType = []string{
+	"ADD_PRIMARY_EMAIL",
+	"ADD_GUARDIAN_EMAIL",
+	"ADD_MOBILE_NUMBER",
+	"VERIFY_EMAIL_FOR_WALLET_RESTORATION",
+	"ADD_WALLET_THIRD_SHARD",
+	"VERIFY_EMAIL_OTP",
+	"VERIFY_MOBILE_OTP",
+	"VERIFY_GUARDIAN_OTP_FOR_UPDATE",
+}
+
 type UserDetails struct {
 	UserEmail                         string   `json:"useremail"`
 	UnverifiedUserEmail               string   `json:"tempuseremail"`
@@ -39,6 +50,7 @@ type UserDetails struct {
 	UnverifiedGuardians               []string `json:"unverifiedGuardians"`
 	GuardianEmailVerificationOTP      []string `json:"guardiansOTP"`
 	GuardianEmailOTPGenerateTimestamp []int64  `json:"guardianEmailOTPGenerateTimestamp"`
+	GuardiansUpdateStatus             []bool   `json:"guardiansUpdateStatus"`
 	UserMobile                        string   `json:"usermobile"`
 	UnverifiedUserMobile              string   `json:"tempusermobile"`
 	UserRSAPublicKey                  string   `json:"userRSAPublicKey"`
@@ -83,6 +95,15 @@ func ValidateFields(req *logical.Request, data *framework.FieldData) error {
 	}
 
 	return nil
+}
+
+func StringInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
 }
 
 // errorString is a trivial implementation of error.

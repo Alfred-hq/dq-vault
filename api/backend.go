@@ -232,6 +232,11 @@ get help.
 						Description: "source value",
 						Default:     "",
 					},
+					"guardianIndex": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "guardian index",
+						Default:     "",
+					},
 				},
 				Callbacks: map[logical.Operation]framework.OperationFunc{
 					logical.UpdateOperation: b.pathAddMFASource,
@@ -298,6 +303,11 @@ get help.
 					"otp": &framework.FieldSchema{
 						Type:        framework.TypeString,
 						Description: "otp received on mail",
+						Default:     "",
+					},
+					"guardianIndex": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "guardian index",
 						Default:     "",
 					},
 				},
@@ -422,6 +432,37 @@ get help.
 				},
 				Callbacks: map[logical.Operation]framework.OperationFunc{
 					logical.UpdateOperation: b.pathGuardians,
+				},
+			},
+
+			&framework.Path{
+				Pattern:         "verifyGuardianForUpdate",
+				HelpSynopsis:    "verify previous guardian for update!",
+				HelpDescription: `verify previous guardian for update`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "uuid identifier for path",
+						Default:     "",
+					},
+					"guardianIndex": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "index of guardian to update",
+						Default:     "",
+					},
+					"signatureRSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "RSA signature",
+						Default:     "",
+					},
+					"signatureECDSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "ECDSA signature",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathUpdateGuardians,
 				},
 			},
 		},

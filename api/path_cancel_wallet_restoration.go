@@ -29,7 +29,7 @@ func (b *backend) pathCancelWalletRestoration(ctx context.Context, req *logical.
 	path := config.StorageBasePath + identifier
 	entry, err := req.Storage.Get(ctx, path)
 	if err != nil {
-		logger.Log(backendLogger, config.Error, "cancelWalletRestoration:", err.Error())
+		logger.Log(backendLogger, config.Error, "cancelWalletRestoration: could not get storage entry", err.Error())
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
@@ -37,7 +37,7 @@ func (b *backend) pathCancelWalletRestoration(ctx context.Context, req *logical.
 	var userData helpers.UserDetails
 	err = entry.DecodeJSON(&userData)
 	if err != nil {
-		logger.Log(backendLogger, config.Error, "cancelWalletRestoration:", err.Error())
+		logger.Log(backendLogger, config.Error, "cancelWalletRestoration: could not get user data", err.Error())
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
@@ -60,13 +60,13 @@ func (b *backend) pathCancelWalletRestoration(ctx context.Context, req *logical.
 	userData.RestoreInitiationTimestamp = int64(0)
 	store, err := logical.StorageEntryJSON(path, userData)
 	if err != nil {
-		logger.Log(backendLogger, config.Error, "cancelWalletRestoration:", err.Error())
+		logger.Log(backendLogger, config.Error, "cancelWalletRestoration: could not get storage entry", err.Error())
 		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
 	}
 
 	// put user information in store
 	if err = req.Storage.Put(ctx, store); err != nil {
-		logger.Log(backendLogger, config.Error, "cancelWalletRestoration:", err.Error())
+		logger.Log(backendLogger, config.Error, "cancelWalletRestoration: could not store user data", err.Error())
 		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
 	}
 

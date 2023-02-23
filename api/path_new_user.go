@@ -19,10 +19,10 @@ func (b *backend) pathNewUser(ctx context.Context, req *logical.Request, d *fram
 	backendLogger := b.logger
 
 	// obtain user details:
-	userRSAPublicKey := d.Get("userRSAPublicKey").(string)     // base64 encoded pem key
-	userECDSAPublicKey := d.Get("userECDSAPublicKey").(string) // hex
-	identifier := d.Get("identifier").(string)                 // uuid
-	signatureRSA := d.Get("signatureRSA").(string)             // JWT token
+	userRSAPublicKey := d.Get("userRSAPublicKey").(string)
+	userECDSAPublicKey := d.Get("userECDSAPublicKey").(string)
+	identifier := d.Get("identifier").(string)
+	signatureRSA := d.Get("signatureRSA").(string)
 	signatureECDSA := d.Get("signatureECDSA").(string)
 
 	// create new user
@@ -31,6 +31,7 @@ func (b *backend) pathNewUser(ctx context.Context, req *logical.Request, d *fram
 		UnverifiedUserEmail:               "",
 		Guardians:                         []string{"", "", ""},
 		UnverifiedGuardians:               []string{"", "", ""},
+		GuardiansUpdateStatus:             []bool{true, true, true},
 		UserMobile:                        "",
 		UnverifiedUserMobile:              "",
 		UserRSAPublicKey:                  userRSAPublicKey,
@@ -77,17 +78,17 @@ func (b *backend) pathNewUser(ctx context.Context, req *logical.Request, d *fram
 		}, nil
 	}
 
-	// creates strorage entry with user JSON encoded value
+	// creates storage entry with user JSON encoded value
 	storagePath := config.StorageBasePath + identifier
 	store, err := logical.StorageEntryJSON(storagePath, userData)
 	if err != nil {
-		logger.Log(backendLogger, config.Error, "registerNewUser:", err.Error())
+		logger.Log(backendLogger, config.Error, "registerNewUser: could not create storage entry", err.Error())
 		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
 	}
 
 	// put user information in store
 	if err = req.Storage.Put(ctx, store); err != nil {
-		logger.Log(backendLogger, config.Error, "registerNewUser:", err.Error())
+		logger.Log(backendLogger, config.Error, "registerNewUser: could not put user info in storage", err.Error())
 		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
 	}
 

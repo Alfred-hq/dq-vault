@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/vault/sdk/framework"
@@ -16,13 +17,13 @@ import (
 )
 
 // pathPassphrase corresponds to POST gen/passphrase.
-func (b *backend) pathBackupThirdShard(ctx context.Context, req *logical.Request, d *framework.FieldData) (*logical.Response, error) {
+func (b *backend) pathUpdateGuardians(ctx context.Context, req *logical.Request, d *framework.FieldData) (*logical.Response, error) {
 	// var err error
 	backendLogger := b.logger
 
 	// obtain details:
 	identifier := d.Get("identifier").(string)
-	walletThirdShard := d.Get("walletThirdShard").(string)
+	guardianIndex := d.Get("guardianIndex").(string)
 	signatureRSA := d.Get("signatureRSA").(string)
 	signatureECDSA := d.Get("signatureECDSA").(string)
 
@@ -30,7 +31,7 @@ func (b *backend) pathBackupThirdShard(ctx context.Context, req *logical.Request
 	path := config.StorageBasePath + identifier
 	entry, err := req.Storage.Get(ctx, path)
 	if err != nil {
-		logger.Log(backendLogger, config.Error, "addThirdShard: could not fetch data from storage", err.Error())
+		logger.Log(backendLogger, config.Error, "updateGuardian: could not fetch data from storage", err.Error())
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
@@ -38,13 +39,13 @@ func (b *backend) pathBackupThirdShard(ctx context.Context, req *logical.Request
 	var userData helpers.UserDetails
 	err = entry.DecodeJSON(&userData)
 	if err != nil {
-		logger.Log(backendLogger, config.Error, "addThirdShard: could not encode JSON", err.Error())
+		logger.Log(backendLogger, config.Error, "updateGuardian: could not encode JSON", err.Error())
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
 	dataToValidate := map[string]string{
-		"identifier":       identifier,
-		"walletThirdShard": walletThirdShard,
+		"identifier":    identifier,
+		"guardianIndex": guardianIndex,
 	}
 
 	rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userData.UserRSAPublicKey, "RS256")
@@ -69,24 +70,37 @@ func (b *backend) pathBackupThirdShard(ctx context.Context, req *logical.Request
 		}, nil
 	}
 
-	userData.WalletThirdShard = walletThirdShard
-
 	store, err := logical.StorageEntryJSON(path, userData)
 	if err != nil {
-		logger.Log(backendLogger, config.Error, "addThirdShard: could not get storage entry", err.Error())
+		logger.Log(backendLogger, config.Error, "updateGuardian: could not get storage entry", err.Error())
 		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
 	}
 
 	// put user information in store
 	if err = req.Storage.Put(ctx, store); err != nil {
-		logger.Log(backendLogger, config.Error, "addThirdShard: could not put user information in store", err.Error())
+		logger.Log(backendLogger, config.Error, "updateGuardian: could not put user information in store", err.Error())
 		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
 	}
 
 	otp, err := helpers.GenerateOTP(6)
 	if err != nil {
-		logger.Log(backendLogger, config.Error, "addThirdShard: could not generate otp", err.Error())
+		logger.Log(backendLogger, config.Error, "updateGuardian: could not generate otp", err.Error())
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+	}
+
+	index, err := strconv.Atoi(guardianIndex)
+	if err != nil {
+		logger.Log(backendLogger, config.Error, "updateGuardian: could not convert str to int", err.Error())
+		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+	}
+
+	if userData.Guardians[index] == "" {
+		return &logical.Response{
+			Data: map[string]interface{}{
+				"status":  false,
+				"remarks": "No guardian found!",
+			},
+		}, nil
 	}
 
 	newCtx := context.Background()
@@ -98,32 +112,32 @@ func (b *backend) pathBackupThirdShard(ctx context.Context, req *logical.Request
 	}
 	t := client.Topic(pubsubTopic)
 
-	mailFormat := &helpers.MailFormatVerification{To: userData.UserEmail, Otp: otp, Purpose: "VERIFICATION", MFASource: "email"}
+	mailFormat := &helpers.MailFormatVerification{To: userData.Guardians[index], Otp: otp, Purpose: "CHANGE_GUARDIAN", MFASource: "email"}
 	mailFormatJson, _ := json.Marshal(mailFormat)
 	res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
 	_, err = res.Get(newCtx)
 	if err != nil {
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
-	userData.UnverifiedWalletThirdShard = walletThirdShard
-	userData.PrimaryEmailVerificationOTP = otp
-	userData.PrimaryEmailOTPGenerateTimestamp = time.Now().Unix()
+	//userData.GuardiansUpdateStatus[index] = true
+	userData.GuardianEmailVerificationOTP[index] = otp
+	userData.GuardianEmailOTPGenerateTimestamp[index] = time.Now().Unix()
 	store, storageErr := logical.StorageEntryJSON(path, userData)
 	if storageErr != nil {
-		logger.Log(backendLogger, config.Error, "addThirdShard: could not get storage entry", err.Error())
+		logger.Log(backendLogger, config.Error, "updateGuardian: could not get storage entry", err.Error())
 		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
 	}
 
 	// put user information in store
 	if err = req.Storage.Put(ctx, store); err != nil {
-		logger.Log(backendLogger, config.Error, "addThirdShard: could not put user info in storage", err.Error())
+		logger.Log(backendLogger, config.Error, "updateGuardian: could not put user info in storage", err.Error())
 		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
 	}
 	// return response
 	return &logical.Response{
 		Data: map[string]interface{}{
 			"status":  true,
-			"remarks": "verification for backup pending, otp sent!",
+			"remarks": "verification for guardian update pending, otp sent!",
 		},
 	}, nil
 }

@@ -34,12 +34,13 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 	signatureRSA := d.Get("signatureRSA").(string)
 	signatureECDSA := d.Get("signatureECDSA").(string)
 	otp := d.Get("otp").(string)
+	guardianIndex := d.Get("guardianIndex").(string)
 
 	// path where user data is stored
 	path := config.StorageBasePath + identifier
 	entry, err := req.Storage.Get(ctx, path)
 	if err != nil {
-		logger.Log(backendLogger, config.Error, "submitOTP:", err.Error())
+		logger.Log(backendLogger, config.Error, "submitOTP: could not get storage entry", err.Error())
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
@@ -56,17 +57,25 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 	var userData helpers.UserDetails
 	err = entry.DecodeJSON(&userData)
 	if err != nil {
-		logger.Log(backendLogger, config.Error, "submitOTP:", err.Error())
+		logger.Log(backendLogger, config.Error, "submitOTP: could not get user data", err.Error())
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
-	// Generate unsigned data
-	//unsignedData := identifier + otp + purpose // alphabetical
+	dataToValidate := map[string]string{}
 
-	dataToValidate := map[string]string{
-		"identifier": identifier,
-		"otp":        otp,
-		"purpose":    purpose,
+	if purpose == helpers.PurposeType[1] || purpose == helpers.PurposeType[7] {
+		dataToValidate = map[string]string{
+			"identifier":    identifier,
+			"otp":           otp,
+			"purpose":       purpose,
+			"guardianIndex": guardianIndex,
+		}
+	} else {
+		dataToValidate = map[string]string{
+			"identifier": identifier,
+			"otp":        otp,
+			"purpose":    purpose,
+		}
 	}
 
 	rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userData.UserRSAPublicKey, "RS256")
@@ -82,11 +91,11 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 	otpTTLStr := os.Getenv("OTP_TTL")
 	otpTTL, err := strconv.Atoi(otpTTLStr)
 	if err != nil {
-		logger.Log(backendLogger, config.Error, "submitOTP:", err.Error())
+		logger.Log(backendLogger, config.Error, "submitOTP: could not convert number to string", err.Error())
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 	switch purpose {
-	case "ADD_OR_UPDATE_PRIMARY_EMAIL":
+	case helpers.PurposeType[0]:
 		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 		if ecdsaVerificationState == false {
 			return &logical.Response{
@@ -117,7 +126,7 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			userData.PrimaryEmailOTPGenerateTimestamp = int64(0)
 			userData.PrimaryEmailVerificationOTP = "xxxxxx"
 		}
-	case "ADD_OR_UPDATE_GUARDIAN_EMAIL_1":
+	case helpers.PurposeType[1]:
 		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 		if ecdsaVerificationState == false {
 			return &logical.Response{
@@ -127,15 +136,30 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 				},
 			}, nil
 		}
+		index, err := strconv.Atoi(guardianIndex)
+		if err != nil {
+			logger.Log(backendLogger, config.Error, "submitOTP: could not convert number to string", err.Error())
+			return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+		}
+
+		if userData.GuardiansUpdateStatus[index] == false {
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "Permission Denied!",
+				},
+			}, nil
+		}
+
 		currentUnixTime := time.Now().Unix()
-		if userData.GuardianEmailVerificationOTP[0] != otp {
+		if userData.GuardianEmailVerificationOTP[index] != otp {
 			return &logical.Response{
 				Data: map[string]interface{}{
 					"status":  false,
 					"remarks": "OTP DID NOT MATCH",
 				},
 			}, nil
-		} else if currentUnixTime-userData.GuardianEmailOTPGenerateTimestamp[0] > int64(otpTTL) { // 5 minute time based otp
+		} else if currentUnixTime-userData.GuardianEmailOTPGenerateTimestamp[index] > int64(otpTTL) { // 5 minute time based otp
 			return &logical.Response{
 				Data: map[string]interface{}{
 					"status":  false,
@@ -145,81 +169,14 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 		} else {
 			id := uuid.New()
 			guardianId := id.String()
-			userData.GuardianIdentifiers[0] = guardianId
-			userData.Guardians[0] = userData.UnverifiedGuardians[0]
-			userData.UnverifiedGuardians[0] = ""
-			userData.GuardianEmailOTPGenerateTimestamp[0] = int64(0)
-			userData.GuardianEmailVerificationOTP[0] = "xxxxxx"
+			userData.GuardianIdentifiers[index] = guardianId
+			userData.Guardians[index] = userData.UnverifiedGuardians[index]
+			userData.UnverifiedGuardians[index] = ""
+			userData.GuardiansUpdateStatus[index] = false
+			userData.GuardianEmailOTPGenerateTimestamp[index] = int64(0)
+			userData.GuardianEmailVerificationOTP[index] = "xxxxxx"
 		}
-	case "ADD_OR_UPDATE_GUARDIAN_EMAIL_2":
-		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
-		if ecdsaVerificationState == false {
-			return &logical.Response{
-				Data: map[string]interface{}{
-					"status":  false,
-					"remarks": remarks,
-				},
-			}, nil
-		}
-		currentUnixTime := time.Now().Unix()
-		if userData.GuardianEmailVerificationOTP[1] != otp {
-			return &logical.Response{
-				Data: map[string]interface{}{
-					"status":  false,
-					"remarks": "OTP DID NOT MATCH",
-				},
-			}, nil
-		} else if currentUnixTime-userData.GuardianEmailOTPGenerateTimestamp[1] > int64(otpTTL) { // 5 minute time based otp
-			return &logical.Response{
-				Data: map[string]interface{}{
-					"status":  false,
-					"remarks": "OTP EXPIRED",
-				},
-			}, nil
-		} else {
-			id := uuid.New()
-			guardianId := id.String()
-			userData.GuardianIdentifiers[1] = guardianId
-			userData.Guardians[1] = userData.UnverifiedGuardians[1]
-			userData.UnverifiedGuardians[1] = ""
-			userData.GuardianEmailOTPGenerateTimestamp[1] = int64(0)
-			userData.GuardianEmailVerificationOTP[1] = "xxxxxx"
-		}
-	case "ADD_OR_UPDATE_GUARDIAN_EMAIL_3":
-		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
-		if ecdsaVerificationState == false {
-			return &logical.Response{
-				Data: map[string]interface{}{
-					"status":  false,
-					"remarks": remarks,
-				},
-			}, nil
-		}
-		currentUnixTime := time.Now().Unix()
-		if userData.GuardianEmailVerificationOTP[2] != otp {
-			return &logical.Response{
-				Data: map[string]interface{}{
-					"status":  false,
-					"remarks": "OTP DID NOT MATCH",
-				},
-			}, nil
-		} else if currentUnixTime-userData.GuardianEmailOTPGenerateTimestamp[2] > int64(otpTTL) { // 5 minute time based otp
-			return &logical.Response{
-				Data: map[string]interface{}{
-					"status":  false,
-					"remarks": "OTP EXPIRED",
-				},
-			}, nil
-		} else {
-			id := uuid.New()
-			guardianId := id.String()
-			userData.GuardianIdentifiers[2] = guardianId
-			userData.Guardians[2] = userData.UnverifiedGuardians[2]
-			userData.UnverifiedGuardians[2] = ""
-			userData.GuardianEmailOTPGenerateTimestamp[2] = int64(0)
-			userData.GuardianEmailVerificationOTP[2] = "xxxxxx"
-		}
-	case "ADD_OR_UPDATE_MOBILE_NUMBER":
+	case helpers.PurposeType[2]:
 		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 		if ecdsaVerificationState == false {
 			return &logical.Response{
@@ -250,7 +207,7 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			userData.MobileOTPGenerateTimestamp = int64(0)
 			userData.MobileVerificationOTP = "xxxxxx"
 		}
-	case "VERIFY_EMAIL_FOR_WALLET_RESTORATION":
+	case helpers.PurposeType[3]:
 		currentUnixTime := time.Now().Unix()
 		if userData.PrimaryEmailVerificationOTP != otp {
 			return &logical.Response{
@@ -298,7 +255,7 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 				return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 			}
 		}
-	case "ADD_WALLET_THIRD_SHARD":
+	case helpers.PurposeType[4]:
 		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 		if ecdsaVerificationState == false {
 			return &logical.Response{
@@ -329,7 +286,7 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			userData.PrimaryEmailOTPGenerateTimestamp = int64(0)
 			userData.PrimaryEmailVerificationOTP = "xxxxxx"
 		}
-	case "VERIFY_EMAIL_OTP":
+	case helpers.PurposeType[5]:
 		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 		if ecdsaVerificationState == false {
 			return &logical.Response{
@@ -358,7 +315,7 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			userData.PrimaryEmailVerificationOTP = "xxxxxx"
 			userData.PrimaryEmailOTPGenerateTimestamp = int64(0)
 		}
-	case "VERIFY_MOBILE_OTP":
+	case helpers.PurposeType[6]:
 		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 		if ecdsaVerificationState == false {
 			return &logical.Response{
@@ -386,6 +343,41 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 		} else {
 			userData.MobileVerificationOTP = "xxxxxx"
 			userData.MobileOTPGenerateTimestamp = int64(0)
+		}
+	case helpers.PurposeType[7]:
+		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
+		if ecdsaVerificationState == false {
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": remarks,
+				},
+			}, nil
+		}
+		index, err := strconv.Atoi(guardianIndex)
+		if err != nil {
+			logger.Log(backendLogger, config.Error, "submitOTP: could not convert number to string", err.Error())
+			return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+		}
+		currentUnixTime := time.Now().Unix()
+		if userData.GuardianEmailVerificationOTP[index] != otp {
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "OTP DID NOT MATCH",
+				},
+			}, nil
+		} else if currentUnixTime-userData.GuardianEmailOTPGenerateTimestamp[index] > int64(otpTTL) { // 5 minute time based otp
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "OTP EXPIRED",
+				},
+			}, nil
+		} else {
+			userData.GuardiansUpdateStatus[index] = true
+			userData.GuardianEmailVerificationOTP[index] = "xxxxxx"
+			userData.GuardianEmailOTPGenerateTimestamp[index] = int64(0)
 		}
 	}
 
