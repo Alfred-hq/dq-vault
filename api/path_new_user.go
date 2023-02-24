@@ -54,7 +54,8 @@ func (b *backend) pathNewUser(ctx context.Context, req *logical.Request, d *fram
 		PrimaryEmailOTPGenerateTimestamp: int64(0),
 		MobileOTPGenerateTimestamp:       int64(0),
 		RestoreInitiationTimestamp:       int64(0),
-		WalletIdentifierStoredAt:          base64EncodedECDSAPublicKey,
+		WalletIdentifierStoredAt:         base64EncodedECDSAPublicKey,
+		SignedConsent:                    "",
 	}
 
 	dataToValidate := map[string]string{
