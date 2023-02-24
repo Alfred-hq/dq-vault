@@ -148,23 +148,8 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 		}
 
 		if sourceValue == "" {
-			switch index {
-			case 0:
-				userData.Guardians[0] = userData.Guardians[1]
-				userData.GuardianIdentifiers[0] = userData.GuardianIdentifiers[1]
-				userData.Guardians[1] = userData.Guardians[2]
-				userData.GuardianIdentifiers[1] = userData.GuardianIdentifiers[2]
-				userData.Guardians[2] = ""
-				userData.GuardianIdentifiers[2] = ""
-			case 1:
-				userData.Guardians[1] = userData.Guardians[2]
-				userData.GuardianIdentifiers[1] = userData.GuardianIdentifiers[2]
-				userData.Guardians[2] = ""
-				userData.GuardianIdentifiers[2] = ""
-			case 2:
-				userData.Guardians[2] = ""
-				userData.GuardianIdentifiers[2] = ""
-			}
+			userData.Guardians[index] = ""
+			userData.GuardianIdentifiers[index] = ""
 		} else {
 			userData.UnverifiedGuardians[index] = sourceValue
 			userData.GuardiansAddLinkInitiation[index] = time.Now().Unix()
