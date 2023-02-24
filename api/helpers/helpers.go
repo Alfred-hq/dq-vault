@@ -66,6 +66,7 @@ type UserDetails struct {
 	MobileOTPGenerateTimestamp        int64    `json:"mobileotpgeneratedtimestamp"`
 	RestoreInitiationTimestamp        int64    `json:"restoreinitiationtimestamp"`
 	WalletIdentifierStoredAt          string   `json:"walletIdentifierStoredAt"`
+	SignedConsent                     string   `json:"signedConsent"`
 }
 
 type WalletIdentifierStorage struct {

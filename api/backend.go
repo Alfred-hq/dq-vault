@@ -502,6 +502,36 @@ get help.
 					logical.UpdateOperation: b.pathUpdateRSAKeys,
 				},
 			},
+			&framework.Path{
+				Pattern:         "saveUserConsent",
+				HelpSynopsis:    "saves user consent",
+				HelpDescription: `saves user consent`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "user identifier",
+						Default:     "",
+					},
+					"consent": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "user consent",
+						Default:     "",
+					},
+					"userRSAPublicKey": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "signature rsa",
+						Default:     "",
+					},
+					"signatureECDSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "ECDSA signature",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathSaveUserConsent,
+				},
+			},
 		},
 	}
 	return &b
