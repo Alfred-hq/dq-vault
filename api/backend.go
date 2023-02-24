@@ -436,33 +436,23 @@ get help.
 			},
 
 			&framework.Path{
-				Pattern:         "verifyGuardianForUpdate",
-				HelpSynopsis:    "verify previous guardian for update!",
-				HelpDescription: `verify previous guardian for update`,
+				Pattern:         "verifyGuardian",
+				HelpSynopsis:    "verify guardian!",
+				HelpDescription: `verify guardian`,
 				Fields: map[string]*framework.FieldSchema{
 					"identifier": &framework.FieldSchema{
 						Type:        framework.TypeString,
 						Description: "uuid identifier for path",
 						Default:     "",
 					},
-					"guardianIndex": &framework.FieldSchema{
+					"path": &framework.FieldSchema{
 						Type:        framework.TypeString,
-						Description: "index of guardian to update",
-						Default:     "",
-					},
-					"signatureRSA": &framework.FieldSchema{
-						Type:        framework.TypeString,
-						Description: "RSA signature",
-						Default:     "",
-					},
-					"signatureECDSA": &framework.FieldSchema{
-						Type:        framework.TypeString,
-						Description: "ECDSA signature",
+						Description: "encoded unique link path",
 						Default:     "",
 					},
 				},
 				Callbacks: map[logical.Operation]framework.OperationFunc{
-					logical.UpdateOperation: b.pathUpdateGuardians,
+					logical.UpdateOperation: b.pathVerifyGuardian,
 				},
 			},
 

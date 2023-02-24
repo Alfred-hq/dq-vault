@@ -3,10 +3,13 @@ package api
 import (
 	"cloud.google.com/go/pubsub"
 	"context"
+	"encoding/base64"
 	"encoding/json"
+	"github.com/google/uuid"
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/vault/sdk/framework"
@@ -17,15 +20,32 @@ import (
 )
 
 // pathPassphrase corresponds to POST gen/passphrase.
-func (b *backend) pathUpdateGuardians(ctx context.Context, req *logical.Request, d *framework.FieldData) (*logical.Response, error) {
+func (b *backend) pathVerifyGuardian(ctx context.Context, req *logical.Request, d *framework.FieldData) (*logical.Response, error) {
 	// var err error
 	backendLogger := b.logger
 
 	// obtain details:
 	identifier := d.Get("identifier").(string)
-	guardianIndex := d.Get("guardianIndex").(string)
-	signatureRSA := d.Get("signatureRSA").(string)
-	signatureECDSA := d.Get("signatureECDSA").(string)
+	guardianLinkPathEncoded := d.Get("path").(string)
+
+	guardianLinkPathDecodedBytes, err := base64.StdEncoding.DecodeString(guardianLinkPathEncoded)
+	if err != nil {
+		logger.Log(backendLogger, config.Error, "verifyGuardian: Malformed base64 encoded string", err.Error())
+		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+	}
+
+	guardianLinkPath := string(guardianLinkPathDecodedBytes)
+
+	values := strings.Split(guardianLinkPath, "_")
+
+	if values[0] != identifier {
+		return &logical.Response{
+			Data: map[string]interface{}{
+				"status":  false,
+				"remarks": "Identifier mismatch!",
+			},
+		}, nil
+	}
 
 	// path where user data is stored
 	path := config.StorageBasePath + identifier
@@ -43,33 +63,43 @@ func (b *backend) pathUpdateGuardians(ctx context.Context, req *logical.Request,
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
-	dataToValidate := map[string]string{
-		"identifier":    identifier,
-		"guardianIndex": guardianIndex,
-	}
+	guardianIndex, _ := strconv.Atoi(values[1])
 
-	rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userData.UserRSAPublicKey, "RS256")
-
-	if rsaVerificationState == false {
+	if userData.UnverifiedGuardians[guardianIndex] == "" {
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,
-				"remarks": remarks,
+				"remarks": "Cannot verify as you have been removed as guardian!",
 			},
 		}, nil
 	}
 
-	ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
-
-	if ecdsaVerificationState == false {
+	if userData.UnverifiedGuardians[guardianIndex] != values[2] {
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,
-				"remarks": remarks,
+				"remarks": "Email mismatch!",
 			},
 		}, nil
 	}
 
+	expiryTime := userData.GuardiansAddLinkInitiation[guardianIndex] + 604800
+
+	if time.Now().Unix() > expiryTime {
+		return &logical.Response{
+			Data: map[string]interface{}{
+				"status":  false,
+				"remarks": "Link Expired!",
+			},
+		}, nil
+	}
+
+	userData.Guardians[guardianIndex] = userData.UnverifiedGuardians[guardianIndex]
+	userData.GuardiansAddLinkInitiation[guardianIndex] = 0
+	userData.UnverifiedGuardians[guardianIndex] = ""
+	id := uuid.New()
+	guardianId := id.String()
+	userData.GuardianIdentifiers[guardianIndex] = guardianId
 	store, err := logical.StorageEntryJSON(path, userData)
 	if err != nil {
 		logger.Log(backendLogger, config.Error, "updateGuardian: could not get storage entry", err.Error())
@@ -82,62 +112,28 @@ func (b *backend) pathUpdateGuardians(ctx context.Context, req *logical.Request,
 		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
 	}
 
-	otp, err := helpers.GenerateOTP(6)
-	if err != nil {
-		logger.Log(backendLogger, config.Error, "updateGuardian: could not generate otp", err.Error())
-		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
-	}
+	mailFormat := &helpers.MailFormatGuardianVerified{To: userData.Guardians[guardianIndex], Purpose: "VERIFY_GUARDIAN", MFASource: "email"}
+	mailFormatJson, _ := json.Marshal(mailFormat)
 
-	index, err := strconv.Atoi(guardianIndex)
-	if err != nil {
-		logger.Log(backendLogger, config.Error, "updateGuardian: could not convert str to int", err.Error())
-		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
-	}
-
-	if userData.Guardians[index] == "" {
-		return &logical.Response{
-			Data: map[string]interface{}{
-				"status":  false,
-				"remarks": "No guardian found!",
-			},
-		}, nil
-	}
-
-	newCtx := context.Background()
 	pubsubTopic := os.Getenv("PUBSUB_TOPIC")
 	gcpProject := os.Getenv("GCP_PROJECT")
+	newCtx := context.Background()
 	client, err := pubsub.NewClient(ctx, gcpProject)
 	if err != nil {
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 	t := client.Topic(pubsubTopic)
-
-	mailFormat := &helpers.MailFormatVerification{To: userData.Guardians[index], Otp: otp, Purpose: "CHANGE_GUARDIAN", MFASource: "email"}
-	mailFormatJson, _ := json.Marshal(mailFormat)
 	res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
 	_, err = res.Get(newCtx)
 	if err != nil {
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
-	//userData.GuardiansUpdateStatus[index] = true
-	userData.GuardianEmailVerificationOTP[index] = otp
-	userData.GuardianEmailOTPGenerateTimestamp[index] = time.Now().Unix()
-	store, storageErr := logical.StorageEntryJSON(path, userData)
-	if storageErr != nil {
-		logger.Log(backendLogger, config.Error, "updateGuardian: could not get storage entry", err.Error())
-		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
-	}
 
-	// put user information in store
-	if err = req.Storage.Put(ctx, store); err != nil {
-		logger.Log(backendLogger, config.Error, "updateGuardian: could not put user info in storage", err.Error())
-		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
-	}
 	// return response
 	return &logical.Response{
 		Data: map[string]interface{}{
 			"status":  true,
-			"remarks": "verification for guardian update pending, otp sent!",
+			"remarks": "guardian verified successfully!",
 		},
 	}, nil
 }
