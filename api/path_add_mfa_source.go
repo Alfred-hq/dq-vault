@@ -3,6 +3,7 @@ package api
 import (
 	"cloud.google.com/go/pubsub"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
 	"os"
@@ -128,15 +129,6 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 			return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 		}
 
-		if userData.GuardiansUpdateStatus[index] == false {
-			return &logical.Response{
-				Data: map[string]interface{}{
-					"status":  false,
-					"remarks": "Permission Denied!",
-				},
-			}, nil
-		}
-
 		if userData.UserEmail == sourceValue {
 			return &logical.Response{
 				Data: map[string]interface{}{
@@ -155,17 +147,36 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 			}, nil
 		}
 
-		mailFormat := &helpers.MailFormatVerification{sourceValue, otp, "VERIFICATION", "email"}
-		mailFormatJson, _ := json.Marshal(mailFormat)
-		res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
-		_, err = res.Get(newCtx)
-		if err != nil {
-			return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+		if sourceValue == "" {
+			switch index {
+			case 0:
+				userData.Guardians[0] = userData.Guardians[1]
+				userData.GuardianIdentifiers[0] = userData.GuardianIdentifiers[1]
+				userData.Guardians[1] = userData.Guardians[2]
+				userData.GuardianIdentifiers[1] = userData.GuardianIdentifiers[2]
+				userData.Guardians[2] = ""
+				userData.GuardianIdentifiers[2] = ""
+			case 1:
+				userData.Guardians[1] = userData.Guardians[2]
+				userData.GuardianIdentifiers[1] = userData.GuardianIdentifiers[2]
+				userData.Guardians[2] = ""
+				userData.GuardianIdentifiers[2] = ""
+			case 2:
+				userData.Guardians[2] = ""
+				userData.GuardianIdentifiers[2] = ""
+			}
+		} else {
+			userData.UnverifiedGuardians[index] = sourceValue
+			userData.GuardiansAddLinkInitiation[index] = time.Now().Unix()
+			guardianLinkPath := base64.StdEncoding.EncodeToString([]byte(userData.Identifier + "_" + strconv.Itoa(index) + "_" + sourceValue))
+			mailFormat := &helpers.MailFormatGuardianAdditionLink{To: sourceValue, Purpose: "ADD_GUARDIAN", MFASource: "email", WalletIdentifier: identifier, Path: guardianLinkPath}
+			mailFormatJson, _ := json.Marshal(mailFormat)
+			res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
+			_, err = res.Get(newCtx)
+			if err != nil {
+				return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+			}
 		}
-		userData.UnverifiedGuardians[index] = sourceValue
-		userData.GuardianEmailVerificationOTP[index] = otp
-		userData.GuardianEmailOTPGenerateTimestamp[index] = time.Now().Unix()
-
 	case "userMobileNumber":
 		mailFormat := &helpers.MailFormatVerification{sourceValue, otp, "VERIFICATION", "mobile"}
 		mailFormatJson, _ := json.Marshal(mailFormat)
