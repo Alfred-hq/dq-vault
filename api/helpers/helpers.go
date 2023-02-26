@@ -71,14 +71,14 @@ type UserDetails struct {
 
 type VaultStatus struct {
 	Identifier                 string `json:"identifier"`
-	UserEmail                  bool   `json:"useremail"`
+	UserEmail                  bool   `json:"userEmail"`
 	Guardians                  []bool `json:"guardians"`
-	UserMobile                 bool   `json:"usermobile"`
+	UserMobile                 bool   `json:"userMobile"`
 	UserRSAPublicKey           bool   `json:"userRSAPublicKey"`
 	UserECDSAPublicKey         bool   `json:"userECDSAPublicKey"`
 	WalletThirdShard           bool   `json:"secret"`
-	IsRestoreInProgress        bool   `json:"isrestoreinprogress"`
-	RestoreInitiationTimestamp int64  `json:"restoreinitiationtimestamp"`
+	IsRestoreInProgress        bool   `json:"isRestoreInProgress"`
+	RestoreInitiationTimestamp int64  `json:"restoreInitiationTimestamp"`
 	RestoreCompletionTimestamp int64  `json:"restoreCompletionTimestamp"`
 	SignedConsent              bool   `json:"signedConsent"`
 }

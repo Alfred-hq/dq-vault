@@ -85,8 +85,9 @@ func (b *backend) pathGetUserVaultStatus(ctx context.Context, req *logical.Reque
 	// return response
 	return &logical.Response{
 		Data: map[string]interface{}{
-			"userVaultStatus": vaultStatus,
-			"status":          true,
+			"remarks": "success",
+			"status":  true,
+			"data":    vaultStatus,
 		},
 	}, nil
 }
