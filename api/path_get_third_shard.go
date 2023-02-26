@@ -73,7 +73,7 @@ func (b *backend) pathGetThirdShard(ctx context.Context, req *logical.Request, d
 	waitPeriod, _ := strconv.Atoi(waitPeriodStr)
 	currentUnixTime := time.Now().Unix()
 	if currentUnixTime-userData.RestoreInitiationTimestamp < int64(waitPeriod) {
-		waitUntil := time.Unix(userData.RestoreInitiationTimestamp+86400, 0).Format(time.RFC3339)
+		waitUntil := time.Unix(userData.RestoreInitiationTimestamp+int64(waitPeriod), 0).Format(time.RFC3339)
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,

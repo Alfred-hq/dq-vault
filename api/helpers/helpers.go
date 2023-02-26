@@ -69,6 +69,20 @@ type UserDetails struct {
 	SignedConsent                     string   `json:"signedConsent"`
 }
 
+type VaultStatus struct {
+	Identifier                 string `json:"identifier"`
+	UserEmail                  bool   `json:"useremail"`
+	Guardians                  []bool `json:"guardians"`
+	UserMobile                 bool   `json:"usermobile"`
+	UserRSAPublicKey           bool   `json:"userRSAPublicKey"`
+	UserECDSAPublicKey         bool   `json:"userECDSAPublicKey"`
+	WalletThirdShard           bool   `json:"secret"`
+	IsRestoreInProgress        bool   `json:"isrestoreinprogress"`
+	RestoreInitiationTimestamp int64  `json:"restoreinitiationtimestamp"`
+	RestoreCompletionTimestamp int64  `json:"restoreCompletionTimestamp"`
+	SignedConsent              bool   `json:"signedConsent"`
+}
+
 type WalletIdentifierStorage struct {
 	WalletIdentifier string `json:"walletIdentifier"`
 }
