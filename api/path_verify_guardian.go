@@ -65,6 +65,15 @@ func (b *backend) pathVerifyGuardian(ctx context.Context, req *logical.Request, 
 
 	guardianIndex, _ := strconv.Atoi(values[1])
 
+	if helpers.StringInSlice(values[2], userData.Guardians) {
+		return &logical.Response{
+			Data: map[string]interface{}{
+				"status":  false,
+				"remarks": "Guardian already added!",
+			},
+		}, nil
+	}
+
 	if userData.UnverifiedGuardians[guardianIndex] == "" {
 		return &logical.Response{
 			Data: map[string]interface{}{

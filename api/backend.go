@@ -532,6 +532,27 @@ get help.
 					logical.UpdateOperation: b.pathSaveUserConsent,
 				},
 			},
+
+			&framework.Path{
+				Pattern:         "getUserVaultStatus",
+				HelpSynopsis:    "getUserVaultStatus",
+				HelpDescription: `getUserVaultStatus`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "user identifier",
+						Default:     "",
+					},
+					"signatureRSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "RSA signature",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathGetUserVaultStatus,
+				},
+			},
 		},
 	}
 	return &b
