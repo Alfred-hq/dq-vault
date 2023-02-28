@@ -517,7 +517,7 @@ get help.
 						Description: "user consent",
 						Default:     "",
 					},
-					"userRSAPublicKey": &framework.FieldSchema{
+					"signatureRSA": &framework.FieldSchema{
 						Type:        framework.TypeString,
 						Description: "signature rsa",
 						Default:     "",
