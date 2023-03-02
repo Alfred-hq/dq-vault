@@ -78,6 +78,7 @@ func (b *backend) pathGetUserVaultStatus(ctx context.Context, req *logical.Reque
 		UserECDSAPublicKey:         checkIfNotEmpty(userData.UserECDSAPublicKey),
 		SignedConsent:              checkIfNotEmpty(userData.SignedConsent),
 		WalletThirdShard:           checkIfNotEmpty(userData.WalletThirdShard),
+		LastRecoverySavedAt:        userData.LastRecoverySavedAt,
 		IsRestoreInProgress:        userData.IsRestoreInProgress,
 		RestoreInitiationTimestamp: userData.RestoreInitiationTimestamp,
 		RestoreCompletionTimestamp: userData.RestoreInitiationTimestamp + int64(waitPeriod),

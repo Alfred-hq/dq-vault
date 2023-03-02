@@ -44,6 +44,7 @@ func (b *backend) pathNewUser(ctx context.Context, req *logical.Request, d *fram
 		UserECDSAPublicKey:               userECDSAPublicKey,
 		UnverifiedWalletThirdShard:       "",
 		WalletThirdShard:                 "",
+		LastRecoverySavedAt:              helpers.LastRecoverySaveLocation{GoogleDriveFileId: "", IcloudFileId: "", LocalFileId: ""},
 		Identifier:                       identifier,
 		IsRestoreInProgress:              false,
 		EmailVerificationState:           false,

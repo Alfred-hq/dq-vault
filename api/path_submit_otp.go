@@ -214,7 +214,10 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 				},
 			}, nil
 		} else {
-			userData.WalletThirdShard = userData.UnverifiedWalletThirdShard // unset values
+			userData.WalletThirdShard = userData.UnverifiedWalletThirdShard
+			userData.LastRecoverySavedAt.GoogleDriveFileId = ""
+			userData.LastRecoverySavedAt.IcloudFileId = ""
+			userData.LastRecoverySavedAt.LocalFileId = ""
 			userData.UnverifiedWalletThirdShard = ""
 			userData.PrimaryEmailOTPGenerateTimestamp = int64(0)
 			userData.PrimaryEmailVerificationOTP = "xxxxxx"

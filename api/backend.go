@@ -553,6 +553,42 @@ get help.
 					logical.UpdateOperation: b.pathGetUserVaultStatus,
 				},
 			},
+
+			&framework.Path{
+				Pattern:         "pathUpdateRecoveryFileId",
+				HelpSynopsis:    "pathUpdateRecoveryFileId",
+				HelpDescription: `pathUpdateRecoveryFileId`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "user identifier",
+						Default:     "",
+					},
+					"sourceType": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "source type",
+						Default:     "",
+					},
+					"sourceValue": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "source value",
+						Default:     "",
+					},
+					"signatureRSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "RSA signature",
+						Default:     "",
+					},
+					"signatureECDSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "ECDSA signature",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathUpdateRecoveryFileId,
+				},
+			},
 		},
 	}
 	return &b

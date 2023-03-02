@@ -42,45 +42,53 @@ var PurposeType = []string{
 }
 
 type UserDetails struct {
-	UserEmail                         string   `json:"useremail"`
-	UnverifiedUserEmail               string   `json:"tempuseremail"`
-	Guardians                         []string `json:"guardians"`
-	UnverifiedGuardians               []string `json:"unverifiedGuardians"`
-	GuardianEmailOTPGenerateTimestamp []int64  `json:"guardianEmailOTPGenerateTimestamp"`
-	GuardiansAddLinkInitiation        []int64  `json:"guardiansAddLinkInitiation"`
-	GuardiansUpdateStatus             []bool   `json:"guardiansUpdateStatus"`
-	UserMobile                        string   `json:"usermobile"`
-	UnverifiedUserMobile              string   `json:"tempusermobile"`
-	UserRSAPublicKey                  string   `json:"userRSAPublicKey"`
-	UserECDSAPublicKey                string   `json:"userECDSAPublicKey"`
-	WalletThirdShard                  string   `json:"secret"`
-	UnverifiedWalletThirdShard        string   `json:"unverifiedSecret"`
-	Identifier                        string   `json:"identifier"`
-	IsRestoreInProgress               bool     `json:"isrestoreinprogress"`
-	EmailVerificationState            bool     `json:"emailverificationstate"`
-	MobileVerificationState           bool     `json:"mobileverificationstate"`
-	PrimaryEmailVerificationOTP       string   `json:"primaryEmailVerificationOTP"`
-	GuardianIdentifiers               []string `json:"guardianIdentifiers"`
-	MobileVerificationOTP             string   `json:"mobileverificationotp"`
-	PrimaryEmailOTPGenerateTimestamp  int64    `json:"primaryEmailOTPGenerateTimestamp"`
-	MobileOTPGenerateTimestamp        int64    `json:"mobileotpgeneratedtimestamp"`
-	RestoreInitiationTimestamp        int64    `json:"restoreinitiationtimestamp"`
-	WalletIdentifierStoredAt          string   `json:"walletIdentifierStoredAt"`
-	SignedConsent                     string   `json:"signedConsent"`
+	UserEmail                         string                   `json:"useremail"`
+	UnverifiedUserEmail               string                   `json:"tempuseremail"`
+	Guardians                         []string                 `json:"guardians"`
+	UnverifiedGuardians               []string                 `json:"unverifiedGuardians"`
+	GuardianEmailOTPGenerateTimestamp []int64                  `json:"guardianEmailOTPGenerateTimestamp"`
+	GuardiansAddLinkInitiation        []int64                  `json:"guardiansAddLinkInitiation"`
+	GuardiansUpdateStatus             []bool                   `json:"guardiansUpdateStatus"`
+	UserMobile                        string                   `json:"usermobile"`
+	UnverifiedUserMobile              string                   `json:"tempusermobile"`
+	UserRSAPublicKey                  string                   `json:"userRSAPublicKey"`
+	UserECDSAPublicKey                string                   `json:"userECDSAPublicKey"`
+	WalletThirdShard                  string                   `json:"secret"`
+	LastRecoverySavedAt               LastRecoverySaveLocation `json:"lastRecoverySavedAt"`
+	UnverifiedWalletThirdShard        string                   `json:"unverifiedSecret"`
+	Identifier                        string                   `json:"identifier"`
+	IsRestoreInProgress               bool                     `json:"isrestoreinprogress"`
+	EmailVerificationState            bool                     `json:"emailverificationstate"`
+	MobileVerificationState           bool                     `json:"mobileverificationstate"`
+	PrimaryEmailVerificationOTP       string                   `json:"primaryEmailVerificationOTP"`
+	GuardianIdentifiers               []string                 `json:"guardianIdentifiers"`
+	MobileVerificationOTP             string                   `json:"mobileverificationotp"`
+	PrimaryEmailOTPGenerateTimestamp  int64                    `json:"primaryEmailOTPGenerateTimestamp"`
+	MobileOTPGenerateTimestamp        int64                    `json:"mobileotpgeneratedtimestamp"`
+	RestoreInitiationTimestamp        int64                    `json:"restoreinitiationtimestamp"`
+	WalletIdentifierStoredAt          string                   `json:"walletIdentifierStoredAt"`
+	SignedConsent                     string                   `json:"signedConsent"`
+}
+
+type LastRecoverySaveLocation struct {
+	GoogleDriveFileId string `json:"googleDriveFileId"`
+	IcloudFileId      string `json:"icloudFileId"`
+	LocalFileId       string `json:"localFileId"`
 }
 
 type VaultStatus struct {
-	Identifier                 string `json:"identifier"`
-	UserEmail                  bool   `json:"userEmail"`
-	Guardians                  []bool `json:"guardians"`
-	UserMobile                 bool   `json:"userMobile"`
-	UserRSAPublicKey           bool   `json:"userRSAPublicKey"`
-	UserECDSAPublicKey         bool   `json:"userECDSAPublicKey"`
-	WalletThirdShard           bool   `json:"secret"`
-	IsRestoreInProgress        bool   `json:"isRestoreInProgress"`
-	RestoreInitiationTimestamp int64  `json:"restoreInitiationTimestamp"`
-	RestoreCompletionTimestamp int64  `json:"restoreCompletionTimestamp"`
-	SignedConsent              bool   `json:"signedConsent"`
+	Identifier                 string                   `json:"identifier"`
+	UserEmail                  bool                     `json:"userEmail"`
+	Guardians                  []bool                   `json:"guardians"`
+	UserMobile                 bool                     `json:"userMobile"`
+	UserRSAPublicKey           bool                     `json:"userRSAPublicKey"`
+	UserECDSAPublicKey         bool                     `json:"userECDSAPublicKey"`
+	WalletThirdShard           bool                     `json:"secret"`
+	LastRecoverySavedAt        LastRecoverySaveLocation `json:"lastRecoverySavedAt"`
+	IsRestoreInProgress        bool                     `json:"isRestoreInProgress"`
+	RestoreInitiationTimestamp int64                    `json:"restoreInitiationTimestamp"`
+	RestoreCompletionTimestamp int64                    `json:"restoreCompletionTimestamp"`
+	SignedConsent              bool                     `json:"signedConsent"`
 }
 
 type WalletIdentifierStorage struct {
