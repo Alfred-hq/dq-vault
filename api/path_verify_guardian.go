@@ -105,7 +105,6 @@ func (b *backend) pathVerifyGuardian(ctx context.Context, req *logical.Request, 
 
 	userData.Guardians[guardianIndex] = userData.UnverifiedGuardians[guardianIndex]
 	userData.GuardiansAddLinkInitiation[guardianIndex] = 0
-	userData.UnverifiedGuardians[guardianIndex] = ""
 	id := uuid.New()
 	guardianId := id.String()
 	userData.GuardianIdentifiers[guardianIndex] = guardianId

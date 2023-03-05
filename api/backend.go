@@ -534,6 +534,37 @@ get help.
 			},
 
 			&framework.Path{
+				Pattern:         "removeGuardian",
+				HelpSynopsis:    "removes guardian",
+				HelpDescription: `removes guardian`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "user identifier",
+						Default:     "",
+					},
+					"guardianEmail": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "email of guardian to remove",
+						Default:     "",
+					},
+					"signatureRSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "signature rsa",
+						Default:     "",
+					},
+					"signatureECDSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "ECDSA signature",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathRemoveGuardian,
+				},
+			},
+
+			&framework.Path{
 				Pattern:         "getUserVaultStatus",
 				HelpSynopsis:    "getUserVaultStatus",
 				HelpDescription: `getUserVaultStatus`,
