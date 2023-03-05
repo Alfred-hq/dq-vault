@@ -71,9 +71,9 @@ func (b *backend) pathGetUserVaultStatus(ctx context.Context, req *logical.Reque
 
 	vaultStatus := &helpers.VaultStatus{
 		Identifier:                 userData.Identifier,
-		UserEmail:                  checkIfNotEmpty(userData.UserEmail),
-		Guardians:                  []bool{checkIfNotEmpty(userData.Guardians[0]), checkIfNotEmpty(userData.Guardians[1]), checkIfNotEmpty(userData.Guardians[2])},
-		UserMobile:                 checkIfNotEmpty(userData.UserMobile),
+		UserEmail:                  userData.UserEmail,
+		Guardians:                  []helpers.GuardianEmails{{checkIfNotEmpty(userData.Guardians[0]), userData.UnverifiedGuardians[0]}, {checkIfNotEmpty(userData.Guardians[1]), userData.UnverifiedGuardians[1]}, {checkIfNotEmpty(userData.Guardians[2]), userData.UnverifiedGuardians[2]}},
+		UserMobile:                 userData.UserMobile,
 		UserRSAPublicKey:           checkIfNotEmpty(userData.UserRSAPublicKey),
 		UserECDSAPublicKey:         checkIfNotEmpty(userData.UserECDSAPublicKey),
 		SignedConsent:              checkIfNotEmpty(userData.SignedConsent),
