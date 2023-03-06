@@ -67,7 +67,7 @@ func (b *backend) pathRemoveGuardian(ctx context.Context, req *logical.Request, 
 		}, nil
 	}
 
-	if !(helpers.StringInSlice(guardianEmail, userData.Guardians)) {
+	if !(helpers.StringInSlice(guardianEmail, userData.UnverifiedGuardians)) {
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,
@@ -76,10 +76,29 @@ func (b *backend) pathRemoveGuardian(ctx context.Context, req *logical.Request, 
 		}, nil
 	}
 
-	for ind, guardianVal := range userData.Guardians {
+	for ind, guardianVal := range userData.UnverifiedGuardians {
 		if guardianVal == guardianEmail {
-			userData.Guardians[ind] = ""
-			userData.UnverifiedGuardians[ind] = ""
+			switch ind {
+			case 0:
+				userData.Guardians[0] = userData.Guardians[1]
+				userData.UnverifiedGuardians[0] = userData.UnverifiedGuardians[1]
+				userData.GuardianIdentifiers[0] = userData.GuardianIdentifiers[1]
+				userData.GuardiansAddLinkInitiation[0] = userData.GuardiansAddLinkInitiation[1]
+
+				userData.Guardians[1] = userData.Guardians[2]
+				userData.UnverifiedGuardians[1] = userData.UnverifiedGuardians[2]
+				userData.GuardianIdentifiers[1] = userData.GuardianIdentifiers[2]
+				userData.GuardiansAddLinkInitiation[1] = userData.GuardiansAddLinkInitiation[2]
+			case 1:
+				userData.Guardians[1] = userData.Guardians[2]
+				userData.UnverifiedGuardians[1] = userData.UnverifiedGuardians[2]
+				userData.GuardianIdentifiers[1] = userData.GuardianIdentifiers[2]
+				userData.GuardiansAddLinkInitiation[1] = userData.GuardiansAddLinkInitiation[2]
+			}
+			userData.Guardians[2] = ""
+			userData.UnverifiedGuardians[2] = ""
+			userData.GuardianIdentifiers[2] = ""
+			userData.GuardiansAddLinkInitiation[2] = 0
 		}
 	}
 
