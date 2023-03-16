@@ -8,7 +8,6 @@ import (
 	"github.com/google/uuid"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -63,9 +62,7 @@ func (b *backend) pathVerifyGuardian(ctx context.Context, req *logical.Request, 
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
-	guardianIndex, _ := strconv.Atoi(values[1])
-
-	if helpers.StringInSlice(values[2], userData.Guardians) {
+	if helpers.StringInSlice(values[1], userData.Guardians) {
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,
@@ -73,8 +70,14 @@ func (b *backend) pathVerifyGuardian(ctx context.Context, req *logical.Request, 
 			},
 		}, nil
 	}
+	guardianInd := -1
+	for guardianIndex, guardian := range userData.UnverifiedGuardians {
+		if guardian == values[1] {
+			guardianInd = guardianIndex
+		}
+	}
 
-	if userData.UnverifiedGuardians[guardianIndex] == "" {
+	if guardianInd == -1 {
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,
@@ -83,7 +86,7 @@ func (b *backend) pathVerifyGuardian(ctx context.Context, req *logical.Request, 
 		}, nil
 	}
 
-	if userData.UnverifiedGuardians[guardianIndex] != values[2] {
+	if userData.UnverifiedGuardians[guardianInd] != values[1] {
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,
@@ -92,7 +95,7 @@ func (b *backend) pathVerifyGuardian(ctx context.Context, req *logical.Request, 
 		}, nil
 	}
 
-	expiryTime := userData.GuardiansAddLinkInitiation[guardianIndex] + 604800
+	expiryTime := userData.GuardiansAddLinkInitiation[guardianInd] + 604800
 
 	if time.Now().Unix() > expiryTime {
 		return &logical.Response{
@@ -103,11 +106,11 @@ func (b *backend) pathVerifyGuardian(ctx context.Context, req *logical.Request, 
 		}, nil
 	}
 
-	userData.Guardians[guardianIndex] = userData.UnverifiedGuardians[guardianIndex]
-	userData.GuardiansAddLinkInitiation[guardianIndex] = 0
+	userData.Guardians[guardianInd] = userData.UnverifiedGuardians[guardianInd]
+	userData.GuardiansAddLinkInitiation[guardianInd] = 0
 	id := uuid.New()
 	guardianId := id.String()
-	userData.GuardianIdentifiers[guardianIndex] = guardianId
+	userData.GuardianIdentifiers[guardianInd] = guardianId
 	store, err := logical.StorageEntryJSON(path, userData)
 	if err != nil {
 		logger.Log(backendLogger, config.Error, "updateGuardian: could not get storage entry", err.Error())
@@ -120,7 +123,7 @@ func (b *backend) pathVerifyGuardian(ctx context.Context, req *logical.Request, 
 		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
 	}
 
-	mailFormat := &helpers.MailFormatGuardianVerified{To: userData.Guardians[guardianIndex], Purpose: "VERIFY_GUARDIAN", MFASource: "email"}
+	mailFormat := &helpers.MailFormatGuardianVerified{To: userData.Guardians[guardianInd], Purpose: "VERIFY_GUARDIAN", MFASource: "email"}
 	mailFormatJson, _ := json.Marshal(mailFormat)
 
 	pubsubTopic := os.Getenv("PUBSUB_TOPIC")
