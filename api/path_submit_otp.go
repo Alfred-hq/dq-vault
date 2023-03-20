@@ -280,6 +280,54 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			userData.MobileVerificationOTP = "xxxxxx"
 			userData.MobileOTPGenerateTimestamp = int64(0)
 		}
+	case helpers.PurposeType[6]:
+		currentUnixTime := time.Now().Unix()
+		if userData.MobileVerificationOTP != otp {
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "OTP DID NOT MATCH",
+				},
+			}, nil
+		} else if currentUnixTime-userData.MobileOTPGenerateTimestamp > int64(otpTTL) { // 5 minute time based otp
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "OTP EXPIRED",
+				},
+			}, nil
+		} else {
+			userData.IsRestoreInProgress = true
+			userData.RestoreInitiationTimestamp = time.Now().Unix()
+			userData.MobileVerificationOTP = "xxxxxx"
+			userData.MobileOTPGenerateTimestamp = int64(0)
+			ct := time.Now()
+			currentTime := ct.Format("15:04:05")
+			timeOfRestoration := time.Unix(time.Now().Unix(), 0).Format(time.RFC3339)
+			mailFormatUser := &helpers.MAILFormatUpdates{userData.UserEmail, "RESTORATION_INITIATED", "email", currentTime}
+			mailFormatUserJson, _ := json.Marshal(mailFormatUser)
+			res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatUserJson})
+			if userData.Guardians[0] != "" {
+				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[0], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[0], "email", currentTime, timeOfRestoration}
+				mailFormatGuardianJson, _ := json.Marshal(mailFormatGuardian)
+				res = t.Publish(newCtx, &pubsub.Message{Data: mailFormatGuardianJson})
+			}
+			if userData.Guardians[1] != "" {
+				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[1], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[1], "email", currentTime, timeOfRestoration}
+				mailFormatGuardianJson, _ := json.Marshal(mailFormatGuardian)
+				res = t.Publish(newCtx, &pubsub.Message{Data: mailFormatGuardianJson})
+			}
+			if userData.Guardians[2] != "" {
+				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[2], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[2], "email", currentTime, timeOfRestoration}
+				mailFormatGuardianJson, _ := json.Marshal(mailFormatGuardian)
+				res = t.Publish(newCtx, &pubsub.Message{Data: mailFormatGuardianJson})
+			}
+
+			_, err := res.Get(newCtx)
+			if err != nil {
+				return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+			}
+		}
 	}
 
 	store, err := logical.StorageEntryJSON(path, userData)
