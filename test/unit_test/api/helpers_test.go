@@ -3,6 +3,9 @@ package tests
 import (
 	"testing"
 
+	"github.com/dgrijalva/jwt-go"
+	"github.com/golang/mock"
+	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/vault/sdk/framework"
 	"github.com/hashicorp/vault/sdk/logical"
 	"github.com/ryadavDeqode/dq-vault/api/helpers"
@@ -79,23 +82,24 @@ func TestNew(t *testing.T) {
 	}
 }
 
-// func TestValidateData(t *testing.T) {
-// 	validateData := helpers.ValidateData(context.Background(), &logical.Request{}, "test_uuid", "/test/")
+func TestValidateData(t *testing.T) {
+	validateData := helpers.ValidateData(context.Background(), &logical.Request{}, "test_uuid", "/test/")
 
-// }
+}
 
-// func TestUUIDExists(t *testing.T){
-// 	mockRequestStruct := logical.Request{}
+func TestUUIDExists(t *testing.T){
 
-// 	s
+	ctrl = gomock()
+	mockReq := NewMock
 
-// 	mockRequestStruct.Storage = func (ctx context.Context, path string)([]string, error){
-// 		return []string{}, nil
-// 	}
 
-// 	uuidExists = helpers.UUIDExists(context.Background(), &mockRequestStruct, "test_uuid")
+	mockRequestStruct.Storage = func (ctx context.Context, path string)([]string, error){
+		return []string{}, nil
+	}
 
-// }
+	uuidExists = helpers.UUIDExists(context.Background(), &mockRequestStruct, "test_uuid")
+
+}
 
 func TestGenerateOTP(t *testing.T) {
 	otp, err := helpers.GenerateOTP(6)
@@ -113,18 +117,18 @@ func TestGenerateOTP(t *testing.T) {
 }
 
 func TestConvertPemToPublicKey(t *testing.T) {
+
 	pubKey, err := helpers.ConvertPemToPublicKey("test")
 
-	if err != nil {
+	if err == nil {
 		t.Error("expected error!")
 	}
 
 	pubKey, err = helpers.ConvertPemToPublicKey(mockPublicKeyPem)
 
-	if err == nil {
-		t.Error("expected error!", pubKey, err)
+	if err != nil {
+		t.Error("expected valid public key, received error -> ", err, pubKey)
 	}
-
 }
 
 func TestVerifyRSASignedMessage(t *testing.T) {
@@ -136,8 +140,57 @@ func TestVerifyRSASignedMessage(t *testing.T) {
 
 	verifyRSA = helpers.VerifyRSASignedMessage(mockPublicKeyEncoded, "test data", mockPublicKeyPemEncode)
 
-	if verifyRSA == false {
-		t.Error("expected true")
+	if verifyRSA == true {
+		t.Error("expected false")
 	}
+
+	verifyRSA = helpers.VerifyRSASignedMessage(mockPublicKeyEncoded, "test data", mockPublicKeyPemEncode)
+
+	if verifyRSA == true {
+		t.Error("expected false")
+	}
+}
+
+func TestVerifyECDSASignedMessage(t *testing.T) {
+	verified := helpers.VerifyECDSASignedMessage("0x0135f8c1", "test_data", "test")
+
+	if verified == true {
+		t.Error("expected false")	
+	}
+
+	verified = helpers.VerifyECDSASignedMessage("0x0135f8c1", "test_data", "test")
+
+	if verified != false {
+		t.Error("expected false, ")	
+	}
+
+	verified = helpers.VerifyECDSASignedMessage("0x74657374", "test", "0x74657374")
+
+	if verified != false{
+		t.Error("expected false")	
+	}
+
+}
+
+func TestVerifyTokenClaims(t *testing.T) {
+
+	m := make(map[string]string)
+	verified := helpers.VerifyTokenClaims(jwt.MapClaims{}, m)
+	if verified != true {
+		t.Error("expected true, returned false")
+	}
+	m["test_k"] = "test_v"
+	verified = helpers.VerifyTokenClaims(jwt.MapClaims{}, m)
+	if verified != false {
+		t.Error("expected false, returned true")
+	}
+}
+
+func TestVerifyJWTSignature(t *testing.T){
+
+	dateToValidate := make(map[string]string)
+	dateToValidate = 
+	verified := helpers.VerifyJWTSignature('', )
+	
 }
 
