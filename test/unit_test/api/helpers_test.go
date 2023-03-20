@@ -1,14 +1,16 @@
 package tests
 
 import (
+	"context"
 	"testing"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/golang/mock"
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/vault/sdk/framework"
 	"github.com/hashicorp/vault/sdk/logical"
 	"github.com/ryadavDeqode/dq-vault/api/helpers"
+	"github.com/ryadavDeqode/dq-vault/config"
+	"github.com/ryadavDeqode/dq-vault/test/unit_test/mocks"
 )
 
 var mockPublicKeyPem = `-----BEGIN RSA PUBLIC KEY-----
@@ -42,15 +44,6 @@ func TestNewUUID(t *testing.T) {
 	}
 }
 
-// func TestErrMissingField(t *testing.T){
-
-// 	errMissingField := helpers.ErrMissingField("")
-
-// 	if errMissingField != logical.ErrorResponse("missing required") {
-// 		t.Error(errMissingField)
-// 	}
-// }
-
 func TestValidateFields(t *testing.T) {
 
 	validateFields := helpers.ValidateFields(&logical.Request{}, &framework.FieldData{})
@@ -83,21 +76,78 @@ func TestNew(t *testing.T) {
 }
 
 func TestValidateData(t *testing.T) {
-	validateData := helpers.ValidateData(context.Background(), &logical.Request{}, "test_uuid", "/test/")
 
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	m := mocks.NewMockStorage(ctrl)
+
+	m.EXPECT().List(context.Background(), config.StorageBasePath).DoAndReturn(func(arg1 context.Context, arg2 string)([]string, error){
+		return []string{}, nil
+	}).Times(1)
+
+	req := logical.Request{Storage: m}
+
+	err := helpers.ValidateData(context.Background(), &req, "test_uuid", "/test/")
+
+	if err == nil {
+		t.Error("expected err. received - ", err)
+	}
+
+	m = mocks.NewMockStorage(ctrl)
+
+	m.EXPECT().List(context.Background(), config.StorageBasePath).DoAndReturn(func(arg1 context.Context, arg2 string)([]string, error){
+		return []string{"test_uuid"}, nil
+	}).Times(1)
+
+	req = logical.Request{Storage: m}
+
+	err = helpers.ValidateData(context.Background(), &req, "test_uuid", "/test/")
+
+	if err != nil {
+		t.Error("expected nil. received - ", err)
+	}
+
+	err = helpers.ValidateData(context.Background(), &req, "test_uuid", "")
+
+	if err == nil {
+		t.Error("expected error, received - ", err.Error())
+	}
 }
 
 func TestUUIDExists(t *testing.T){
 
-	ctrl = gomock()
-	mockReq := NewMock
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
+	m := mocks.NewMockStorage(ctrl)
 
-	mockRequestStruct.Storage = func (ctx context.Context, path string)([]string, error){
+	m.EXPECT().List(context.Background(), config.StorageBasePath).DoAndReturn(func(arg1 context.Context, arg2 string)([]string, error){
 		return []string{}, nil
+	}).Times(1)
+
+	req := logical.Request{Storage: m}
+
+	uuidExists := helpers.UUIDExists(context.Background(), &req, "test_uuid")
+
+	if uuidExists{
+		t.Error("expected false. received - ", uuidExists)
 	}
 
-	uuidExists = helpers.UUIDExists(context.Background(), &mockRequestStruct, "test_uuid")
+
+	m = mocks.NewMockStorage(ctrl)
+
+	m.EXPECT().List(context.Background(), config.StorageBasePath).DoAndReturn(func(arg1 context.Context, arg2 string)([]string, error){
+		return []string{"test_uuid"}, nil
+	}).Times(1)
+
+	req = logical.Request{Storage: m}
+
+	uuidExists = helpers.UUIDExists(context.Background(), &req, "test_uuid")
+
+	if !uuidExists{
+		t.Error("expected false. received - ", uuidExists)
+	}
 
 }
 
@@ -114,39 +164,43 @@ func TestGenerateOTP(t *testing.T) {
 
 	otp, err = helpers.GenerateOTP(0)
 
+	if err != nil{
+		t.Error(otp)
+	}
+
 }
 
 func TestConvertPemToPublicKey(t *testing.T) {
 
-	pubKey, err := helpers.ConvertPemToPublicKey("test")
+	_, err := helpers.ConvertPemToPublicKey("test")
 
 	if err == nil {
 		t.Error("expected error!")
 	}
 
-	pubKey, err = helpers.ConvertPemToPublicKey(mockPublicKeyPem)
+	_, err = helpers.ConvertPemToPublicKey(mockPublicKeyPem)
 
 	if err != nil {
-		t.Error("expected valid public key, received error -> ", err, pubKey)
+		t.Error("expected valid public key, received error -> ", err)
 	}
 }
 
 func TestVerifyRSASignedMessage(t *testing.T) {
 	verifyRSA := helpers.VerifyRSASignedMessage("", "", "")
 
-	if verifyRSA == true {
+	if verifyRSA {
 		t.Error("expected false")
 	}
 
 	verifyRSA = helpers.VerifyRSASignedMessage(mockPublicKeyEncoded, "test data", mockPublicKeyPemEncode)
 
-	if verifyRSA == true {
+	if verifyRSA{
 		t.Error("expected false")
 	}
 
 	verifyRSA = helpers.VerifyRSASignedMessage(mockPublicKeyEncoded, "test data", mockPublicKeyPemEncode)
 
-	if verifyRSA == true {
+	if verifyRSA{
 		t.Error("expected false")
 	}
 }
@@ -154,19 +208,19 @@ func TestVerifyRSASignedMessage(t *testing.T) {
 func TestVerifyECDSASignedMessage(t *testing.T) {
 	verified := helpers.VerifyECDSASignedMessage("0x0135f8c1", "test_data", "test")
 
-	if verified == true {
+	if verified {
 		t.Error("expected false")	
 	}
 
 	verified = helpers.VerifyECDSASignedMessage("0x0135f8c1", "test_data", "test")
 
-	if verified != false {
+	if verified {
 		t.Error("expected false, ")	
 	}
 
 	verified = helpers.VerifyECDSASignedMessage("0x74657374", "test", "0x74657374")
 
-	if verified != false{
+	if verified{
 		t.Error("expected false")	
 	}
 
@@ -176,21 +230,34 @@ func TestVerifyTokenClaims(t *testing.T) {
 
 	m := make(map[string]string)
 	verified := helpers.VerifyTokenClaims(jwt.MapClaims{}, m)
-	if verified != true {
+	if !verified {
 		t.Error("expected true, returned false")
 	}
 	m["test_k"] = "test_v"
 	verified = helpers.VerifyTokenClaims(jwt.MapClaims{}, m)
-	if verified != false {
+	if verified {
 		t.Error("expected false, returned true")
 	}
 }
 
 func TestVerifyJWTSignature(t *testing.T){
 
-	dateToValidate := make(map[string]string)
-	dateToValidate = 
-	verified := helpers.VerifyJWTSignature('', )
+	dataToValidate := make(map[string]string)
+	
+	_, errMsg := helpers.VerifyJWTSignature("", dataToValidate, "", "RS256")
+
+	if errMsg != "token contains an invalid number of segments"{
+		t.Error("errMsg was unexpected, received - ", errMsg)
+	} 
+
+
+	_, errMsg = helpers.VerifyJWTSignature("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c", dataToValidate, "", "RS256")
+
+
+	if errMsg != "RSA signature verification failed, token expired" {
+		t.Error("errMsg was unexpected, received - ", errMsg)
+	} 
+
 	
 }
 
