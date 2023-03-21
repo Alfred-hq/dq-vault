@@ -72,6 +72,7 @@ require (
 	github.com/oklog/run v1.0.0 // indirect
 	github.com/pierrec/lz4 v2.5.2+incompatible // indirect
 	github.com/ryanuber/go-glob v1.0.0 // indirect
+	github.com/undefinedlabs/go-mpatch v1.0.6 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	golang.org/x/net v0.0.0-20221014081412-f15817d10f9b // indirect
