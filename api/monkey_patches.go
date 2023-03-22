@@ -9,6 +9,9 @@ import (
 	"github.com/hashicorp/vault/sdk/framework"
 	"github.com/hashicorp/vault/sdk/logical"
 	"github.com/ryadavDeqode/dq-vault/api/helpers"
+	"github.com/ryadavDeqode/dq-vault/lib/adapter"
+	"github.com/ryadavDeqode/dq-vault/lib/adapter/baseadapter"
+	"github.com/sirupsen/logrus"
 	"github.com/undefinedlabs/go-mpatch"
 	"google.golang.org/api/option"
 )
@@ -32,7 +35,7 @@ func MPatchDecodeJSON(rval error) (*mpatch.Patch, error) {
 }
 
 //go:noinline
-func MPatchGet(rval string) (*mpatch.Patch, error) {
+func MPatchGet(rval interface{}) (*mpatch.Patch, error) {
 
 	var patch *mpatch.Patch
 	var err error
@@ -88,6 +91,47 @@ func MPatchNewClient() (*mpatch.Patch, error) {
 	return patch, err
 }
 
+func MPatchDerivePrivateKey(rVal string, rErr error) (*mpatch.Patch, error) {
+
+	var patch *mpatch.Patch
+	var err error
+
+	a := new(adapter.BitcoinAdapter)
+
+	patch, err = mpatch.PatchInstanceMethodByName(reflect.TypeOf(&a), "DerivePrivateKey", func(_ *baseadapter.IBlockchainAdapter, _ logrus.Logger) (string, error) {
+		patch.Unpatch()
+		defer patch.Patch()
+		return rVal, rErr
+	})
+
+	if err != nil {
+		fmt.Println("patching failed", err)
+	}
+
+	return patch, err
+
+}
+
+func MPatchDerivePublicKey(rVal string, rErr error) (*mpatch.Patch, error) {
+	var patch *mpatch.Patch
+	var err error
+
+	// a := adapter.NewBitcoinAdapter([]byte{}, "", false)
+	a := baseadapter.BlockchainAdapter{}
+
+	patch, err = mpatch.PatchInstanceMethodByName(reflect.TypeOf(&a.IBlockchainAdapter), "DerivePublicKey", func(_ *baseadapter.IBlockchainAdapter, _ logrus.Logger) (string, error) {
+		patch.Unpatch()
+		defer patch.Patch()
+		return rVal, rErr
+	})
+
+	if err != nil {
+		fmt.Println("patching failed", err)
+	}
+
+	return patch, err
+
+}
 
 // func MPatchClientTopic(rval string) (*mpatch.Patch, error) {
 

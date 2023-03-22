@@ -16,10 +16,10 @@ func (b *backend) pathBackupThirdShard(ctx context.Context, req *logical.Request
 	backendLogger := b.logger
 
 	// obtain details:
-	identifier := d.Get("identifier").(string)
-	walletThirdShard := d.Get("walletThirdShard").(string)
-	signatureRSA := d.Get("signatureRSA").(string)
-	signatureECDSA := d.Get("signatureECDSA").(string)
+	identifier, _ := d.Get("identifier").(string)
+	walletThirdShard, _ := d.Get("walletThirdShard").(string)
+	signatureRSA, _ := d.Get("signatureRSA").(string)
+	signatureECDSA, _ := d.Get("signatureECDSA").(string)
 
 	// path where user data is stored
 	path := config.StorageBasePath + identifier
