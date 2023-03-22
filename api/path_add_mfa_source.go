@@ -46,7 +46,7 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
-	if userData.IsRestoreInProgress == true {
+	if userData.IsRestoreInProgress {
 
 		return &logical.Response{
 			Data: map[string]interface{}{
