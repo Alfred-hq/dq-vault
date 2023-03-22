@@ -55,7 +55,6 @@ func (b *backend) pathVeto(ctx context.Context, req *logical.Request, d *framewo
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 	t := client.Topic(pubsubTopic)
-
 	for index, guardian := range userData.GuardianIdentifiers {
 		if guardian == guardianIdentifier {
 			if userData.IsRestoreInProgress == false {
@@ -81,6 +80,7 @@ func (b *backend) pathVeto(ctx context.Context, req *logical.Request, d *framewo
 			}
 			userData.IsRestoreInProgress = false
 			userData.RestoreInitiationTimestamp = int64(0)
+			userData.LastVetoedBy = userData.Guardians[index]
 			store, err := logical.StorageEntryJSON(path, userData)
 
 			mailFormatUser := &helpers.MailFormatVetoed{userData.UserEmail, "RESTORATION_VETOED", userData.Guardians[index], "email"}

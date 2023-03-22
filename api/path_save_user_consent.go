@@ -20,6 +20,7 @@ func (b *backend) pathSaveUserConsent(ctx context.Context, req *logical.Request,
 
 	// obtain details:
 	identifier := d.Get("identifier").(string)
+	consentType := d.Get("consentType").(string)
 	consent := d.Get("consent").(string)
 	signatureRSA := d.Get("signatureRSA").(string)
 	signatureECDSA := d.Get("signatureECDSA").(string)
@@ -41,8 +42,9 @@ func (b *backend) pathSaveUserConsent(ctx context.Context, req *logical.Request,
 	}
 
 	dataToValidate := map[string]string{
-		"identifier": identifier,
-		"consent":    consent,
+		"identifier":  identifier,
+		"consent":     consent,
+		"consentType": consentType,
 	}
 
 	rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userData.UserRSAPublicKey, "RS256")
@@ -66,8 +68,18 @@ func (b *backend) pathSaveUserConsent(ctx context.Context, req *logical.Request,
 			},
 		}, nil
 	}
-
-	userData.SignedConsent = consent
+	if consentType == "MNEMONICS" {
+		userData.SignedConsentForMnemonics = consent
+	} else if consentType == "PRIVATE_KEY" {
+		userData.SignedConsentForPrivateKey = consent
+	} else {
+		return &logical.Response{
+			Data: map[string]interface{}{
+				"status":  false,
+				"remarks": "please provide valid consent type!",
+			},
+		}, nil
+	}
 
 	store, err := logical.StorageEntryJSON(path, userData)
 	if err != nil {

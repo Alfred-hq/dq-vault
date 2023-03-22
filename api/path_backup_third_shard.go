@@ -1,18 +1,13 @@
 package api
 
 import (
-	"cloud.google.com/go/pubsub"
 	"context"
-	"encoding/json"
-	"net/http"
-	"os"
-	"time"
-
 	"github.com/hashicorp/vault/sdk/framework"
 	"github.com/hashicorp/vault/sdk/logical"
 	"github.com/ryadavDeqode/dq-vault/api/helpers"
 	"github.com/ryadavDeqode/dq-vault/config"
 	"github.com/ryadavDeqode/dq-vault/logger"
+	"net/http"
 )
 
 // pathPassphrase corresponds to POST gen/passphrase.
@@ -70,6 +65,9 @@ func (b *backend) pathBackupThirdShard(ctx context.Context, req *logical.Request
 	}
 
 	userData.WalletThirdShard = walletThirdShard
+	userData.LastRecoverySavedAt.GoogleDriveFileId = ""
+	userData.LastRecoverySavedAt.IcloudFileId = ""
+	userData.LastRecoverySavedAt.LocalFileId = ""
 
 	store, err := logical.StorageEntryJSON(path, userData)
 	if err != nil {
@@ -83,47 +81,11 @@ func (b *backend) pathBackupThirdShard(ctx context.Context, req *logical.Request
 		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
 	}
 
-	otp, err := helpers.GenerateOTP(6)
-	if err != nil {
-		logger.Log(backendLogger, config.Error, "addThirdShard: could not generate otp", err.Error())
-		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
-	}
-
-	newCtx := context.Background()
-	pubsubTopic := os.Getenv("PUBSUB_TOPIC")
-	gcpProject := os.Getenv("GCP_PROJECT")
-	client, err := pubsub.NewClient(ctx, gcpProject)
-	if err != nil {
-		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
-	}
-	t := client.Topic(pubsubTopic)
-
-	mailFormat := &helpers.MailFormatVerification{To: userData.UserEmail, Otp: otp, Purpose: "VERIFICATION", MFASource: "email"}
-	mailFormatJson, _ := json.Marshal(mailFormat)
-	res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
-	_, err = res.Get(newCtx)
-	if err != nil {
-		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
-	}
-	userData.UnverifiedWalletThirdShard = walletThirdShard
-	userData.PrimaryEmailVerificationOTP = otp
-	userData.PrimaryEmailOTPGenerateTimestamp = time.Now().Unix()
-	store, storageErr := logical.StorageEntryJSON(path, userData)
-	if storageErr != nil {
-		logger.Log(backendLogger, config.Error, "addThirdShard: could not get storage entry", err.Error())
-		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
-	}
-
-	// put user information in store
-	if err = req.Storage.Put(ctx, store); err != nil {
-		logger.Log(backendLogger, config.Error, "addThirdShard: could not put user info in storage", err.Error())
-		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
-	}
 	// return response
 	return &logical.Response{
 		Data: map[string]interface{}{
 			"status":  true,
-			"remarks": "verification for backup pending, otp sent!",
+			"remarks": "success!",
 		},
 	}, nil
 }

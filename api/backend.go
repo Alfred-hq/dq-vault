@@ -517,6 +517,11 @@ get help.
 						Description: "user consent",
 						Default:     "",
 					},
+					"consentType": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "user consent type",
+						Default:     "",
+					},
 					"signatureRSA": &framework.FieldSchema{
 						Type:        framework.TypeString,
 						Description: "signature rsa",

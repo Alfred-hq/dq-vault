@@ -67,7 +67,9 @@ type UserDetails struct {
 	MobileOTPGenerateTimestamp        int64                    `json:"mobileotpgeneratedtimestamp"`
 	RestoreInitiationTimestamp        int64                    `json:"restoreinitiationtimestamp"`
 	WalletIdentifierStoredAt          string                   `json:"walletIdentifierStoredAt"`
-	SignedConsent                     string                   `json:"signedConsent"`
+	SignedConsentForPrivateKey        string                   `json:"signedConsentForPrivateKey"`
+	SignedConsentForMnemonics         string                   `json:"signedConsentForMnemonics"`
+	LastVetoedBy                      string                   `json:"lastVetoedBy"`
 }
 
 type LastRecoverySaveLocation struct {
@@ -93,7 +95,9 @@ type VaultStatus struct {
 	IsRestoreInProgress        bool                     `json:"isRestoreInProgress"`
 	RestoreInitiationTimestamp int64                    `json:"restoreInitiationTimestamp"`
 	RestoreCompletionTimestamp int64                    `json:"restoreCompletionTimestamp"`
-	SignedConsent              bool                     `json:"signedConsent"`
+	SignedConsentForPrivateKey bool                     `json:"signedConsentForPrivateKey"`
+	SignedConsentForMnemonics  bool                     `json:"signedConsentForMnemonics"`
+	LastVetoedBy               string                   `json:"lastVetoedBy"`
 }
 
 type WalletIdentifierStorage struct {
