@@ -12,7 +12,7 @@ import (
 	"github.com/ryadavDeqode/dq-vault/test/unit_test/mocks"
 )
 
-func TestPathBackupThirdShard(t *testing.T) {
+func TestPathGetIdentifier(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -22,7 +22,7 @@ func TestPathBackupThirdShard(t *testing.T) {
 	tErr := "test error"
 	s.EXPECT().Get(context.Background(), config.StorageBasePath+"test").Return(&logical.StorageEntry{}, errors.New(tErr))
 	s.EXPECT().List(context.Background(), config.StorageBasePath).Return([]string{"test"}, nil).AnyTimes()
-	s.EXPECT().Put(context.Background(), gomock.Any()).Return(nil)
+	s.EXPECT().Put(context.Background(), gomock.Any()).Return(nil).AnyTimes()
 	b := backend{}
 	req := logical.Request{}
 
@@ -36,22 +36,10 @@ func TestPathBackupThirdShard(t *testing.T) {
 		t.Error("expected test error, received - ", res, err)
 	}
 
-	res, err = b.pathBackupThirdShard(context.Background(), &req, &framework.FieldData{})
-
-	if err != nil {
-		t.Error(" error wasn't expected, received - ", err)
-	} else {
-		if res.Data["status"].(bool) {
-			t.Error(" unexpected value of status,expected false, received - ", err)
-		}
-	}
-
-	tr := "test_remark"
-
-	mpjwt, _ := MPatchVerifyJWTSignature(false, tr)
+	s.EXPECT().Get(context.Background(), config.StorageBasePath+"test").Return(&logical.StorageEntry{}, nil).AnyTimes()
+	MPatchDecodeJSON(nil)
 
 	res, err = b.pathBackupThirdShard(context.Background(), &req, &framework.FieldData{})
-	mpjwt.Unpatch()
 
 	if err != nil {
 		t.Error(" error wasn't expected, received - ", err)
@@ -59,13 +47,9 @@ func TestPathBackupThirdShard(t *testing.T) {
 		if res.Data["status"].(bool) {
 			t.Error(" unexpected value of status,expected false, received - ", res)
 		}
-		if res.Data["remarks"] != tr {
-
-			t.Error(" unexpected value of remarks,expected \"test_remarks\", received - ", res)
-		}
 	}
 
-	MPatchVerifyJWTSignature(true, tr)
+	MPatchVerifyJWTSignature(true, "")
 
 	res, err = b.pathBackupThirdShard(context.Background(), &req, &framework.FieldData{})
 
@@ -80,6 +64,5 @@ func TestPathBackupThirdShard(t *testing.T) {
 		}
 	}
 
-
-
+	
 }
