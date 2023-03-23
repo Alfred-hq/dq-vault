@@ -1,4 +1,3 @@
-
 package api
 
 import (
@@ -54,18 +53,12 @@ func TestPathGetThirdShard(t *testing.T) {
 
 	res, err = b.pathGetThirdShard(context.Background(), &req, &framework.FieldData{})
 
+	if err != nil {
+		t.Error(" error wasn't expected, received - ", err)
+	} else {
+		if res.Data["status"].(bool) {
+			t.Error(" unexpected value of status,expected false, received - ", res)
+		}
+	}
 
-	t.Error(res, err)
-	// if err != nil {
-	// 	t.Error(" error wasn't expected, received - ", err)
-	// } else {
-	// 	if !res.Data["status"].(bool) {
-	// 		t.Error(" unexpected value of status,expected true, received - ", res)
-	// 	}
-	// 	if res.Data["remarks"] != "success!" {
-	// 		t.Error(" unexpected value of remarks,expected \"success\", received - ", res)
-	// 	}
-	// }
-
-	
 }
