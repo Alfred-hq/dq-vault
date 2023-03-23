@@ -18,7 +18,7 @@ import (
 )
 
 //go:noinline
-func MPatchDecodeJSON(rval error) (*mpatch.Patch, error) {
+func MPatchDecodeJSON(rval error) *mpatch.Patch {
 	var patch *mpatch.Patch
 	var err error
 
@@ -32,11 +32,11 @@ func MPatchDecodeJSON(rval error) (*mpatch.Patch, error) {
 		fmt.Println("patching failed", err)
 	}
 
-	return patch, err
+	return patch
 }
 
 //go:noinline
-func MPatchGet(rval interface{}) (*mpatch.Patch, error) {
+func MPatchGet(rval interface{}) *mpatch.Patch {
 
 	var patch *mpatch.Patch
 	var err error
@@ -51,11 +51,11 @@ func MPatchGet(rval interface{}) (*mpatch.Patch, error) {
 		fmt.Println("patching failed", err)
 	}
 
-	return patch, err
+	return patch
 }
 
 //go:noinline
-func MPatchVerifyJWTSignature(rval1 bool, rval2 string) (*mpatch.Patch, error) {
+func MPatchVerifyJWTSignature(rval1 bool, rval2 string) *mpatch.Patch {
 
 	var patch *mpatch.Patch
 	var err error
@@ -70,11 +70,11 @@ func MPatchVerifyJWTSignature(rval1 bool, rval2 string) (*mpatch.Patch, error) {
 		fmt.Println("patching failed", err)
 	}
 
-	return patch, err
+	return patch
 }
 
 //go:noinline
-func MPatchNewClient() (*mpatch.Patch, error) {
+func MPatchNewClient() *mpatch.Patch {
 
 	var patch *mpatch.Patch
 	var err error
@@ -89,10 +89,10 @@ func MPatchNewClient() (*mpatch.Patch, error) {
 		fmt.Println("patching failed", err)
 	}
 
-	return patch, err
+	return patch
 }
 
-func MPatchDerivePrivateKey(rVal string, rErr error) (*mpatch.Patch, error) {
+func MPatchDerivePrivateKey(rVal string, rErr error) *mpatch.Patch {
 
 	var patch *mpatch.Patch
 	var err error
@@ -109,11 +109,11 @@ func MPatchDerivePrivateKey(rVal string, rErr error) (*mpatch.Patch, error) {
 		fmt.Println("patching failed", err)
 	}
 
-	return patch, err
+	return patch
 
 }
 
-func MPatchDerivePublicKey(rVal string, rErr error) (*mpatch.Patch, error) {
+func MPatchDerivePublicKey(rVal string, rErr error) *mpatch.Patch {
 	var patch *mpatch.Patch
 	var err error
 
@@ -130,11 +130,10 @@ func MPatchDerivePublicKey(rVal string, rErr error) (*mpatch.Patch, error) {
 		fmt.Println("patching failed", err)
 	}
 
-	return patch, err
-
+	return patch
 }
 
-func MPatchMnemonicFromEntropy(rVal string, rErr error) (*mpatch.Patch) {
+func MPatchMnemonicFromEntropy(rVal string, rErr error) *mpatch.Patch {
 
 	var patch *mpatch.Patch
 	var err error
@@ -143,6 +142,44 @@ func MPatchMnemonicFromEntropy(rVal string, rErr error) (*mpatch.Patch) {
 		patch.Unpatch()
 		defer patch.Patch()
 		return rVal, rErr
+	})
+
+	if err != nil {
+		fmt.Println("patching failed", err)
+	}
+
+	return patch
+}
+
+func MPatchStringInSlice(rVal bool) *mpatch.Patch {
+
+	var patch *mpatch.Patch
+	var err error
+
+	patch, err = mpatch.PatchMethod(helpers.StringInSlice, func(_ string, list []string) bool {
+		patch.Unpatch()
+		defer patch.Patch()
+		return rVal
+	})
+
+	if err != nil {
+		fmt.Println("patching failed", err)
+	}
+
+	return patch
+}
+
+func MPatchGetPubSub(serverID string, e error) *mpatch.Patch {
+
+	var patch *mpatch.Patch
+	var err error
+
+	a := pubsub.PublishResult{}
+
+	patch, err = mpatch.PatchInstanceMethodByName(reflect.TypeOf(&a), "Get", func(_ *pubsub.PublishResult, _ context.Context) (string, error) {
+		patch.Unpatch()
+		defer patch.Patch()
+		return serverID, e
 	})
 
 	if err != nil {

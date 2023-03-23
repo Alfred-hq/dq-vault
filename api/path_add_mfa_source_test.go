@@ -48,7 +48,7 @@ func TestPathAddMFASource(t *testing.T) {
 		t.Error("unexpected value of status, received - ", err, res)
 	}
 
-	mJWTSignature, _ := MPatchVerifyJWTSignature(false, "test")
+	mJWTSignature:= MPatchVerifyJWTSignature(false, "test")
 
 	res, err = b.pathAddMFASource(context.Background(), &req, &d)
 

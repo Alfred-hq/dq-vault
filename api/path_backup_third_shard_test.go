@@ -48,7 +48,7 @@ func TestPathBackupThirdShard(t *testing.T) {
 
 	tr := "test_remark"
 
-	mpjwt, _ := MPatchVerifyJWTSignature(false, tr)
+	mpjwt := MPatchVerifyJWTSignature(false, tr)
 
 	res, err = b.pathBackupThirdShard(context.Background(), &req, &framework.FieldData{})
 	mpjwt.Unpatch()

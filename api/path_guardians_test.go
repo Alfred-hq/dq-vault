@@ -20,7 +20,7 @@ func TestPathGuardians(t *testing.T) {
 	req := logical.Request{}
 	d := framework.FieldData{}
 
-	p, _ := MPatchGet("test")
+	p := MPatchGet("test")
 
 	pathGs, err := b.pathGuardians(context.Background(), &req, &d)
 
@@ -55,7 +55,7 @@ func TestPathGuardians(t *testing.T) {
 		t.Error("no error was expected", pathGs, err)
 	}
 	testRemark := "test_remark"
-	mJWT,_ := MPatchVerifyJWTSignature(false, testRemark)
+	mJWT := MPatchVerifyJWTSignature(false, testRemark)
 
 	pathGs, err = b.pathGuardians(context.Background(), &req, &d)
 

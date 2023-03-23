@@ -41,7 +41,7 @@ func TestPathCancelWalletRestoration(t *testing.T) {
 	}
 
 	s.EXPECT().Get(context.Background(), config.StorageBasePath+"test").Return(&logical.StorageEntry{}, nil).AnyTimes()
-	mPDecodeJson, _ := MPatchDecodeJSON(errors.New(tErr))
+	mPDecodeJson := MPatchDecodeJSON(errors.New(tErr))
 	res, err = b.pathCancelWalletRestoration(context.Background(), &req, &framework.FieldData{})
 	mPDecodeJson.Unpatch()
 
