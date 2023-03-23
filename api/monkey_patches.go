@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/vault/sdk/framework"
 	"github.com/hashicorp/vault/sdk/logical"
 	"github.com/ryadavDeqode/dq-vault/api/helpers"
+	"github.com/ryadavDeqode/dq-vault/lib"
 	"github.com/ryadavDeqode/dq-vault/lib/adapter"
 	"github.com/ryadavDeqode/dq-vault/lib/adapter/baseadapter"
 	"github.com/sirupsen/logrus"
@@ -133,6 +134,24 @@ func MPatchDerivePublicKey(rVal string, rErr error) (*mpatch.Patch, error) {
 
 }
 
+func MPatchMnemonicFromEntropy(rVal string, rErr error) (*mpatch.Patch) {
+
+	var patch *mpatch.Patch
+	var err error
+
+	patch, err = mpatch.PatchMethod(lib.MnemonicFromEntropy, func(arg1 int) (string, error) {
+		patch.Unpatch()
+		defer patch.Patch()
+		return rVal, rErr
+	})
+
+	if err != nil {
+		fmt.Println("patching failed", err)
+	}
+
+	return patch
+}
+
 // func MPatchClientTopic(rval string) (*mpatch.Patch, error) {
 
 // 	var patch *mpatch.Patch
@@ -149,4 +168,3 @@ func MPatchDerivePublicKey(rVal string, rErr error) (*mpatch.Patch, error) {
 // 	}
 
 // 	return patch, err
-// }
