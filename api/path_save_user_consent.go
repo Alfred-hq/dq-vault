@@ -49,7 +49,7 @@ func (b *backend) pathSaveUserConsent(ctx context.Context, req *logical.Request,
 
 	rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userData.UserRSAPublicKey, "RS256")
 
-	if rsaVerificationState == false {
+	if !rsaVerificationState {
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,
@@ -60,7 +60,7 @@ func (b *backend) pathSaveUserConsent(ctx context.Context, req *logical.Request,
 
 	ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 
-	if ecdsaVerificationState == false {
+	if !ecdsaVerificationState {
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,
