@@ -52,7 +52,7 @@ func (b *backend) pathInitiateWalletRestoration(ctx context.Context, req *logica
 
 	rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userData.UserRSAPublicKey, "RS256")
 
-	if rsaVerificationState == false {
+	if !rsaVerificationState {
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,
