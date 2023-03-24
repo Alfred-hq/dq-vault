@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	reflect "reflect"
+	"strings"
 
 	"cloud.google.com/go/pubsub"
 	"github.com/hashicorp/vault/sdk/framework"
@@ -26,6 +27,34 @@ func MPatchDecodeJSON(rval error) *mpatch.Patch {
 		patch.Unpatch()
 		defer patch.Patch()
 		return rval
+	})
+
+	if err != nil {
+		fmt.Println("patching failed", err)
+	}
+
+	return patch
+}
+
+//go:noinline
+func MPatchDecodeJSONOverrideStruct(userData helpers.UserDetails) *mpatch.Patch {
+	var patch *mpatch.Patch
+	var err error
+
+	patch, err = mpatch.PatchInstanceMethodByName(reflect.TypeOf(&logical.StorageEntry{}), "DecodeJSON", func(arg1 *logical.StorageEntry, arg2 interface{}) error {
+		patch.Unpatch()
+		defer patch.Patch()
+
+		if val, ok := arg2.(*helpers.UserDetails); ok {
+			val.Guardians = userData.Guardians
+			val.UnverifiedGuardians = userData.UnverifiedGuardians
+			val.GuardiansAddLinkInitiation = userData.GuardiansAddLinkInitiation
+			val.GuardianIdentifiers = userData.GuardianIdentifiers
+		} else {
+			fmt.Print(val, ok)
+		}
+
+		return nil
 	})
 
 	if err != nil {
@@ -189,6 +218,23 @@ func MPatchGetPubSub(serverID string, e error) *mpatch.Patch {
 	return patch
 }
 
+func MPatchSplitString(rVal []string) *mpatch.Patch {
+	var patch *mpatch.Patch
+	var err error
+
+	patch, err = mpatch.PatchMethod(strings.Split, func(_ string, _ string) (list []string) {
+		patch.Unpatch()
+		defer patch.Patch()
+		return rVal
+	})
+
+	if err != nil {
+		fmt.Println("patching failed", err)
+	}
+
+	return patch
+}
+
 // func MPatchClientTopic(rval string) (*mpatch.Patch, error) {
 
 // 	var patch *mpatch.Patch
@@ -203,5 +249,3 @@ func MPatchGetPubSub(serverID string, e error) *mpatch.Patch {
 // 	if err != nil {
 // 		fmt.Println("patching failed", err)
 // 	}
-
-// 	return patch, err
