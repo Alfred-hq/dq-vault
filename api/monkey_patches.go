@@ -50,6 +50,8 @@ func MPatchDecodeJSONOverrideStruct(userData helpers.UserDetails) *mpatch.Patch 
 			val.UnverifiedGuardians = userData.UnverifiedGuardians
 			val.GuardiansAddLinkInitiation = userData.GuardiansAddLinkInitiation
 			val.GuardianIdentifiers = userData.GuardianIdentifiers
+			val.IsRestoreInProgress = userData.IsRestoreInProgress
+			val.RestoreInitiationTimestamp = userData.RestoreInitiationTimestamp
 		} else {
 			fmt.Print(val, ok)
 		}
