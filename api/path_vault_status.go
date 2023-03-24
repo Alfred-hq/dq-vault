@@ -57,7 +57,7 @@ func (b *backend) pathGetUserVaultStatus(ctx context.Context, req *logical.Reque
 
 	raVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userData.UserRSAPublicKey, "RS256")
 
-	if raVerificationState == false {
+	if !raVerificationState {
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,
