@@ -28,6 +28,7 @@ func (b *backend) pathInitiateWalletRestoration(ctx context.Context, req *logica
 
 	// obtain details:
 	identifier := d.Get("identifier").(string)
+	sourceType := d.Get("sourceType").(string)
 	signatureRSA := d.Get("signatureRSA").(string)
 
 	// path where user data is stored
@@ -48,6 +49,7 @@ func (b *backend) pathInitiateWalletRestoration(ctx context.Context, req *logica
 
 	dataToValidate := map[string]string{
 		"identifier": identifier,
+		"sourceType": sourceType,
 	}
 
 	rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userData.UserRSAPublicKey, "RS256")
@@ -67,8 +69,48 @@ func (b *backend) pathInitiateWalletRestoration(ctx context.Context, req *logica
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
-	userData.PrimaryEmailVerificationOTP = otp
-	userData.PrimaryEmailOTPGenerateTimestamp = time.Now().Unix()
+	if sourceType == "EMAIL" {
+		userData.PrimaryEmailVerificationOTP = otp
+		userData.PrimaryEmailOTPGenerateTimestamp = time.Now().Unix()
+		mailFormat := &helpers.MailFormatVerification{To: userData.UserEmail, Otp: otp, Purpose: "VERIFICATION", MFASource: "email"}
+		mailFormatJson, _ := json.Marshal(mailFormat)
+
+		pubsubTopic := os.Getenv("PUBSUB_TOPIC")
+		gcpProject := os.Getenv("GCP_PROJECT")
+
+		newCtx := context.Background()
+		client, err := pubsub.NewClient(ctx, gcpProject)
+		if err != nil {
+			return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+		}
+		t := client.Topic(pubsubTopic)
+		res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
+		_, pubsubErr := res.Get(newCtx)
+		if err != nil {
+			return nil, logical.CodedError(http.StatusUnprocessableEntity, pubsubErr.Error())
+		}
+	} else if sourceType == "MOBILE" {
+		userData.MobileVerificationOTP = otp
+		userData.MobileOTPGenerateTimestamp = time.Now().Unix()
+
+		mailFormat := &helpers.MailFormatVerification{userData.UserMobile, otp, "VERIFICATION", "mobile"}
+		mailFormatJson, _ := json.Marshal(mailFormat)
+
+		pubsubTopic := os.Getenv("PUBSUB_TOPIC")
+		gcpProject := os.Getenv("GCP_PROJECT")
+
+		newCtx := context.Background()
+		client, err := pubsub.NewClient(ctx, gcpProject)
+		if err != nil {
+			return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+		}
+		t := client.Topic(pubsubTopic)
+		res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
+		_, err = res.Get(newCtx)
+		if err != nil {
+			return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+		}
+	}
 
 	store, err := logical.StorageEntryJSON(path, userData)
 	if err != nil {
@@ -80,24 +122,6 @@ func (b *backend) pathInitiateWalletRestoration(ctx context.Context, req *logica
 	if err = req.Storage.Put(ctx, store); err != nil {
 		logger.Log(backendLogger, config.Error, "initiateWalletRestoration: unable to store user info", err.Error())
 		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
-	}
-
-	mailFormat := &helpers.MailFormatVerification{To: userData.UserEmail, Otp: otp, Purpose: "VERIFICATION", MFASource: "email"}
-	mailFormatJson, _ := json.Marshal(mailFormat)
-
-	pubsubTopic := os.Getenv("PUBSUB_TOPIC")
-	gcpProject := os.Getenv("GCP_PROJECT")
-
-	newCtx := context.Background()
-	client, err := pubsub.NewClient(ctx, gcpProject)
-	if err != nil {
-		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
-	}
-	t := client.Topic(pubsubTopic)
-	res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
-	_, pubsubErr := res.Get(newCtx)
-	if err != nil {
-		return nil, logical.CodedError(http.StatusUnprocessableEntity, pubsubErr.Error())
 	}
 
 	// return response

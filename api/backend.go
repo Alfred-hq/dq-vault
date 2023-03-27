@@ -327,6 +327,11 @@ get help.
 						Description: "uuid identifier for path",
 						Default:     "",
 					},
+					"sourceType": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "type of source to be used for verification",
+						Default:     "",
+					},
 					"signatureRSA": &framework.FieldSchema{
 						Type:        framework.TypeString,
 						Description: "RSA signature",

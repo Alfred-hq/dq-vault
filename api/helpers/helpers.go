@@ -39,6 +39,7 @@ var PurposeType = []string{
 	"ADD_WALLET_THIRD_SHARD",
 	"VERIFY_EMAIL_OTP",
 	"VERIFY_MOBILE_OTP",
+	"VERIFY_MOBILE_FOR_WALLET_RESTORATION",
 }
 
 type UserDetails struct {
