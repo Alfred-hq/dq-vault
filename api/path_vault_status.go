@@ -33,7 +33,7 @@ func (b *backend) pathGetUserVaultStatus(ctx context.Context, req *logical.Reque
 
 	// obtain details:
 	identifier := d.Get("identifier").(string)
-	signatureRSA := d.Get("signatureRSA").(string)
+	signatureECDSA := d.Get("signatureECDSA").(string)
 
 	// path where user data is stored
 	path := config.StorageBasePath + identifier
@@ -55,9 +55,9 @@ func (b *backend) pathGetUserVaultStatus(ctx context.Context, req *logical.Reque
 		"identifier": identifier,
 	}
 
-	raVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userData.UserRSAPublicKey, "RS256")
+	ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 
-	if raVerificationState == false {
+	if ecdsaVerificationState == false {
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,

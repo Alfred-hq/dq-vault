@@ -61,16 +61,6 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 		"purpose":    purpose,
 	}
 
-	rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userData.UserRSAPublicKey, "RS256")
-
-	if rsaVerificationState == false {
-		return &logical.Response{
-			Data: map[string]interface{}{
-				"status":  false,
-				"remarks": remarks,
-			},
-		}, nil
-	}
 	otpTTLStr := os.Getenv("OTP_TTL")
 	otpTTL, err := strconv.Atoi(otpTTLStr)
 	if err != nil {
@@ -141,6 +131,16 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			userData.MobileVerificationOTP = "xxxxxx"
 		}
 	case helpers.PurposeType[2]:
+		rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userData.UserRSAPublicKey, "RS256")
+
+		if rsaVerificationState == false {
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": remarks,
+				},
+			}, nil
+		}
 		currentUnixTime := time.Now().Unix()
 		if userData.PrimaryEmailVerificationOTP != otp {
 			return &logical.Response{
@@ -281,6 +281,16 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			userData.MobileOTPGenerateTimestamp = int64(0)
 		}
 	case helpers.PurposeType[6]:
+		rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userData.UserRSAPublicKey, "RS256")
+
+		if rsaVerificationState == false {
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": remarks,
+				},
+			}, nil
+		}
 		currentUnixTime := time.Now().Unix()
 		if userData.MobileVerificationOTP != otp {
 			return &logical.Response{
