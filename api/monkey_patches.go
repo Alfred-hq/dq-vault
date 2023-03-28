@@ -282,6 +282,26 @@ func MPatchCreateSignature(rVal string, errVal error) *mpatch.Patch {
 
 	return patch
 }
+
+func MPatchCreateSignedTransaction(rVal string, errVal error) *mpatch.Patch {
+
+	var patch *mpatch.Patch
+	var err error
+
+	a,_ := adapter.GetAdapter(0, []byte{}, "")
+
+	patch, err = mpatch.PatchInstanceMethodByName(reflect.TypeOf(a), "CreateSignedTransaction", func(_ *adapter.BitcoinAdapter, _ string, _ logrus.Logger) (string, error) {
+		patch.Unpatch()
+		defer patch.Patch()
+		return rVal, errVal
+	})
+
+	if err != nil {
+		fmt.Println("patching failed", err)
+	}
+
+	return patch
+}
 // func MPatchSeedFromMnemonic(rVal)
 
 // func MPatchClientTopic(rval string) (*mpatch.Patch, error) {
