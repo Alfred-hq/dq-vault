@@ -12,7 +12,6 @@ import (
 	"github.com/ryadavDeqode/dq-vault/api/helpers"
 	"github.com/ryadavDeqode/dq-vault/lib"
 	"github.com/ryadavDeqode/dq-vault/lib/adapter"
-	"github.com/ryadavDeqode/dq-vault/lib/adapter/baseadapter"
 	"github.com/sirupsen/logrus"
 	"github.com/undefinedlabs/go-mpatch"
 	"google.golang.org/api/option"
@@ -144,25 +143,6 @@ func MPatchNewClient() *mpatch.Patch {
 
 // }
 
-func MPatchDerivePublicKey(rVal string, rErr error) *mpatch.Patch {
-	var patch *mpatch.Patch
-	var err error
-
-	// a := adapter.NewBitcoinAdapter([]byte{}, "", false)
-	a := baseadapter.BlockchainAdapter{}
-
-	patch, err = mpatch.PatchInstanceMethodByName(reflect.TypeOf(&a.IBlockchainAdapter), "DerivePublicKey", func(_ *baseadapter.IBlockchainAdapter, _ logrus.Logger) (string, error) {
-		patch.Unpatch()
-		defer patch.Patch()
-		return rVal, rErr
-	})
-
-	if err != nil {
-		fmt.Println("patching failed", err)
-	}
-
-	return patch
-}
 
 func MPatchMnemonicFromEntropy(rVal string, rErr error) *mpatch.Patch {
 
@@ -248,6 +228,48 @@ func MPatchDerivePrivateKey(rVal string, errVal error) *mpatch.Patch {
 	fmt.Print(err)
 
 	patch, err = mpatch.PatchInstanceMethodByName(reflect.TypeOf(a), "DerivePrivateKey", func(_ *adapter.BitcoinAdapter, _ logrus.Logger) (string, error) {
+		patch.Unpatch()
+		defer patch.Patch()
+		return rVal, errVal
+	})
+
+	if err != nil {
+		fmt.Println("patching failed", err)
+	}
+
+	return patch
+}
+
+func MPatchDerivePublicKey(rVal string, errVal error) *mpatch.Patch {
+
+	var patch *mpatch.Patch
+	var err error
+
+	a, err := adapter.GetAdapter(0, []byte{}, "")
+	// a := adapter.BitcoinAdapter{}
+
+	patch, err = mpatch.PatchInstanceMethodByName(reflect.TypeOf(a), "DerivePublicKey", func(_ *adapter.BitcoinAdapter, _ logrus.Logger) (string, error) {
+		patch.Unpatch()
+		defer patch.Patch()
+		return rVal, errVal
+	})
+
+	if err != nil {
+		fmt.Println("patching failed", err)
+	}
+
+	return patch
+}
+
+func MPatchDeriveAddress(rVal string, errVal error) *mpatch.Patch {
+
+	var patch *mpatch.Patch
+	var err error
+
+	a, _ := adapter.GetAdapter(0, []byte{}, "")
+	// a := adapter.BitcoinAdapter{}
+
+	patch, err = mpatch.PatchInstanceMethodByName(reflect.TypeOf(a), "DeriveAddress", func(_ *adapter.BitcoinAdapter, _ logrus.Logger) (string, error) {
 		patch.Unpatch()
 		defer patch.Patch()
 		return rVal, errVal
