@@ -35,12 +35,41 @@ func TestPathSign(t *testing.T) {
 		t.Error("expected test error, received - ", res, err)
 	}
 
-
-	s.EXPECT().Get(context.Background(), config.StorageBasePath+"test").Return(&logical.StorageEntry{}, nil)
+	s.EXPECT().Get(context.Background(), config.StorageBasePath+"test").Return(&logical.StorageEntry{}, nil).AnyTimes()
 	req.Storage = s
-	MPatchDecodeJSON(nil)
+	mpdj := MPatchDecodeJSON(errors.New(tErr))
 	res, err = b.pathSign(context.Background(), &req, &framework.FieldData{})
-	
-	t.Error(res, err)
+
+	if err == nil {
+		t.Error("expected Error, received", res)
+	} else if err.Error() != tErr {
+		t.Error("unexpected Error, expected - ", tErr, "received", err.Error())
+	}
+
+	mpdj.Unpatch()
+
+	mpdj = MPatchDecodeJSON(nil)
+	mpdpk := MPatchDerivePrivateKey("", errors.New(tErr))
+
+	res, err = b.pathSign(context.Background(), &req, &framework.FieldData{})
+
+	if err == nil {
+		t.Error("expected Error, received", res)
+	} else if err.Error() != tErr {
+		t.Error("unexpected Error, expected - ", tErr, "received", err.Error())
+	}
+	mpdpk.Unpatch()
+
+	mpdpk = MPatchDerivePrivateKey(tErr, nil)
+	MPatchCreateSignature(tErr, nil)
+
+	res, err = b.pathSign(context.Background(), &req, &framework.FieldData{})
+	if err != nil {
+		t.Error(" error wasn't expected, received - ", err)
+	} else {
+		if res.Data["signature"] != tErr {
+			t.Error(" unexpected value of status,expected ", tErr, "received", res)
+		}
+	}
 
 }

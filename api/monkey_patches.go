@@ -123,26 +123,26 @@ func MPatchNewClient() *mpatch.Patch {
 	return patch
 }
 
-func MPatchDerivePrivateKey(rVal string, rErr error) *mpatch.Patch {
+// func MPatchDerivePrivateKey(rVal string, rErr error) *mpatch.Patch {
 
-	var patch *mpatch.Patch
-	var err error
+// 	var patch *mpatch.Patch
+// 	var err error
 
-	a := new(adapter.BitcoinAdapter)
+// 	a := new(adapter.BitcoinAdapter)
 
-	patch, err = mpatch.PatchInstanceMethodByName(reflect.TypeOf(&a), "DerivePrivateKey", func(_ *baseadapter.IBlockchainAdapter, _ logrus.Logger) (string, error) {
-		patch.Unpatch()
-		defer patch.Patch()
-		return rVal, rErr
-	})
+// 	patch, err = mpatch.PatchInstanceMethodByName(reflect.TypeOf(&a), "DerivePrivateKey", func(_ *baseadapter.IBlockchainAdapter, _ logrus.Logger) (string, error) {
+// 		patch.Unpatch()
+// 		defer patch.Patch()
+// 		return rVal, rErr
+// 	})
 
-	if err != nil {
-		fmt.Println("patching failed", err)
-	}
+// 	if err != nil {
+// 		fmt.Println("patching failed", err)
+// 	}
 
-	return patch
+// 	return patch
 
-}
+// }
 
 func MPatchDerivePublicKey(rVal string, rErr error) *mpatch.Patch {
 	var patch *mpatch.Patch
@@ -236,6 +236,53 @@ func MPatchSplitString(rVal []string) *mpatch.Patch {
 
 	return patch
 }
+
+func MPatchDerivePrivateKey(rVal string, errVal error) *mpatch.Patch {
+
+	var patch *mpatch.Patch
+	var err error
+
+	a, err := adapter.GetAdapter(0, []byte{}, "")
+	// a := adapter.BitcoinAdapter{}
+
+	fmt.Print(err)
+
+	patch, err = mpatch.PatchInstanceMethodByName(reflect.TypeOf(a), "DerivePrivateKey", func(_ *adapter.BitcoinAdapter, _ logrus.Logger) (string, error) {
+		patch.Unpatch()
+		defer patch.Patch()
+		return rVal, errVal
+	})
+
+	if err != nil {
+		fmt.Println("patching failed", err)
+	}
+
+	return patch
+}
+
+func MPatchCreateSignature(rVal string, errVal error) *mpatch.Patch {
+
+	var patch *mpatch.Patch
+	var err error
+
+	a, err := adapter.GetAdapter(0, []byte{}, "")
+	// a := adapter.BitcoinAdapter{}
+
+	fmt.Print(err)
+
+	patch, err = mpatch.PatchInstanceMethodByName(reflect.TypeOf(a), "CreateSignature", func(_ *adapter.BitcoinAdapter, _ string, _ logrus.Logger) (string, error) {
+		patch.Unpatch()
+		defer patch.Patch()
+		return rVal, errVal
+	})
+
+	if err != nil {
+		fmt.Println("patching failed", err)
+	}
+
+	return patch
+}
+// func MPatchSeedFromMnemonic(rVal)
 
 // func MPatchClientTopic(rval string) (*mpatch.Patch, error) {
 
