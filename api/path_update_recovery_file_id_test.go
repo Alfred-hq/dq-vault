@@ -8,6 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/vault/sdk/framework"
 	"github.com/hashicorp/vault/sdk/logical"
+	"github.com/ryadavDeqode/dq-vault/api/helpers"
 	"github.com/ryadavDeqode/dq-vault/config"
 	"github.com/ryadavDeqode/dq-vault/test/unit_test/mocks"
 )
@@ -22,7 +23,6 @@ func TestPathUpdateRecoveryFileId(t *testing.T) {
 	tErr := "test error"
 	s.EXPECT().Get(context.Background(), config.StorageBasePath+"").Return(&logical.StorageEntry{}, errors.New(tErr))
 	s.EXPECT().List(context.Background(), config.StorageBasePath).Return([]string{"test"}, nil).AnyTimes()
-	s.EXPECT().Put(context.Background(), gomock.Any()).Return(nil).AnyTimes()
 	b := backend{}
 	req := logical.Request{}
 
@@ -49,39 +49,52 @@ func TestPathUpdateRecoveryFileId(t *testing.T) {
 	mpdj.Unpatch()
 
 	mpdj = MPatchDecodeJSON(nil)
-	MPatchVerifyJWTSignature(false, tErr)
+	mpjwt := MPatchVerifyJWTSignature(false, tErr)
 
 	res, err = b.pathUpdateRecoveryFileId(context.Background(), &req, &framework.FieldData{})
 
-	if err.Error() != tErr {
-		t.Error("expected test error, received - ", res, err)
+	if err != nil {
+		t.Error(" error wasn't expected, received - ", err)
+	} else {
+		if res.Data["status"].(bool) {
+			t.Error(" unexpected value of status,expected false, received - ", res)
+		}
+
+		if res.Data["remarks"] != tErr {
+			t.Error(" unexpected value of remarks,expected - "+tErr+", received - ", res.Data["remarks"])
+		}
 	}
-	
-	
 
-	// mpdj = MPatchDecodeJSONOverrideStruct(
-	// 	helpers.UserDetails{
-	// 		Guardians:                  []string{"test"},
-	// 		UnverifiedGuardians:        []string{"test2"},
-	// 		GuardiansAddLinkInitiation: []int64{0, 0},
-	// 	})
+	mpdj.Unpatch()
+	mpjwt.Unpatch()
+	MPatchDecodeJSONOverrideStruct(
+		helpers.UserDetails{
+			Guardians:                  []string{"test"},
+			UnverifiedGuardians:        []string{"test2"},
+			GuardiansAddLinkInitiation: []int64{0, 0},
+		})
 
-	// res, err = b.pathUpdateRecoveryFileId(context.Background(), &req, &framework.FieldData{})
+	MPatchVerifyJWTSignature(true, tErr)
 
-	// t.Error(res, err)
+	s.EXPECT().Put(context.Background(), gomock.Any()).Return(errors.New(tErr))
+	res, err = b.pathUpdateRecoveryFileId(context.Background(), &req, &framework.FieldData{})
 
-	// if err != nil {
-	// 	t.Error(" error wasn't expected, received - ", err)
-	// } else {
-	// 	if res.Data["status"].(bool) {
-	// 		t.Error(" unexpected value of status,expected false, received - ", res)
-	// 	}
-	// }
+	if err == nil {
+		t.Error(" expected error, received - ", res, err)
+	} else if err.Error() != tErr {
+		t.Error("not the error expected, expected", tErr, "received", err)
+	}
 
-	
+	s.EXPECT().Put(context.Background(), gomock.Any()).Return(nil).AnyTimes()
 
+	res, err = b.pathUpdateRecoveryFileId(context.Background(), &req, &framework.FieldData{})
 
-
-
+	if err != nil {
+		t.Error(" error wasn't expected, received - ", err)
+	} else {
+		if !res.Data["status"].(bool) {
+			t.Error(" unexpected value of status,expected true, received - ", res)
+		}
+	}
 
 }
