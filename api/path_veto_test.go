@@ -30,7 +30,7 @@ func TestPathVeto(t *testing.T) {
 
 	req.Storage = s
 
-	MPatchGet("test")
+	mpget := MPatchGet("test")
 
 	res, err := b.pathVeto(context.Background(), &req, &framework.FieldData{})
 
@@ -40,7 +40,7 @@ func TestPathVeto(t *testing.T) {
 
 	s.EXPECT().Get(context.Background(), config.StorageBasePath+"test").Return(&logical.StorageEntry{}, nil).AnyTimes()
 	mpdj := MPatchDecodeJSON(nil)
-	MPatchNewClient()
+	mpnc := MPatchNewClient()
 
 	res, err = b.pathVeto(context.Background(), &req, &framework.FieldData{})
 
@@ -62,7 +62,7 @@ func TestPathVeto(t *testing.T) {
 			IsRestoreInProgress:        false,
 		})
 
-	MPatchVerifyJWTSignature(true, "")
+	mpjwt := MPatchVerifyJWTSignature(true, "")
 
 	res, err = b.pathVeto(context.Background(), &req, &framework.FieldData{})
 
@@ -138,4 +138,9 @@ func TestPathVeto(t *testing.T) {
 		}
 	}
 
+	mpGetPubSub.Unpatch()
+	mpdj.Unpatch()
+	mpjwt.Unpatch()
+	mpnc.Unpatch()
+	mpget.Unpatch()
 }

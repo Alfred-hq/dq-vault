@@ -29,7 +29,7 @@ func TestPathGetUserVaultStatus(t *testing.T) {
 
 	req.Storage = s
 
-	MPatchGet("")
+	mpget := MPatchGet("")
 
 	res, err := b.pathGetUserVaultStatus(context.Background(), &req, &framework.FieldData{})
 
@@ -67,8 +67,8 @@ func TestPathGetUserVaultStatus(t *testing.T) {
 
 	mpJWT.Unpatch()
 	mpDecodeJson.Unpatch()
-	MPatchVerifyJWTSignature(true, tErr)
-	MPatchDecodeJSONOverrideStruct(helpers.UserDetails{Guardians: []string{"test", "test1", "test2"}, UnverifiedGuardians: []string{"test", "test1", "test2"}})
+	mpJWT = MPatchVerifyJWTSignature(true, tErr)
+	mpdjOverride := MPatchDecodeJSONOverrideStruct(helpers.UserDetails{Guardians: []string{"test", "test1", "test2"}, UnverifiedGuardians: []string{"test", "test1", "test2"}})
 
 	res, err = b.pathGetUserVaultStatus(context.Background(), &req, &framework.FieldData{})
 
@@ -80,4 +80,8 @@ func TestPathGetUserVaultStatus(t *testing.T) {
 			t.Error(" unexpected value of status,expected true, received - ", res)
 		}
 	}
+
+	mpget.Unpatch()
+	mpJWT.Unpatch()
+	mpdjOverride.Unpatch()
 }

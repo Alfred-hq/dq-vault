@@ -26,7 +26,7 @@ func TestPathNewUser(t *testing.T) {
 
 	req.Storage = s
 
-	MPatchGet("test")
+	mpget := MPatchGet("test")
 
 	res, err := b.pathNewUser(context.Background(), &req, &framework.FieldData{})
 
@@ -38,7 +38,7 @@ func TestPathNewUser(t *testing.T) {
 		}
 	}
 
-	MPatchVerifyJWTSignature(true, tErr)
+	mpjwt := MPatchVerifyJWTSignature(true, tErr)
 	s.EXPECT().Put(context.Background(), gomock.Any()).Return(nil)
 
 	res, err = b.pathNewUser(context.Background(), &req, &framework.FieldData{})
@@ -55,8 +55,11 @@ func TestPathNewUser(t *testing.T) {
 
 	res, err = b.pathNewUser(context.Background(), &req, &framework.FieldData{})
 
-	if err == nil{
+	if err == nil {
 		t.Error(res, err)
 	}
+
+	mpget.Unpatch()
+	mpjwt.Unpatch()
 
 }

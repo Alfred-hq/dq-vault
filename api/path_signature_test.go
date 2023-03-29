@@ -19,7 +19,7 @@ func TestPathSignature(t *testing.T) {
 
 	tErr := "test error"
 
-	MPatchGet("test")
+	mpget := MPatchGet("test")
 
 	s := mocks.NewMockStorage(ctrl)
 	b := backend{}
@@ -52,7 +52,7 @@ func TestPathSignature(t *testing.T) {
 
 	mpdj.Unpatch()
 
-	MPatchDecodeJSON(nil)
+	mpdj = MPatchDecodeJSON(nil)
 	mpdpk := MPatchDerivePrivateKey("", errors.New(tErr))
 
 	res, err = b.pathSignature(context.Background(), &req, &framework.FieldData{})
@@ -64,7 +64,7 @@ func TestPathSignature(t *testing.T) {
 	}
 
 	mpdpk.Unpatch()
-	MPatchDerivePrivateKey("", nil)
+	mpDerivePrivateKey := MPatchDerivePrivateKey("", nil)
 	mpcst := MPatchCreateSignedTransaction("", errors.New(tErr))
 
 	res, err = b.pathSignature(context.Background(), &req, &framework.FieldData{})
@@ -77,7 +77,7 @@ func TestPathSignature(t *testing.T) {
 
 	mpcst.Unpatch()
 
-	MPatchCreateSignedTransaction(tErr, nil)
+	mpTxn := MPatchCreateSignedTransaction(tErr, nil)
 
 	res, err = b.pathSignature(context.Background(), &req, &framework.FieldData{})
 
@@ -89,4 +89,9 @@ func TestPathSignature(t *testing.T) {
 		}
 	}
 
+	mpTxn.Unpatch()
+	mpDerivePrivateKey.Unpatch()
+	mpdj.Unpatch()
+	mpdpk.Unpatch()
+	mpget.Unpatch()
 }

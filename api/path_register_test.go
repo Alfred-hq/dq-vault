@@ -30,7 +30,7 @@ func TestPathRegister(t *testing.T) {
 
 	req.Storage = s
 
-	MPatchGet("")
+	mpget := MPatchGet("")
 
 	res, err := b.pathRegister(context.Background(), &req, &framework.FieldData{})
 
@@ -38,13 +38,16 @@ func TestPathRegister(t *testing.T) {
 		t.Error("expected no error, received", err, res)
 	}
 
-	MPatchMnemonicFromEntropy(tErr, errors.New(tErr))
+	mpMnemonic := MPatchMnemonicFromEntropy(tErr, errors.New(tErr))
 	res, err = b.pathRegister(context.Background(), &req, &framework.FieldData{})
 
 	if err == nil {
 		t.Error("expected error, received", err, res)
-	}else if err.Error() != tErr{
+	} else if err.Error() != tErr {
 		t.Error("unexpected error message", err, res)
 	}
+
+	mpget.Unpatch()
+	mpMnemonic.Patch()
 
 }

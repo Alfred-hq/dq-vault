@@ -20,11 +20,11 @@ func TestPathGuardians(t *testing.T) {
 	req := logical.Request{}
 	d := framework.FieldData{}
 
-	p := MPatchGet("test")
+	mpget := MPatchGet("test")
 
 	pathGs, err := b.pathGuardians(context.Background(), &req, &d)
 
-	p.Unpatch()
+	mpget.Unpatch()
 
 	if pathGs.Data["remarks"] != "return proper quest" {
 		t.Error("not the response expected!", pathGs)
@@ -34,7 +34,7 @@ func TestPathGuardians(t *testing.T) {
 		t.Error("error wasn't expected", err)
 	}
 
-	MPatchGet("GET_GUARDIANS")
+	mpget = MPatchGet("GET_GUARDIANS")
 
 	s := mocks.NewMockStorage(ctrl)
 
@@ -47,7 +47,7 @@ func TestPathGuardians(t *testing.T) {
 		t.Error("error was expected", err)
 	}
 
-	MPatchDecodeJSON(nil)
+	mpdj := MPatchDecodeJSON(nil)
 
 	pathGs, err = b.pathGuardians(context.Background(), &req, &d)
 
@@ -55,11 +55,11 @@ func TestPathGuardians(t *testing.T) {
 		t.Error("no error was expected", pathGs, err)
 	}
 	testRemark := "test_remark"
-	mJWT := MPatchVerifyJWTSignature(false, testRemark)
+	mpjwt := MPatchVerifyJWTSignature(false, testRemark)
 
 	pathGs, err = b.pathGuardians(context.Background(), &req, &d)
 
-	mJWT.Unpatch()
+	mpjwt.Unpatch()
 
 	if err != nil {
 		t.Error("no error was expected", pathGs, err)
@@ -69,7 +69,7 @@ func TestPathGuardians(t *testing.T) {
 	}
 
 
-	MPatchVerifyJWTSignature(true, testRemark)
+	mpjwt = MPatchVerifyJWTSignature(true, testRemark)
 
 	pathGs, err = b.pathGuardians(context.Background(), &req, &d)
 
@@ -84,4 +84,8 @@ func TestPathGuardians(t *testing.T) {
 	if pathGs.Data["status"] != true {
 		t.Error("unexpected status value, expected true, received - ", pathGs)
 	}
+
+	mpdj.Unpatch()
+	mpget.Unpatch()
+	mpjwt.Unpatch()
 }

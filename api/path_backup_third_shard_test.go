@@ -15,26 +15,40 @@ import (
 func TestPathBackupThirdShard(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
+	
 	defer ctrl.Finish()
 
 	s := mocks.NewMockStorage(ctrl)
 
+
 	tErr := "test error"
 	s.EXPECT().Get(context.Background(), config.StorageBasePath+"test").Return(&logical.StorageEntry{}, errors.New(tErr))
 	s.EXPECT().List(context.Background(), config.StorageBasePath).Return([]string{"test"}, nil).AnyTimes()
-	s.EXPECT().Put(context.Background(), gomock.Any()).Return(nil)
+	s.EXPECT().Put(context.Background(), gomock.Any()).Return(nil).AnyTimes()
 	b := backend{}
 	req := logical.Request{}
 
 	req.Storage = s
 
-	MPatchGet("test")
+	mpGet := MPatchGet("test")
 
 	res, err := b.pathBackupThirdShard(context.Background(), &req, &framework.FieldData{})
 
 	if err.Error() != tErr {
 		t.Error("expected test error, received - ", res, err)
 	}
+
+	s.EXPECT().Get(context.Background(), config.StorageBasePath+"test").Return(&logical.StorageEntry{}, nil).AnyTimes()
+
+	mpdj := MPatchDecodeJSON(errors.New(tErr))
+
+	res, err = b.pathBackupThirdShard(context.Background(), &req, &framework.FieldData{})
+
+	if err.Error() != tErr {
+		t.Error("expected test error, received - ", res, err)
+	}
+	mpdj.Unpatch()
+	mpdj = MPatchDecodeJSON(nil)
 
 	res, err = b.pathBackupThirdShard(context.Background(), &req, &framework.FieldData{})
 
@@ -65,7 +79,7 @@ func TestPathBackupThirdShard(t *testing.T) {
 		}
 	}
 
-	MPatchVerifyJWTSignature(true, tr)
+	mpjwt = MPatchVerifyJWTSignature(true, tr)
 
 	res, err = b.pathBackupThirdShard(context.Background(), &req, &framework.FieldData{})
 
@@ -79,6 +93,10 @@ func TestPathBackupThirdShard(t *testing.T) {
 			t.Error(" unexpected value of remarks,expected \"success\", received - ", res)
 		}
 	}
+
+	mpGet.Unpatch()
+	mpjwt.Unpatch()
+	mpdj.Unpatch()
 
 
 

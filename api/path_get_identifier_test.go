@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"testing"
 
@@ -20,7 +21,8 @@ func TestPathGetIdentifier(t *testing.T) {
 	s := mocks.NewMockStorage(ctrl)
 
 	tErr := "test error"
-	s.EXPECT().Get(context.Background(), config.StorageBasePath+"test").Return(&logical.StorageEntry{}, errors.New(tErr))
+
+	s.EXPECT().Get(context.Background(), config.StorageBasePath+ base64.StdEncoding.EncodeToString([]byte("test"))).Return(&logical.StorageEntry{}, errors.New(tErr))
 	s.EXPECT().List(context.Background(), config.StorageBasePath).Return([]string{"test"}, nil).AnyTimes()
 	s.EXPECT().Put(context.Background(), gomock.Any()).Return(nil).AnyTimes()
 	b := backend{}
@@ -28,18 +30,20 @@ func TestPathGetIdentifier(t *testing.T) {
 
 	req.Storage = s
 
-	MPatchGet("test")
+	mpGet := MPatchGet("test")
 
-	res, err := b.pathBackupThirdShard(context.Background(), &req, &framework.FieldData{})
+
+	res, err := b.pathGetIdentifier(context.Background(), &req, &framework.FieldData{})
+
 
 	if err.Error() != tErr {
 		t.Error("expected test error, received - ", res, err)
 	}
 
-	s.EXPECT().Get(context.Background(), config.StorageBasePath+"test").Return(&logical.StorageEntry{}, nil).AnyTimes()
-	MPatchDecodeJSON(nil)
+	mpdj := MPatchDecodeJSON(nil)
+	s.EXPECT().Get(context.Background(), config.StorageBasePath+ base64.StdEncoding.EncodeToString([]byte("test"))).Return(&logical.StorageEntry{}, nil).AnyTimes()
 
-	res, err = b.pathBackupThirdShard(context.Background(), &req, &framework.FieldData{})
+	res, err = b.pathGetIdentifier(context.Background(), &req, &framework.FieldData{})
 
 	if err != nil {
 		t.Error(" error wasn't expected, received - ", err)
@@ -49,9 +53,9 @@ func TestPathGetIdentifier(t *testing.T) {
 		}
 	}
 
-	MPatchVerifyJWTSignature(true, "")
+	mpJWT := MPatchVerifyJWTSignature(true, "")
 
-	res, err = b.pathBackupThirdShard(context.Background(), &req, &framework.FieldData{})
+	res, err = b.pathGetIdentifier(context.Background(), &req, &framework.FieldData{})
 
 	if err != nil {
 		t.Error(" error wasn't expected, received - ", err)
@@ -59,10 +63,10 @@ func TestPathGetIdentifier(t *testing.T) {
 		if !res.Data["status"].(bool) {
 			t.Error(" unexpected value of status,expected true, received - ", res)
 		}
-		if res.Data["remarks"] != "success!" {
-			t.Error(" unexpected value of remarks,expected \"success\", received - ", res)
-		}
 	}
 
+	mpGet.Unpatch()
+	mpJWT.Unpatch()
+	mpdj.Unpatch()
 	
 }

@@ -28,7 +28,7 @@ func TestPathGetThirdShard(t *testing.T) {
 
 	req.Storage = s
 
-	MPatchGet("test")
+	mpget := MPatchGet("test")
 
 	res, err := b.pathGetThirdShard(context.Background(), &req, &framework.FieldData{})
 
@@ -37,7 +37,7 @@ func TestPathGetThirdShard(t *testing.T) {
 	}
 
 	s.EXPECT().Get(context.Background(), config.StorageBasePath+"test").Return(&logical.StorageEntry{}, nil).AnyTimes()
-	MPatchDecodeJSON(nil)
+	mpdj := MPatchDecodeJSON(nil)
 
 	res, err = b.pathGetThirdShard(context.Background(), &req, &framework.FieldData{})
 
@@ -49,7 +49,7 @@ func TestPathGetThirdShard(t *testing.T) {
 		}
 	}
 
-	MPatchVerifyJWTSignature(true, "")
+	mpjwt := MPatchVerifyJWTSignature(true, "")
 
 	res, err = b.pathGetThirdShard(context.Background(), &req, &framework.FieldData{})
 
@@ -60,5 +60,9 @@ func TestPathGetThirdShard(t *testing.T) {
 			t.Error(" unexpected value of status,expected false, received - ", res)
 		}
 	}
+
+	mpget.Unpatch()
+	mpdj.Unpatch()
+	mpjwt.Unpatch()
 
 }

@@ -23,7 +23,7 @@ func TestPathAddress(t *testing.T) {
 
 	tErr := "test error"
 
-	MPatchGet("test")
+	mpGet := MPatchGet("test")
 
 	s.EXPECT().Get(gomock.Any(), config.StorageBasePath+"test").Return(&logical.StorageEntry{}, errors.New(tErr))
 	s.EXPECT().List(gomock.Any(), config.StorageBasePath).Return([]string{"test"}, nil).AnyTimes()
@@ -50,7 +50,7 @@ func TestPathAddress(t *testing.T) {
 
 	mpdj.Unpatch()
 
-	MPatchDecodeJSON(nil)
+	mpdj = MPatchDecodeJSON(nil)
 	mpdPrivateKey := MPatchDerivePrivateKey(tErr, nil)
 	mpdPublicKey := MPatchDerivePublicKey(tErr, nil)
 	mpdDeriveAddress := MPatchDeriveAddress(tErr, nil)
@@ -68,5 +68,7 @@ func TestPathAddress(t *testing.T) {
 	mpdPublicKey.Unpatch()
 	mpdPrivateKey.Unpatch()
 	mpdDeriveAddress.Unpatch()
+	mpGet.Unpatch()
+	mpdj.Unpatch()
 
 }

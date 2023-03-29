@@ -25,7 +25,7 @@ func TestPathAddMFASource(t *testing.T) {
 
 	d := framework.FieldData{}
 
-	MPatchGet("test")
+	mpget := MPatchGet("test")
 
 	b := backend{}
 	res, err := b.pathAddMFASource(context.Background(), &req, &d)
@@ -36,7 +36,7 @@ func TestPathAddMFASource(t *testing.T) {
 		t.Error("expected error, received - ", res)
 	}
 
-	MPatchDecodeJSON(nil)
+	mpdj := MPatchDecodeJSON(nil)
 
 	res, err = b.pathAddMFASource(context.Background(), &req, &d)
 
@@ -48,7 +48,7 @@ func TestPathAddMFASource(t *testing.T) {
 		t.Error("unexpected value of status, received - ", err, res)
 	}
 
-	mJWTSignature:= MPatchVerifyJWTSignature(false, "test")
+	mJWTSignature := MPatchVerifyJWTSignature(false, "test")
 
 	res, err = b.pathAddMFASource(context.Background(), &req, &d)
 
@@ -61,8 +61,8 @@ func TestPathAddMFASource(t *testing.T) {
 	}
 
 	mJWTSignature.Unpatch()
-	MPatchVerifyJWTSignature(true, "test")
-	MPatchNewClient()
+	mJWTSignature = MPatchVerifyJWTSignature(true, "test")
+	mpnc := MPatchNewClient()
 	s.EXPECT().Put(gomock.Any(), gomock.Any()).Return(nil)
 
 	res, err = b.pathAddMFASource(context.Background(), &req, &d)
@@ -75,4 +75,9 @@ func TestPathAddMFASource(t *testing.T) {
 	if !res.Data["status"].(bool) {
 		t.Error("unexpected value of status, expected true, received - ", res)
 	}
+
+	mJWTSignature.Unpatch()
+	mpnc.Unpatch()
+	mpdj.Unpatch()
+	mpget.Unpatch()
 }

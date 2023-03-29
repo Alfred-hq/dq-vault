@@ -28,7 +28,7 @@ func TestPathInitiateWalletRestoration(t *testing.T) {
 
 	req.Storage = s
 
-	MPatchGet("test")
+	mpget := MPatchGet("test")
 
 	res, err := b.pathBackupThirdShard(context.Background(), &req, &framework.FieldData{})
 
@@ -37,7 +37,7 @@ func TestPathInitiateWalletRestoration(t *testing.T) {
 	}
 
 	s.EXPECT().Get(context.Background(), config.StorageBasePath+"test").Return(&logical.StorageEntry{}, nil).AnyTimes()
-	MPatchDecodeJSON(nil)
+	mpdj := MPatchDecodeJSON(nil)
 
 	res, err = b.pathBackupThirdShard(context.Background(), &req, &framework.FieldData{})
 
@@ -49,7 +49,7 @@ func TestPathInitiateWalletRestoration(t *testing.T) {
 		}
 	}
 
-	MPatchVerifyJWTSignature(true, tErr)
+	mpjwt := MPatchVerifyJWTSignature(true, tErr)
 
 	res, err = b.pathBackupThirdShard(context.Background(), &req, &framework.FieldData{})
 
@@ -63,4 +63,8 @@ func TestPathInitiateWalletRestoration(t *testing.T) {
 			t.Error(" unexpected value of remarks,expected \"success\", received - ", res)
 		}
 	}
+
+	mpdj.Unpatch()
+	mpget.Unpatch()
+	mpjwt.Unpatch()
 }

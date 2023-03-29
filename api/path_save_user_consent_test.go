@@ -37,7 +37,7 @@ func TestPathSaveUserConsent(t *testing.T) {
 	}
 
 	s.EXPECT().Get(context.Background(), config.StorageBasePath+"test").Return(&logical.StorageEntry{}, nil)
-	MPatchDecodeJSON(nil)
+	mpdj := MPatchDecodeJSON(nil)
 
 	res, err = b.pathSaveUserConsent(context.Background(), &req, &framework.FieldData{})
 
@@ -50,10 +50,10 @@ func TestPathSaveUserConsent(t *testing.T) {
 	}
 
 	mpGet.Unpatch()
-	MPatchGet("MNEMONICS")
-	MPatchVerifyJWTSignature(true, "")
-	MPatchNewClient()
-	MPatchGetPubSub("test", nil)
+	mpGet = MPatchGet("MNEMONICS")
+	mpjwt := MPatchVerifyJWTSignature(true, "")
+	mpnc := MPatchNewClient()
+	mpgetps := MPatchGetPubSub("test", nil)
 
 	s.EXPECT().Get(context.Background(), config.StorageBasePath+"MNEMONICS").Return(&logical.StorageEntry{}, nil)
 	res, err = b.pathSaveUserConsent(context.Background(), &req, &framework.FieldData{})
@@ -65,4 +65,10 @@ func TestPathSaveUserConsent(t *testing.T) {
 			t.Error(" unexpected value of status,expected true, received - ", res)
 		}
 	}
+
+	mpGet.Unpatch()
+	mpjwt.Unpatch()
+	mpnc.Unpatch()
+	mpgetps.Unpatch()
+	mpdj.Unpatch()
 }

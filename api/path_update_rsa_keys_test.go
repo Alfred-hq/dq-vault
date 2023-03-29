@@ -18,7 +18,7 @@ func TestPathUpdateRSAKeys(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	MPatchGet("test")
+	mpget := MPatchGet("test")
 	var err error
 
 	s := mocks.NewMockStorage(ctrl)
@@ -37,13 +37,16 @@ func TestPathUpdateRSAKeys(t *testing.T) {
 		t.Error("expected error!")
 	}
 
-	MPatchDecodeJSON(nil)
+	mpdj := MPatchDecodeJSON(nil)
 
 	_, err = b.pathUpdateRSAKeys(context.Background(), &req, &d)
 
 	if err != nil {
 		t.Error(err)
 	}
+
+	mpdj.Unpatch()
+	mpget.Unpatch()
 }
 
 type MockFieldData struct {

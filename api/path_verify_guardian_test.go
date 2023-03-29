@@ -30,7 +30,7 @@ func TestVerifyGuardian(t *testing.T) {
 
 	req.Storage = s
 
-	MPatchGet("")
+	mpget := MPatchGet("")
 
 	res, err := b.pathVerifyGuardian(context.Background(), &req, &framework.FieldData{})
 
@@ -40,7 +40,7 @@ func TestVerifyGuardian(t *testing.T) {
 
 	s.EXPECT().Get(context.Background(), config.StorageBasePath+"").Return(&logical.StorageEntry{}, errors.New(tErr))
 	mpdj := MPatchDecodeJSON(nil)
-	MPatchNewClient()
+	mpnc := MPatchNewClient()
 
 	res, err = b.pathVerifyGuardian(context.Background(), &req, &framework.FieldData{})
 
@@ -115,8 +115,8 @@ func TestVerifyGuardian(t *testing.T) {
 	}
 
 	mpOverrideStruct.Unpatch()
-	MPatchGetPubSub("test", nil)
-	MPatchDecodeJSONOverrideStruct(
+	mpgetps := MPatchGetPubSub("test", nil)
+	mpOverrideStruct = MPatchDecodeJSONOverrideStruct(
 		helpers.UserDetails{
 			Guardians:                  []string{"test"},
 			UnverifiedGuardians:        []string{"test2"},
@@ -133,5 +133,11 @@ func TestVerifyGuardian(t *testing.T) {
 			t.Error(" unexpected value of status,expected true, received - ", res)
 		}
 	}
+
+	mpget.Unpatch()
+	mpnc.Unpatch()
+	mpgetps.Unpatch()
+	mpOverrideStruct.Unpatch()
+	mpSplit.Unpatch()
 
 }

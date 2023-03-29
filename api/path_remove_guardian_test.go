@@ -29,7 +29,7 @@ func TestPathRemoveGuardian(t *testing.T) {
 
 	req.Storage = s
 
-	MPatchGet("test")
+	mpget := MPatchGet("test")
 
 	res, err := b.pathRemoveGuardian(context.Background(), &req, &framework.FieldData{})
 
@@ -37,17 +37,17 @@ func TestPathRemoveGuardian(t *testing.T) {
 		t.Error("expected test error, received - ", res, err)
 	}
 
-	mpd := MPatchDecodeJSON(tErr)
+	mpdj := MPatchDecodeJSON(tErr)
 	s.EXPECT().Get(context.Background(), config.StorageBasePath+"test").Return(&logical.StorageEntry{}, nil).AnyTimes()
 
 	res, err = b.pathRemoveGuardian(context.Background(), &req, &framework.FieldData{})
-	mpd.Unpatch()
+	mpdj.Unpatch()
 
 	if tErr.Error() != err.Error() {
 		t.Error("expected test error, received - ", res, err)
 	}
 
-	MPatchDecodeJSON(nil)
+	mpdj = MPatchDecodeJSON(nil)
 	mpjwt := MPatchVerifyJWTSignature(false, tErr.Error())
 
 	res, err = b.pathRemoveGuardian(context.Background(), &req, &framework.FieldData{})
@@ -65,10 +65,10 @@ func TestPathRemoveGuardian(t *testing.T) {
 	}
 
 	mpjwt.Unpatch()
-	MPatchVerifyJWTSignature(true, tErr.Error())
-	MPatchStringInSlice(true)
-	MPatchNewClient()
-	MPatchGetPubSub(tErr.Error(), nil)
+	mpjwt = MPatchVerifyJWTSignature(true, tErr.Error())
+	mpStringInSlice := MPatchStringInSlice(true)
+	mpnc := MPatchNewClient()
+	mpgetps := MPatchGetPubSub(tErr.Error(), nil)
 
 	res, err = b.pathRemoveGuardian(context.Background(), &req, &framework.FieldData{})
 
@@ -78,5 +78,12 @@ func TestPathRemoveGuardian(t *testing.T) {
 
 		t.Error(" unexpected value of status,expected true, received - ", res)
 	}
+
+	mpget.Unpatch()
+	mpdj.Unpatch()
+	mpjwt.Unpatch()
+	mpStringInSlice.Unpatch()
+	mpnc.Unpatch()
+	mpgetps.Unpatch()
 
 }

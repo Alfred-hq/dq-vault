@@ -27,7 +27,7 @@ func TestPathSign(t *testing.T) {
 
 	req.Storage = s
 
-	MPatchGet("test")
+	mpget := MPatchGet("test")
 
 	res, err := b.pathSign(context.Background(), &req, &framework.FieldData{})
 
@@ -61,7 +61,7 @@ func TestPathSign(t *testing.T) {
 	mpdpk.Unpatch()
 
 	mpdpk = MPatchDerivePrivateKey(tErr, nil)
-	MPatchCreateSignature(tErr, nil)
+	mpsign := MPatchCreateSignature(tErr, nil)
 
 	res, err = b.pathSign(context.Background(), &req, &framework.FieldData{})
 	if err != nil {
@@ -72,4 +72,8 @@ func TestPathSign(t *testing.T) {
 		}
 	}
 
+	mpdj.Unpatch()
+	mpdpk.Unpatch()
+	mpget.Unpatch()
+	mpsign.Unpatch()
 }

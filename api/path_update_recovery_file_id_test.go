@@ -28,7 +28,7 @@ func TestPathUpdateRecoveryFileId(t *testing.T) {
 
 	req.Storage = s
 
-	MPatchGet("")
+	mpget := MPatchGet("")
 
 	res, err := b.pathUpdateRecoveryFileId(context.Background(), &req, &framework.FieldData{})
 
@@ -38,7 +38,7 @@ func TestPathUpdateRecoveryFileId(t *testing.T) {
 
 	s.EXPECT().Get(context.Background(), config.StorageBasePath+"").Return(&logical.StorageEntry{}, nil).AnyTimes()
 	mpdj := MPatchDecodeJSON(errors.New(tErr))
-	MPatchNewClient()
+	mpnc := MPatchNewClient()
 
 	res, err = b.pathUpdateRecoveryFileId(context.Background(), &req, &framework.FieldData{})
 
@@ -67,14 +67,14 @@ func TestPathUpdateRecoveryFileId(t *testing.T) {
 
 	mpdj.Unpatch()
 	mpjwt.Unpatch()
-	MPatchDecodeJSONOverrideStruct(
+	mpdjOverride := MPatchDecodeJSONOverrideStruct(
 		helpers.UserDetails{
 			Guardians:                  []string{"test"},
 			UnverifiedGuardians:        []string{"test2"},
 			GuardiansAddLinkInitiation: []int64{0, 0},
 		})
 
-	MPatchVerifyJWTSignature(true, tErr)
+	mpjwt = MPatchVerifyJWTSignature(true, tErr)
 
 	s.EXPECT().Put(context.Background(), gomock.Any()).Return(errors.New(tErr))
 	res, err = b.pathUpdateRecoveryFileId(context.Background(), &req, &framework.FieldData{})
@@ -96,5 +96,11 @@ func TestPathUpdateRecoveryFileId(t *testing.T) {
 			t.Error(" unexpected value of status,expected true, received - ", res)
 		}
 	}
+
+	mpget.Unpatch()
+	mpdjOverride.Unpatch()
+	mpjwt.Unpatch()
+	mpnc.Unpatch()
+	
 
 }

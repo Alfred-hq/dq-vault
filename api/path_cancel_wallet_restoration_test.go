@@ -28,7 +28,7 @@ func TestPathCancelWalletRestoration(t *testing.T) {
 
 	req.Storage = s
 
-	MPatchGet("test")
+	mpget := MPatchGet("test")
 
 	res, err := b.pathCancelWalletRestoration(context.Background(), &req, &framework.FieldData{})
 
@@ -41,9 +41,9 @@ func TestPathCancelWalletRestoration(t *testing.T) {
 	}
 
 	s.EXPECT().Get(context.Background(), config.StorageBasePath+"test").Return(&logical.StorageEntry{}, nil).AnyTimes()
-	mPDecodeJson := MPatchDecodeJSON(errors.New(tErr))
+	mpdj := MPatchDecodeJSON(errors.New(tErr))
 	res, err = b.pathCancelWalletRestoration(context.Background(), &req, &framework.FieldData{})
-	mPDecodeJson.Unpatch()
+	mpdj.Unpatch()
 
 	if err == nil {
 		t.Error("expected error, received", res)
@@ -52,7 +52,7 @@ func TestPathCancelWalletRestoration(t *testing.T) {
 		t.Error("unexpected error, expected - "+tErr+", received - ", res)
 	}
 
-	MPatchDecodeJSON(nil)
+	mpdj = MPatchDecodeJSON(nil)
 
 	res, err = b.pathCancelWalletRestoration(context.Background(), &req, &framework.FieldData{})
 
@@ -62,7 +62,7 @@ func TestPathCancelWalletRestoration(t *testing.T) {
 		t.Error("Unexpected value of status, expected false, received , ", res)
 	}
 
-	MPatchVerifyJWTSignature(true, tErr)
+	mpjwt := MPatchVerifyJWTSignature(true, tErr)
 
 	res, err = b.pathCancelWalletRestoration(context.Background(), &req, &framework.FieldData{})
 
@@ -73,4 +73,7 @@ func TestPathCancelWalletRestoration(t *testing.T) {
 		t.Error("Unexpected value of status, expected true, received , ", res)
 	}
 
+	mpdj.Unpatch()
+	mpjwt.Unpatch()
+	mpget.Unpatch()
 }
