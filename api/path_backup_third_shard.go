@@ -43,7 +43,7 @@ func (b *backend) pathBackupThirdShard(ctx context.Context, req *logical.Request
 		"walletThirdShard": walletThirdShard,
 	}
 
-	rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userData.UserRSAPublicKey, "RS256")
+	rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userRSAPublicKey, "RS256")
 
 	if rsaVerificationState == false {
 		return &logical.Response{
