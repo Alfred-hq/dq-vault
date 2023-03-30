@@ -175,16 +175,16 @@ get help.
 						Description: "uuid identifier for path",
 						Default:     "",
 					},
-					"signatureRSA": &framework.FieldSchema{
-						Type:        framework.TypeString,
-						Description: "RSA signature",
-						Default:     "",
-					},
-					"userRSAPublicKey": &framework.FieldSchema{
-						Type:        framework.TypeString,
-						Description: "user RSA Public Key",
-						Default:     "",
-					},
+					//"signatureRSA": &framework.FieldSchema{
+					//	Type:        framework.TypeString,
+					//	Description: "RSA signature",
+					//	Default:     "",
+					//},
+					//"userRSAPublicKey": &framework.FieldSchema{
+					//	Type:        framework.TypeString,
+					//	Description: "user RSA Public Key",
+					//	Default:     "",
+					//},
 					"signatureECDSA": &framework.FieldSchema{
 						Type:        framework.TypeString,
 						Description: "ECDSA signature",
@@ -212,11 +212,11 @@ get help.
 						Description: "uuid identifier for path",
 						Default:     "",
 					},
-					"signatureRSA": &framework.FieldSchema{
-						Type:        framework.TypeString,
-						Description: "RSA signature",
-						Default:     "",
-					},
+					//"signatureRSA": &framework.FieldSchema{
+					//	Type:        framework.TypeString,
+					//	Description: "RSA signature",
+					//	Default:     "",
+					//},
 					"signatureECDSA": &framework.FieldSchema{
 						Type:        framework.TypeString,
 						Description: "ECDSA signature",
@@ -257,6 +257,11 @@ get help.
 					"signatureRSA": &framework.FieldSchema{
 						Type:        framework.TypeString,
 						Description: "RSA signature",
+						Default:     "",
+					},
+					"userRSAPublicKey": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "UserRSAPublicKey",
 						Default:     "",
 					},
 					"signatureECDSA": &framework.FieldSchema{
@@ -424,11 +429,11 @@ get help.
 						Description: "uuid identifier for guardian",
 						Default:     "",
 					},
-					"signatureRSA": &framework.FieldSchema{
-						Type:        framework.TypeString,
-						Description: "RSA signature",
-						Default:     "",
-					},
+					//"signatureRSA": &framework.FieldSchema{
+					//	Type:        framework.TypeString,
+					//	Description: "RSA signature",
+					//	Default:     "",
+					//},
 					"signatureECDSA": &framework.FieldSchema{
 						Type:        framework.TypeString,
 						Description: "ECDSA signature",
@@ -527,11 +532,11 @@ get help.
 						Description: "user consent type",
 						Default:     "",
 					},
-					"signatureRSA": &framework.FieldSchema{
-						Type:        framework.TypeString,
-						Description: "signature rsa",
-						Default:     "",
-					},
+					//"signatureRSA": &framework.FieldSchema{
+					//	Type:        framework.TypeString,
+					//	Description: "signature rsa",
+					//	Default:     "",
+					//},
 					"signatureECDSA": &framework.FieldSchema{
 						Type:        framework.TypeString,
 						Description: "ECDSA signature",
@@ -558,11 +563,11 @@ get help.
 						Description: "email of guardian to remove",
 						Default:     "",
 					},
-					"signatureRSA": &framework.FieldSchema{
-						Type:        framework.TypeString,
-						Description: "signature rsa",
-						Default:     "",
-					},
+					//"signatureRSA": &framework.FieldSchema{
+					//	Type:        framework.TypeString,
+					//	Description: "signature rsa",
+					//	Default:     "",
+					//},
 					"signatureECDSA": &framework.FieldSchema{
 						Type:        framework.TypeString,
 						Description: "ECDSA signature",
@@ -584,6 +589,27 @@ get help.
 						Description: "user identifier",
 						Default:     "",
 					},
+					"signatureECDSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "ECDSA signature",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathGetUserVaultStatus,
+				},
+			},
+
+			&framework.Path{
+				Pattern:         "getUserVaultRestorationStatus",
+				HelpSynopsis:    "getUserVaultRestorationStatus",
+				HelpDescription: `getUserVaultRestorationStatus`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "user identifier",
+						Default:     "",
+					},
 					"signatureRSA": &framework.FieldSchema{
 						Type:        framework.TypeString,
 						Description: "RSA signature",
@@ -591,7 +617,7 @@ get help.
 					},
 				},
 				Callbacks: map[logical.Operation]framework.OperationFunc{
-					logical.UpdateOperation: b.pathGetUserVaultStatus,
+					logical.UpdateOperation: b.pathGetUserVaultRestorationStatus,
 				},
 			},
 
@@ -615,11 +641,11 @@ get help.
 						Description: "source value",
 						Default:     "",
 					},
-					"signatureRSA": &framework.FieldSchema{
-						Type:        framework.TypeString,
-						Description: "RSA signature",
-						Default:     "",
-					},
+					//"signatureRSA": &framework.FieldSchema{
+					//	Type:        framework.TypeString,
+					//	Description: "RSA signature",
+					//	Default:     "",
+					//},
 					"signatureECDSA": &framework.FieldSchema{
 						Type:        framework.TypeString,
 						Description: "ECDSA signature",
