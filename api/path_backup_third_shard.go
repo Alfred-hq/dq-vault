@@ -16,10 +16,11 @@ func (b *backend) pathBackupThirdShard(ctx context.Context, req *logical.Request
 	backendLogger := b.logger
 
 	// obtain details:
-	identifier, _ := d.Get("identifier").(string)
-	walletThirdShard, _ := d.Get("walletThirdShard").(string)
-	signatureRSA, _ := d.Get("signatureRSA").(string)
-	signatureECDSA, _ := d.Get("signatureECDSA").(string)
+	identifier := d.Get("identifier").(string)
+	walletThirdShard := d.Get("walletThirdShard").(string)
+	userRSAPublicKey := d.Get("userRSAPublicKey").(string)
+	signatureRSA := d.Get("signatureRSA").(string)
+	signatureECDSA := d.Get("signatureECDSA").(string)
 
 	// path where user data is stored
 	path := config.StorageBasePath + identifier
@@ -42,7 +43,7 @@ func (b *backend) pathBackupThirdShard(ctx context.Context, req *logical.Request
 		"walletThirdShard": walletThirdShard,
 	}
 
-	rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userData.UserRSAPublicKey, "RS256")
+	rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userRSAPublicKey, "RS256")
 
 	if rsaVerificationState == false {
 		return &logical.Response{
@@ -65,6 +66,7 @@ func (b *backend) pathBackupThirdShard(ctx context.Context, req *logical.Request
 	}
 
 	userData.WalletThirdShard = walletThirdShard
+	userData.UserRSAPublicKey = userRSAPublicKey
 	userData.LastRecoverySavedAt.GoogleDriveFileId = ""
 	userData.LastRecoverySavedAt.IcloudFileId = ""
 	userData.LastRecoverySavedAt.LocalFileId = ""

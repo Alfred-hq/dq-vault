@@ -21,11 +21,11 @@ func (b *backend) pathNewUser(ctx context.Context, req *logical.Request, d *fram
 	backendLogger := b.logger
 
 	// obtain user details:
-	userRSAPublicKey, _ := d.Get("userRSAPublicKey").(string)
-	userECDSAPublicKey, _ := d.Get("userECDSAPublicKey").(string)
-	identifier, _ := d.Get("identifier").(string)
-	signatureRSA, _ := d.Get("signatureRSA").(string)
-	signatureECDSA, _ := d.Get("signatureECDSA").(string)
+	//userRSAPublicKey := d.Get("userRSAPublicKey").(string)
+	userECDSAPublicKey := d.Get("userECDSAPublicKey").(string)
+	identifier := d.Get("identifier").(string)
+	//signatureRSA := d.Get("signatureRSA").(string)
+	signatureECDSA := d.Get("signatureECDSA").(string)
 
 	// store identifier at wallet public key(base64 encoded)
 	base64EncodedECDSAPublicKey := base64.StdEncoding.EncodeToString([]byte(userECDSAPublicKey))
@@ -40,7 +40,7 @@ func (b *backend) pathNewUser(ctx context.Context, req *logical.Request, d *fram
 		GuardiansAddLinkInitiation:       []int64{0, 0, 0},
 		UserMobile:                       "",
 		UnverifiedUserMobile:             "",
-		UserRSAPublicKey:                 userRSAPublicKey,
+		UserRSAPublicKey:                 "",
 		UserECDSAPublicKey:               userECDSAPublicKey,
 		UnverifiedWalletThirdShard:       "",
 		WalletThirdShard:                 "",
@@ -64,16 +64,16 @@ func (b *backend) pathNewUser(ctx context.Context, req *logical.Request, d *fram
 		"identifier": identifier,
 	}
 
-	rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userRSAPublicKey, "RS256")
-
-	if !rsaVerificationState{
-		return &logical.Response{
-			Data: map[string]interface{}{
-				"status":  false,
-				"remarks": remarks,
-			},
-		}, nil
-	}
+	//rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userRSAPublicKey, "RS256")
+	//
+	//if rsaVerificationState == false {
+	//	return &logical.Response{
+	//		Data: map[string]interface{}{
+	//			"status":  false,
+	//			"remarks": remarks,
+	//		},
+	//	}, nil
+	//}
 
 	ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userECDSAPublicKey, "ES256")
 

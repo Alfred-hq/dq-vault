@@ -25,7 +25,7 @@ func (b *backend) pathUpdateRecoveryFileId(ctx context.Context, req *logical.Req
 	identifier := d.Get("identifier").(string)
 	sourceType := d.Get("sourceType").(string)
 	sourceValue := d.Get("sourceValue").(string)
-	signatureRSA := d.Get("signatureRSA").(string)
+	//signatureRSA := d.Get("signatureRSA").(string)
 	signatureECDSA := d.Get("signatureECDSA").(string)
 
 	// path where user data is stored
@@ -50,16 +50,16 @@ func (b *backend) pathUpdateRecoveryFileId(ctx context.Context, req *logical.Req
 		"sourceValue": sourceValue,
 	}
 
-	rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userData.UserRSAPublicKey, "RS256")
-
-	if !rsaVerificationState{
-		return &logical.Response{
-			Data: map[string]interface{}{
-				"status":  false,
-				"remarks": remarks,
-			},
-		}, nil
-	}
+	//rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userData.UserRSAPublicKey, "RS256")
+	//
+	//if rsaVerificationState == false {
+	//	return &logical.Response{
+	//		Data: map[string]interface{}{
+	//			"status":  false,
+	//			"remarks": remarks,
+	//		},
+	//	}, nil
+	//}
 
 	ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 

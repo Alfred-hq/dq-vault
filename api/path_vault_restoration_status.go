@@ -19,7 +19,7 @@ import (
 	"github.com/ryadavDeqode/dq-vault/logger"
 )
 
-func checkIfNotEmpty(a string) bool {
+func checkIfNotEmptyy(a string) bool {
 	if a == "" {
 		return false
 	}
@@ -27,13 +27,13 @@ func checkIfNotEmpty(a string) bool {
 }
 
 // pathPassphrase corresponds to POST gen/passphrase.
-func (b *backend) pathGetUserVaultStatus(ctx context.Context, req *logical.Request, d *framework.FieldData) (*logical.Response, error) {
+func (b *backend) pathGetUserVaultRestorationStatus(ctx context.Context, req *logical.Request, d *framework.FieldData) (*logical.Response, error) {
 	// var err error
 	backendLogger := b.logger
 
 	// obtain details:
 	identifier := d.Get("identifier").(string)
-	signatureECDSA := d.Get("signatureECDSA").(string)
+	signatureRSA := d.Get("signatureRSA").(string)
 
 	// path where user data is stored
 	path := config.StorageBasePath + identifier
@@ -55,9 +55,9 @@ func (b *backend) pathGetUserVaultStatus(ctx context.Context, req *logical.Reque
 		"identifier": identifier,
 	}
 
-	ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
+	rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userData.UserECDSAPublicKey, "RS256")
 
-	if !ecdsaVerificationState{
+	if rsaVerificationState == false {
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,
