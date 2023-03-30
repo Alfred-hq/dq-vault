@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -17,6 +18,8 @@ func TestPathGuardians(t *testing.T) {
 
 	b := backend{}
 
+	tErr := "test error"
+
 	req := logical.Request{}
 	d := framework.FieldData{}
 
@@ -26,12 +29,10 @@ func TestPathGuardians(t *testing.T) {
 
 	mpget.Unpatch()
 
-	if pathGs.Data["remarks"] != "return proper quest" {
-		t.Error("not the response expected!", pathGs)
-	}
-
 	if err != nil {
 		t.Error("error wasn't expected", err)
+	} else if pathGs.Data["remarks"] != "return proper quest" {
+		t.Error("not the response expected!", pathGs)
 	}
 
 	mpget = MPatchGet("GET_GUARDIANS")
@@ -40,15 +41,39 @@ func TestPathGuardians(t *testing.T) {
 
 	req.Storage = s
 
-	s.EXPECT().Get(context.Background(), config.StorageBasePath+"GET_GUARDIANS").Return(&logical.StorageEntry{}, nil).MinTimes(0)
+	s.EXPECT().Get(context.Background(), config.StorageBasePath+"GET_GUARDIANS").Return(&logical.StorageEntry{}, errors.New(tErr))
+
+	_, err = b.pathGuardians(context.Background(), &req, &d)
+
+	if err == nil {
+		t.Error("error was expected", err)
+	} else if err.Error() != tErr {
+		t.Error("expected error to be ", tErr, "received", err.Error())
+
+	}
+
+	s.EXPECT().Get(context.Background(), config.StorageBasePath+"GET_GUARDIANS").Return(&logical.StorageEntry{}, nil).AnyTimes()
+
 	_, err = b.pathGuardians(context.Background(), &req, &d)
 
 	if err == nil {
 		t.Error("error was expected", err)
 	}
 
-	mpdj := MPatchDecodeJSON(nil)
+	mpdj := MPatchDecodeJSON(errors.New(tErr))
 
+	_, err = b.pathGuardians(context.Background(), &req, &d)
+
+	if err == nil {
+		t.Error("error was expected", err)
+	} else if err.Error() != tErr {
+		t.Error("expected error to be ", tErr, "received", err.Error())
+
+	}
+
+	mpdj.Unpatch()
+
+	mpdj = MPatchDecodeJSON(nil)
 	pathGs, err = b.pathGuardians(context.Background(), &req, &d)
 
 	if err != nil {
@@ -68,7 +93,6 @@ func TestPathGuardians(t *testing.T) {
 		t.Error("unexpected return value!", pathGs)
 	}
 
-
 	mpjwt = MPatchVerifyJWTSignature(true, testRemark)
 
 	pathGs, err = b.pathGuardians(context.Background(), &req, &d)
@@ -77,7 +101,7 @@ func TestPathGuardians(t *testing.T) {
 		t.Error("no error was expected", pathGs, err)
 	}
 
-	if pathGs.Data["remarks"] != "success"{
+	if pathGs.Data["remarks"] != "success" {
 		t.Error("unexpected remarks value, expected success, received - ", pathGs)
 	}
 

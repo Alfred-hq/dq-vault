@@ -40,7 +40,7 @@ func TestPathVeto(t *testing.T) {
 
 	s.EXPECT().Get(context.Background(), config.StorageBasePath+"test").Return(&logical.StorageEntry{}, nil).AnyTimes()
 	mpdj := MPatchDecodeJSON(nil)
-	mpnc := MPatchNewClient()
+	mpnc := MPatchNewClient(nil)
 
 	res, err = b.pathVeto(context.Background(), &req, &framework.FieldData{})
 

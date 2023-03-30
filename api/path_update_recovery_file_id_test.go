@@ -38,7 +38,7 @@ func TestPathUpdateRecoveryFileId(t *testing.T) {
 
 	s.EXPECT().Get(context.Background(), config.StorageBasePath+"").Return(&logical.StorageEntry{}, nil).AnyTimes()
 	mpdj := MPatchDecodeJSON(errors.New(tErr))
-	mpnc := MPatchNewClient()
+	mpnc := MPatchNewClient(nil)
 
 	res, err = b.pathUpdateRecoveryFileId(context.Background(), &req, &framework.FieldData{})
 

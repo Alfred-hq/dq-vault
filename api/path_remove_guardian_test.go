@@ -67,7 +67,7 @@ func TestPathRemoveGuardian(t *testing.T) {
 	mpjwt.Unpatch()
 	mpjwt = MPatchVerifyJWTSignature(true, tErr.Error())
 	mpStringInSlice := MPatchStringInSlice(true)
-	mpnc := MPatchNewClient()
+	mpnc := MPatchNewClient(nil)
 	mpgetps := MPatchGetPubSub(tErr.Error(), nil)
 
 	res, err = b.pathRemoveGuardian(context.Background(), &req, &framework.FieldData{})

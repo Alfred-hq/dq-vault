@@ -62,7 +62,7 @@ func TestPathAddMFASource(t *testing.T) {
 
 	mJWTSignature.Unpatch()
 	mJWTSignature = MPatchVerifyJWTSignature(true, "test")
-	mpnc := MPatchNewClient()
+	mpnc := MPatchNewClient(nil)
 	s.EXPECT().Put(gomock.Any(), gomock.Any()).Return(nil)
 
 	res, err = b.pathAddMFASource(context.Background(), &req, &d)

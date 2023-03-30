@@ -30,16 +30,23 @@ func TestPathInitiateWalletRestoration(t *testing.T) {
 
 	mpget := MPatchGet("test")
 
-	res, err := b.pathBackupThirdShard(context.Background(), &req, &framework.FieldData{})
+	res, err := b.pathInitiateWalletRestoration(context.Background(), &req, &framework.FieldData{})
 
 	if err.Error() != tErr {
 		t.Error("expected test error, received - ", res, err)
 	}
 
 	s.EXPECT().Get(context.Background(), config.StorageBasePath+"test").Return(&logical.StorageEntry{}, nil).AnyTimes()
-	mpdj := MPatchDecodeJSON(nil)
+	mpdj := MPatchDecodeJSON(errors.New(tErr))
+	res, err = b.pathInitiateWalletRestoration(context.Background(), &req, &framework.FieldData{})
 
-	res, err = b.pathBackupThirdShard(context.Background(), &req, &framework.FieldData{})
+	if err.Error() != tErr {
+		t.Error("expected test error, received - ", res, err)
+	}
+
+	mpdj.Unpatch()
+	mpdj = MPatchDecodeJSON(nil)
+	res, err = b.pathInitiateWalletRestoration(context.Background(), &req, &framework.FieldData{})
 
 	if err != nil {
 		t.Error(" error wasn't expected, received - ", err)
@@ -48,10 +55,25 @@ func TestPathInitiateWalletRestoration(t *testing.T) {
 			t.Error(" unexpected value of status,expected true, received - ", res)
 		}
 	}
+	mpjwt := MPatchVerifyJWTSignature(false, tErr)
 
-	mpjwt := MPatchVerifyJWTSignature(true, tErr)
+	res, err = b.pathInitiateWalletRestoration(context.Background(), &req, &framework.FieldData{})
 
-	res, err = b.pathBackupThirdShard(context.Background(), &req, &framework.FieldData{})
+	if err != nil {
+		t.Error(" error wasn't expected, received - ", err)
+	} else {
+		if res.Data["status"].(bool) {
+			t.Error(" unexpected value of status,expected true, received - ", res)
+		}
+		if res.Data["remarks"] != tErr {
+			t.Error(" unexpected value of remarks,expected \"success\", received - ", res)
+		}
+	}
+
+	mpjwt.Unpatch()
+	mpjwt = MPatchVerifyJWTSignature(true, tErr)
+
+	res, err = b.pathInitiateWalletRestoration(context.Background(), &req, &framework.FieldData{})
 
 	if err != nil {
 		t.Error(" error wasn't expected, received - ", err)
@@ -59,10 +81,27 @@ func TestPathInitiateWalletRestoration(t *testing.T) {
 		if !res.Data["status"].(bool) {
 			t.Error(" unexpected value of status,expected true, received - ", res)
 		}
-		if res.Data["remarks"] != "success!" {
+		if res.Data["remarks"] != "success" {
 			t.Error(" unexpected value of remarks,expected \"success\", received - ", res)
 		}
 	}
+
+	mpget.Unpatch()
+
+	s = mocks.NewMockStorage(ctrl)
+	req.Storage = s
+	s.EXPECT().Get(context.Background(), config.StorageBasePath+"EMAIL").Return(&logical.StorageEntry{}, nil).AnyTimes()
+
+	mpget = MPatchGet("EMAIL")
+	mpnc := MPatchNewClient(errors.New(tErr))
+
+	res, err = b.pathInitiateWalletRestoration(context.Background(), &req, &framework.FieldData{})
+
+	if err.Error() != tErr {
+		t.Error("expected test error, received - ", res, err)
+	}
+
+	mpnc.Unpatch()
 
 	mpdj.Unpatch()
 	mpget.Unpatch()

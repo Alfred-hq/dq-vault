@@ -104,7 +104,7 @@ func MPatchVerifyJWTSignature(rval1 bool, rval2 string) *mpatch.Patch {
 }
 
 //go:noinline
-func MPatchNewClient() *mpatch.Patch {
+func MPatchNewClient(rErr error) *mpatch.Patch {
 
 	var patch *mpatch.Patch
 	var err error
@@ -112,6 +112,9 @@ func MPatchNewClient() *mpatch.Patch {
 	patch, err = mpatch.PatchMethod(pubsub.NewClient, func(_ context.Context, _ string, opts ...option.ClientOption) (arg1 *pubsub.Client, arg2 error) {
 		patch.Unpatch()
 		defer patch.Patch()
+		if rErr != nil {
+			return nil, rErr
+		}
 		return &pubsub.Client{}, nil
 	})
 
@@ -142,7 +145,6 @@ func MPatchNewClient() *mpatch.Patch {
 // 	return patch
 
 // }
-
 
 func MPatchMnemonicFromEntropy(rVal string, rErr error) *mpatch.Patch {
 
@@ -310,7 +312,7 @@ func MPatchCreateSignedTransaction(rVal string, errVal error) *mpatch.Patch {
 	var patch *mpatch.Patch
 	var err error
 
-	a,_ := adapter.GetAdapter(0, []byte{}, "")
+	a, _ := adapter.GetAdapter(0, []byte{}, "")
 
 	patch, err = mpatch.PatchInstanceMethodByName(reflect.TypeOf(a), "CreateSignedTransaction", func(_ *adapter.BitcoinAdapter, _ string, _ logrus.Logger) (string, error) {
 		patch.Unpatch()
@@ -324,6 +326,7 @@ func MPatchCreateSignedTransaction(rVal string, errVal error) *mpatch.Patch {
 
 	return patch
 }
+
 // func MPatchSeedFromMnemonic(rVal)
 
 // func MPatchClientTopic(rval string) (*mpatch.Patch, error) {

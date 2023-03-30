@@ -52,7 +52,7 @@ func TestPathSaveUserConsent(t *testing.T) {
 	mpGet.Unpatch()
 	mpGet = MPatchGet("MNEMONICS")
 	mpjwt := MPatchVerifyJWTSignature(true, "")
-	mpnc := MPatchNewClient()
+	mpnc := MPatchNewClient(nil)
 	mpgetps := MPatchGetPubSub("test", nil)
 
 	s.EXPECT().Get(context.Background(), config.StorageBasePath+"MNEMONICS").Return(&logical.StorageEntry{}, nil)

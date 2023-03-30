@@ -40,7 +40,7 @@ func TestVerifyGuardian(t *testing.T) {
 
 	s.EXPECT().Get(context.Background(), config.StorageBasePath+"").Return(&logical.StorageEntry{}, errors.New(tErr))
 	mpdj := MPatchDecodeJSON(nil)
-	mpnc := MPatchNewClient()
+	mpnc := MPatchNewClient(nil)
 
 	res, err = b.pathVerifyGuardian(context.Background(), &req, &framework.FieldData{})
 
