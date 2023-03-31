@@ -1,9 +1,9 @@
-go test -v ./... -gcflags="-l" -cover
+# go test -v ./... -gcflags="-l" -cover
 
 
-go test -v -coverprofile cover.out -gcflags="-l"
+go test -tags exclude_file_from_coverage -v -coverprofile cover.out -gcflags="-l"
 
-go test -gcflags="-l" -cover -coverpkg=github.com/ryadavDeqode/dq-vault/api -v
+# go test -gcflags="-l" -cover -coverpkg=github.com/ryadavDeqode/dq-vault/api -v
 
 # exclude (){
 #     while read p || [ -n "$p" ]

@@ -56,6 +56,7 @@ func MPatchDecodeJSONOverrideStruct(userData helpers.UserDetails) *mpatch.Patch 
 			val.PrimaryEmailOTPGenerateTimestamp = userData.PrimaryEmailOTPGenerateTimestamp
 			val.MobileVerificationOTP = userData.MobileVerificationOTP
 			val.MobileOTPGenerateTimestamp = userData.MobileOTPGenerateTimestamp
+			val.UserEmail = userData.UserEmail
 
 		} else {
 			fmt.Print(val, ok)
