@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	reflect "reflect"
+	"strconv"
 	"strings"
 
 	"cloud.google.com/go/pubsub"
@@ -51,6 +52,11 @@ func MPatchDecodeJSONOverrideStruct(userData helpers.UserDetails) *mpatch.Patch 
 			val.GuardianIdentifiers = userData.GuardianIdentifiers
 			val.IsRestoreInProgress = userData.IsRestoreInProgress
 			val.RestoreInitiationTimestamp = userData.RestoreInitiationTimestamp
+			val.PrimaryEmailVerificationOTP = userData.PrimaryEmailVerificationOTP
+			val.PrimaryEmailOTPGenerateTimestamp = userData.PrimaryEmailOTPGenerateTimestamp
+			val.MobileVerificationOTP = userData.MobileVerificationOTP
+			val.MobileOTPGenerateTimestamp = userData.MobileOTPGenerateTimestamp
+
 		} else {
 			fmt.Print(val, ok)
 		}
@@ -116,6 +122,28 @@ func MPatchNewClient(rErr error) *mpatch.Patch {
 			return nil, rErr
 		}
 		return &pubsub.Client{}, nil
+	})
+
+	if err != nil {
+		fmt.Println("patching failed", err)
+	}
+
+	return patch
+}
+
+func MPatchAtoi(rErr error) *mpatch.Patch {
+
+	var patch *mpatch.Patch
+	var err error
+
+	patch, err = mpatch.PatchMethod(strconv.Atoi, func(_ string) (arg1 int, arg2 error) {
+		patch.Unpatch()
+		defer patch.Patch()
+		if rErr != nil {
+			return 0, rErr
+		}
+		fmt.Print(rErr)
+		return 0, nil
 	})
 
 	if err != nil {
@@ -325,6 +353,27 @@ func MPatchCreateSignedTransaction(rVal string, errVal error) *mpatch.Patch {
 	}
 
 	return patch
+}
+
+func MPatchPublish() *mpatch.Patch {
+
+	var patch *mpatch.Patch
+	var err error
+
+	a := pubsub.Topic{}
+
+	patch, err = mpatch.PatchInstanceMethodByName(reflect.TypeOf(&a), "Publish", func(_ *pubsub.Topic, _ context.Context, _ *pubsub.Message) *pubsub.PublishResult {
+		patch.Unpatch()
+		defer patch.Patch()
+		return &pubsub.PublishResult{}
+	})
+
+	if err != nil {
+		fmt.Println("patching failed", err)
+	}
+
+	return patch
+
 }
 
 // func MPatchSeedFromMnemonic(rVal)
