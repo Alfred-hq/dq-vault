@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -66,6 +67,17 @@ func TestPathSaveUserConsent(t *testing.T) {
 		}
 	}
 
+	mpStorageEntryJson := MPatchEntryJSON(errors.New(tErr))
+
+	s.EXPECT().Get(context.Background(), config.StorageBasePath+"MNEMONICS").Return(&logical.StorageEntry{}, nil)
+	res, err = b.pathSaveUserConsent(context.Background(), &req, &framework.FieldData{})
+
+	if err == nil {
+		t.Error("expected error, received ", res, err)
+	}
+
+	fmt.Println("unPached ")
+
 	// mpjwt.Unpatch()
 	// mpnc.Unpatch()
 	// mpgetps.Unpatch()
@@ -75,6 +87,7 @@ func TestPathSaveUserConsent(t *testing.T) {
 	// mpgetps = MPatchGetPubSub("test", nil)
 
 	mpGet.Unpatch()
+	mpStorageEntryJson.Unpatch()
 	mpGet = MPatchGet("PRIVATE_KEY")
 
 	s.EXPECT().Get(context.Background(), config.StorageBasePath+"PRIVATE_KEY").Return(&logical.StorageEntry{}, nil)
@@ -112,6 +125,7 @@ func TestPathSaveUserConsent(t *testing.T) {
 		t.Error("expected error, received ", res, err)
 	}
 
+	mpStorageEntryJson.Unpatch()
 	mpGet.Unpatch()
 	mpjwt.Unpatch()
 	mpnc.Unpatch()

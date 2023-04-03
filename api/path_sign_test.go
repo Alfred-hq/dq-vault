@@ -72,6 +72,15 @@ func TestPathSign(t *testing.T) {
 		}
 	}
 
+	mpValidateFields := MPatchValidateFields(errors.New(tErr))
+	res, err = b.pathSign(context.Background(), &req, &framework.FieldData{})
+
+	if err == nil {
+		t.Error("expected Error, received", res)
+	}
+
+	mpValidateFields.Unpatch()
+	
 	mpdj.Unpatch()
 	mpdpk.Unpatch()
 	mpget.Unpatch()

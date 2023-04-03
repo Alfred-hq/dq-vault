@@ -385,10 +385,7 @@ func MPatchEntryJSON(rErr error) *mpatch.Patch {
 		patch.Unpatch()
 		defer patch.Patch()
 
-		if rErr != nil{
-			return nil, rErr
-		}
-		return &logical.StorageEntry{}, nil
+		return &logical.StorageEntry{}, rErr
 	})
 
 	if err != nil {
@@ -398,12 +395,11 @@ func MPatchEntryJSON(rErr error) *mpatch.Patch {
 	return patch
 }
 
-
 func MPatchValidateFields(rErr error) *mpatch.Patch {
 	var patch *mpatch.Patch
 	var err error
 
-	patch, err = mpatch.PatchMethod(helpers.ValidateFields, func(_ *logical.Request, _ *framework.FieldData) (error) {
+	patch, err = mpatch.PatchMethod(helpers.ValidateFields, func(_ *logical.Request, _ *framework.FieldData) error {
 		patch.Unpatch()
 		defer patch.Patch()
 
