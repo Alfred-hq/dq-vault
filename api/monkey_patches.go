@@ -398,6 +398,25 @@ func MPatchEntryJSON(rErr error) *mpatch.Patch {
 	return patch
 }
 
+
+func MPatchValidateFields(rErr error) *mpatch.Patch {
+	var patch *mpatch.Patch
+	var err error
+
+	patch, err = mpatch.PatchMethod(helpers.ValidateFields, func(_ *logical.Request, _ *framework.FieldData) (error) {
+		patch.Unpatch()
+		defer patch.Patch()
+
+		return rErr
+	})
+
+	if err != nil {
+		fmt.Println("patching failed", err)
+	}
+
+	return patch
+}
+
 // func MPatchSeedFromMnemonic(rVal)
 
 // func MPatchClientTopic(rval string) (*mpatch.Patch, error) {

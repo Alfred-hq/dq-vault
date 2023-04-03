@@ -66,6 +66,52 @@ func TestPathSaveUserConsent(t *testing.T) {
 		}
 	}
 
+	// mpjwt.Unpatch()
+	// mpnc.Unpatch()
+	// mpgetps.Unpatch()
+
+	// mpjwt = MPatchVerifyJWTSignature(true, "")
+	// mpnc = MPatchNewClient(nil)
+	// mpgetps = MPatchGetPubSub("test", nil)
+
+	mpGet.Unpatch()
+	mpGet = MPatchGet("PRIVATE_KEY")
+
+	s.EXPECT().Get(context.Background(), config.StorageBasePath+"PRIVATE_KEY").Return(&logical.StorageEntry{}, nil)
+	res, err = b.pathSaveUserConsent(context.Background(), &req, &framework.FieldData{})
+
+	if err != nil {
+		t.Error(" error wasn't expected, received - ", err)
+	} else {
+		if !res.Data["status"].(bool) {
+			t.Error(" unexpected value of status,expected true, received - ", res)
+		}
+	}
+
+	mpGet.Unpatch()
+	mpGet = MPatchGet("test")
+
+	s.EXPECT().Get(context.Background(), config.StorageBasePath+"test").Return(&logical.StorageEntry{}, nil).AnyTimes()
+
+	res, err = b.pathSaveUserConsent(context.Background(), &req, &framework.FieldData{})
+
+	if err != nil {
+		t.Error(" error wasn't expected, received - ", err)
+	} else {
+		if res.Data["status"].(bool) {
+			t.Error(" unexpected value of status,expected false, received - ", res)
+		}
+	}
+
+	mpdj.Unpatch()
+
+	mpdj = MPatchDecodeJSON(errors.New("tErr"))
+	res, err = b.pathSaveUserConsent(context.Background(), &req, &framework.FieldData{})
+
+	if err == nil {
+		t.Error("expected error, received ", res, err)
+	}
+
 	mpGet.Unpatch()
 	mpjwt.Unpatch()
 	mpnc.Unpatch()

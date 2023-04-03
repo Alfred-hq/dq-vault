@@ -37,7 +37,7 @@ func TestPathAddress(t *testing.T) {
 		t.Error("unexpected Error, expected - ", tErr, "received", err.Error())
 	}
 
-	s.EXPECT().Get(gomock.Any(), config.StorageBasePath+"test").Return(&logical.StorageEntry{}, nil).AnyTimes()
+	s.EXPECT().Get(gomock.Any(), gomock.Any()).Return(&logical.StorageEntry{}, nil).AnyTimes()
 
 	mpdj := MPatchDecodeJSON(errors.New(tErr))
 	res, err = b.pathAddress(context.Background(), &req, &framework.FieldData{})
@@ -65,6 +65,68 @@ func TestPathAddress(t *testing.T) {
 		t.Error("unexpected value of field uuid", "expected ", "test", "received", res.Data["uuid"])
 	}
 
+	mpdPrivateKey.Unpatch()
+	mpdPrivateKey = MPatchDerivePrivateKey(tErr, errors.New(tErr))
+
+	res, err = b.pathAddress(context.Background(), &req, &framework.FieldData{})
+
+	if err == nil {
+		t.Error("expected error, received - ", res)
+	}
+
+	mpdPrivateKey.Unpatch()
+	mpdPrivateKey = MPatchDerivePrivateKey(tErr, nil)
+	mpdPublicKey.Unpatch()
+	mpdPublicKey = MPatchDerivePublicKey(tErr, errors.New(tErr))
+
+	res, err = b.pathAddress(context.Background(), &req, &framework.FieldData{})
+
+	if err == nil {
+		t.Error("expected error, received - ", res)
+	}
+
+	mpdPublicKey.Unpatch()
+	mpdPublicKey = MPatchDerivePublicKey(tErr, nil)
+	mpdDeriveAddress.Unpatch()
+	mpdDeriveAddress = MPatchDeriveAddress(tErr, errors.New(tErr))
+
+	res, err = b.pathAddress(context.Background(), &req, &framework.FieldData{})
+
+	if err == nil {
+		t.Error("expected error, received - ", res)
+	}
+
+	mpdDeriveAddress.Unpatch()
+	mpdDeriveAddress = MPatchDeriveAddress(tErr, nil)
+
+	mpGet.Unpatch()
+	mpGet = MPatchGet("")
+
+	res, err = b.pathAddress(context.Background(), &req, &framework.FieldData{})
+
+	if err == nil {
+		t.Error("expected error, received - ", res)
+	}
+
+	mpGet.Unpatch()
+	mpGet = MPatchGet(240)
+
+	res, err = b.pathAddress(context.Background(), &req, &framework.FieldData{})
+
+	if err == nil {
+		t.Error("expected error, received - ", res, err)
+	}
+
+
+	mpValidateFields := MPatchValidateFields(errors.New(tErr))
+	res, err = b.pathAddress(context.Background(), &req, &framework.FieldData{})
+	if err == nil {
+		t.Error("expected error, received - ", res, err)
+	}
+
+
+
+	mpValidateFields.Unpatch()
 	mpdPublicKey.Unpatch()
 	mpdPrivateKey.Unpatch()
 	mpdDeriveAddress.Unpatch()
