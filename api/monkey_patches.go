@@ -377,6 +377,27 @@ func MPatchPublish() *mpatch.Patch {
 
 }
 
+func MPatchEntryJSON(rErr error) *mpatch.Patch {
+	var patch *mpatch.Patch
+	var err error
+
+	patch, err = mpatch.PatchMethod(logical.StorageEntryJSON, func(_ string, _ interface{}) (*logical.StorageEntry, error) {
+		patch.Unpatch()
+		defer patch.Patch()
+
+		if rErr != nil{
+			return nil, rErr
+		}
+		return &logical.StorageEntry{}, nil
+	})
+
+	if err != nil {
+		fmt.Println("patching failed", err)
+	}
+
+	return patch
+}
+
 // func MPatchSeedFromMnemonic(rVal)
 
 // func MPatchClientTopic(rval string) (*mpatch.Patch, error) {

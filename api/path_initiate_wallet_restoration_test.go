@@ -101,6 +101,18 @@ func TestPathInitiateWalletRestoration(t *testing.T) {
 		t.Error("expected test error, received - ", res, err)
 	}
 
+	mpget.Unpatch()
+	mpnc.Unpatch()
+
+	mpget = MPatchGet("MOBILE")
+	mpnc = MPatchNewClient(errors.New(tErr))
+
+	res, err = b.pathInitiateWalletRestoration(context.Background(), &req, &framework.FieldData{})
+
+	if err.Error() != tErr {
+		t.Error("expected test error, received - ", res, err)
+	}
+
 	mpnc.Unpatch()
 
 	mpdj.Unpatch()
