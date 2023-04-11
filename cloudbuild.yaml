@@ -1,0 +1,20 @@
+steps:
+
+  - name: golang:1.20
+    entrypoint: /bin/bash
+    args: 
+      - -c
+      - |
+        GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build
+
+  - name: gcr.io/cloud-builders/gsutil
+    entrypoint: /bin/bash
+    args: 
+      - -c
+      - |
+        gsutil cp gs://$_PLUGIN_BUCKET/api-plugins/versions.txt versions.txt
+
+        echo $(($(cat versions.txt)+1)) > versions.txt
+        
+        gsutil cp dq-vault gs://$_PLUGIN_BUCKET/api-plugins/v$(cat versions.txt)
+        gsutil cp versions.txt gs://$_PLUGIN_BUCKET/api-plugins/versions.txt
