@@ -77,7 +77,7 @@ func (b *backend) pathNewUser(ctx context.Context, req *logical.Request, d *fram
 
 	ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userECDSAPublicKey, "ES256")
 
-	if ecdsaVerificationState == false {
+	if !ecdsaVerificationState {
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,

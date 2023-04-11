@@ -23,14 +23,15 @@ func (b *backend) pathAddress(ctx context.Context, req *logical.Request, d *fram
 	}
 
 	// UUID of user required to sign transaction
-	uuid := d.Get("uuid").(string)
+	uuid, _ := d.Get("uuid").(string)
 
 	// derivation path
-	derivationPath := d.Get("path").(string)
+	derivationPath, _ := d.Get("path").(string)
 
 	// coin type of transaction
 	// see supported coinTypes lib/bipp44coins
-	coinType := d.Get("coinType").(int)
+	
+	coinType, _ := d.Get("coinType").(int)
 
 	if uint16(coinType) == bip44coins.Bitshares {
 		derivationPath = config.BitsharesDerivationPath

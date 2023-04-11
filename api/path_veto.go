@@ -57,7 +57,7 @@ func (b *backend) pathVeto(ctx context.Context, req *logical.Request, d *framewo
 	t := client.Topic(pubsubTopic)
 	for index, guardian := range userData.GuardianIdentifiers {
 		if guardian == guardianIdentifier {
-			if userData.IsRestoreInProgress == false {
+			if !userData.IsRestoreInProgress {
 				return &logical.Response{
 					Data: map[string]interface{}{
 						"status":  false,
@@ -70,7 +70,8 @@ func (b *backend) pathVeto(ctx context.Context, req *logical.Request, d *framewo
 			waitPeriodInt, err := strconv.Atoi(waitPeriod)
 
 			currentUnixTime := time.Now().Unix()
-			if userData.IsRestoreInProgress == true && userData.RestoreInitiationTimestamp+int64(waitPeriodInt) <= currentUnixTime {
+
+			if userData.IsRestoreInProgress && userData.RestoreInitiationTimestamp+int64(waitPeriodInt) <= currentUnixTime {
 				return &logical.Response{
 					Data: map[string]interface{}{
 						"status":  false,

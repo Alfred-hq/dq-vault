@@ -57,7 +57,7 @@ func (b *backend) pathGetUserVaultStatus(ctx context.Context, req *logical.Reque
 
 	ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 
-	if ecdsaVerificationState == false {
+	if !ecdsaVerificationState{
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,

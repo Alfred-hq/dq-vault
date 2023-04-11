@@ -5,6 +5,7 @@ import (
 
 	log "github.com/mgutz/logxi/v1"
 	"github.com/ryadavDeqode/dq-vault/lib/adapter"
+	"github.com/sirupsen/logrus"
 )
 
 var logger = log.New("tests")
@@ -105,7 +106,7 @@ func TestBTCPrivateKey(t *testing.T) {
 	for _, pair := range btcAdapterPrivateKeyTests {
 		adapter := adapter.NewBitcoinAdapter(pair.input.seed, pair.input.derivationPath, pair.input.isDev)
 
-		wif, _ := adapter.DerivePrivateKey(logger)
+		wif, _ := adapter.DerivePrivateKey(logrus.Logger{})
 		if wif != pair.privateKey {
 			t.Error(
 				"Seed", pair.input.seed,
@@ -121,7 +122,7 @@ func TestBTCPublicKey(t *testing.T) {
 	for _, pair := range btcAdapterPublicKeyTests {
 		adapter := adapter.NewBitcoinAdapter(pair.input.seed, pair.input.derivationPath, pair.input.isDev)
 
-		publicKey, _ := adapter.DerivePublicKey(logger)
+		publicKey, _ := adapter.DerivePublicKey(logrus.Logger{})
 		if publicKey != pair.publicKey {
 			t.Error(
 				"Seed", pair.input.seed,
@@ -137,7 +138,7 @@ func TestBTCAddress(t *testing.T) {
 	for _, pair := range btcAdapterAddressTests {
 		adapter := adapter.NewBitcoinAdapter(pair.input.seed, pair.input.derivationPath, pair.input.isDev)
 
-		address, _ := adapter.DeriveAddress(logger)
+		address, _ := adapter.DeriveAddress(logrus.Logger{})
 		if address != pair.address {
 			t.Error(
 				"Seed", pair.input.seed,
@@ -153,8 +154,8 @@ func TestBTCSignature(t *testing.T) {
 	for _, pair := range btcAdapterSignatureTests {
 		adapter := adapter.NewBitcoinAdapter(pair.input.seed, pair.input.derivationPath, pair.input.isDev)
 
-		adapter.DerivePrivateKey(logger)
-		signature, _ := adapter.CreateSignedTransaction(pair.payload, logger)
+		adapter.DerivePrivateKey(logrus.Logger{})
+		signature, _ := adapter.CreateSignedTransaction(pair.payload, logrus.Logger{})
 		if signature != pair.signature {
 			t.Error(
 				"Seed", pair.input.seed,

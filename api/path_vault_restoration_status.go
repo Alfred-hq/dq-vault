@@ -19,12 +19,12 @@ import (
 	"github.com/ryadavDeqode/dq-vault/logger"
 )
 
-func checkIfNotEmptyy(a string) bool {
-	if a == "" {
-		return false
-	}
-	return true
-}
+// func checkIfNotEmptyy(a string) bool {
+// 	if a == "" {
+// 		return false
+// 	}
+// 	return true
+// }
 
 // pathPassphrase corresponds to POST gen/passphrase.
 func (b *backend) pathGetUserVaultRestorationStatus(ctx context.Context, req *logical.Request, d *framework.FieldData) (*logical.Response, error) {

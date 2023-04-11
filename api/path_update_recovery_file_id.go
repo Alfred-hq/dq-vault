@@ -63,7 +63,7 @@ func (b *backend) pathUpdateRecoveryFileId(ctx context.Context, req *logical.Req
 
 	ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
 
-	if ecdsaVerificationState == false {
+	if !ecdsaVerificationState{
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,

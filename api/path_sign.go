@@ -23,18 +23,18 @@ func (b *backend) pathSign(ctx context.Context, req *logical.Request, d *framewo
 	}
 
 	// UUID of user which want to sign transaction
-	uuid := d.Get("uuid").(string)
+	uuid, _ := d.Get("uuid").(string)
 
 	// derivation path
-	derivationPath := d.Get("path").(string)
+	derivationPath, _ := d.Get("path").(string)
 
 	// coin type of transaction
 	// see supported coinTypes lib/bipp44coins
-	coinType := d.Get("coinType").(int)
+	coinType, _ := d.Get("coinType").(int)
 
 	// data in string hex
 	// depends on type of transaction
-	payload := d.Get("payload").(string)
+	payload, _ := d.Get("payload").(string)
 
 	if uint16(coinType) == bip44coins.Bitshares {
 		derivationPath = config.BitsharesDerivationPath
@@ -43,6 +43,7 @@ func (b *backend) pathSign(ctx context.Context, req *logical.Request, d *framewo
 	logger.Log(backendLogger, config.Info, "signature:", fmt.Sprintf("request  path=[%v] cointype=%v payload=[%v]", derivationPath, coinType, payload))
 
 	// validate data provided
+
 	if err := helpers.ValidateData(ctx, req, uuid, derivationPath); err != nil {
 		logger.Log(backendLogger, config.Error, "signature:", err.Error())
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
@@ -52,6 +53,7 @@ func (b *backend) pathSign(ctx context.Context, req *logical.Request, d *framewo
 	path := config.StorageBasePath + uuid
 	entry, err := req.Storage.Get(ctx, path)
 	if err != nil {
+
 		logger.Log(backendLogger, config.Error, "signature:", err.Error())
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}

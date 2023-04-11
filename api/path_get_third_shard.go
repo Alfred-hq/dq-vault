@@ -51,7 +51,7 @@ func (b *backend) pathGetThirdShard(ctx context.Context, req *logical.Request, d
 
 	rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userData.UserRSAPublicKey, "RS256")
 
-	if rsaVerificationState == false {
+	if !rsaVerificationState {
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,
@@ -60,7 +60,7 @@ func (b *backend) pathGetThirdShard(ctx context.Context, req *logical.Request, d
 		}, nil
 	}
 
-	if userData.IsRestoreInProgress == false {
+	if !userData.IsRestoreInProgress {
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,

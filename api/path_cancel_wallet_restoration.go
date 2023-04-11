@@ -22,8 +22,8 @@ func (b *backend) pathCancelWalletRestoration(ctx context.Context, req *logical.
 	backendLogger := b.logger
 
 	// obtain details:
-	identifier := d.Get("identifier").(string)
-	signatureRSA := d.Get("signatureRSA").(string)
+	identifier, _ := d.Get("identifier").(string)
+	signatureRSA, _ := d.Get("signatureRSA").(string)
 
 	// path where user data is stored
 	path := config.StorageBasePath + identifier
