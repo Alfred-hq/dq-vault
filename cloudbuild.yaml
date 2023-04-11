@@ -18,3 +18,7 @@ steps:
         
         gsutil cp dq-vault gs://$_PLUGIN_BUCKET/api-plugins/v$(cat versions.txt)
         gsutil cp versions.txt gs://$_PLUGIN_BUCKET/api-plugins/versions.txt
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args: ['compute', 'instance-groups', 'managed' ,'rolling-action', 'restart','vault']
