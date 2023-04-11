@@ -24,4 +24,4 @@ steps:
 
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
-    args: ['compute', 'instance-groups', 'managed' ,'rolling-action', 'restart', 'vault-igm', '--region', 'us-central1']
+    args: ['compute', 'instance-groups', 'managed' ,'rolling-action', 'restart', 'vault-igm', '--region', '$_VAULT_REGION']
