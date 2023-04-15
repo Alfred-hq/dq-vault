@@ -28,4 +28,4 @@ steps:
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: updating Migs
     entrypoint: gcloud
-    args: ['compute', 'instance-groups', 'managed' ,'rolling-action', 'replace', ${_MIG_NAME}, '--region', ${_MIG_REGION}]
+    args: ['compute', 'instance-groups', 'managed' ,'rolling-action', 'replace', '${_MIG_NAME}', '--region', '${_MIG_REGION}']
