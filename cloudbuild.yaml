@@ -1,3 +1,4 @@
+# substitution _PLUGIN_BUCKET,_MIG_REGION, _MIG_NAME
 options:
   logging: CLOUD_LOGGING_ONLY
 
@@ -5,14 +6,16 @@ steps:
 
   - name: golang:1.20
     entrypoint: /bin/bash
-    args: 
+    id: building plugins
+    args:
       - -c
       - |
         GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build
 
   - name: gcr.io/cloud-builders/gsutil
     entrypoint: /bin/bash
-    args: 
+    id: updating plugins
+    args:
       - -c
       - |
         gsutil cp gs://$_PLUGIN_BUCKET/api-plugins/versions.txt versions.txt
@@ -23,7 +26,6 @@ steps:
         gsutil cp versions.txt gs://$_PLUGIN_BUCKET/api-plugins/versions.txt
 
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: updating Migs
     entrypoint: gcloud
-    args: ['compute', 'instance-groups', 'managed' ,'rolling-action', 'replace', 'vault-igm', '--region', '$_VAULT_REGION']
-
-
+    args: ['compute', 'instance-groups', 'managed' ,'rolling-action', 'replace', ${_MIG_NAME}, '--region', ${_MIG_REGION}]
