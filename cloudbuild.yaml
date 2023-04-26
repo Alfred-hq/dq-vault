@@ -18,7 +18,17 @@ steps:
     args:
       - -c
       - |
-        gsutil cp gs://$_PLUGIN_BUCKET/api-plugins/versions.txt versions.txt
+
+        result=$(gsutil -q stat gs://$_PLUGIN_BUCKET/api-plugins/versions.txt versions.txt || echo 1)
+        if [[ $result != 1 ]]; then
+          echo "File exists"
+          gsutil cp gs://$_PLUGIN_BUCKET/api-plugins/versions.txt versions.txt
+        else
+          echo "File does not exist"
+          echo 0 > versions.txt
+        fi
+
+        
 
         echo $(($(cat versions.txt)+1)) > versions.txt
         
