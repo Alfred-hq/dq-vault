@@ -18,6 +18,7 @@ func (b *backend) pathBackupThirdShard(ctx context.Context, req *logical.Request
 	// obtain details:
 	identifier := d.Get("identifier").(string)
 	walletThirdShard := d.Get("walletThirdShard").(string)
+	rsaEncryptedMnemonicEncryptionAESKey := d.Get("rsaEncryptedMnemonicEncryptionAESKey").(string)
 	userRSAPublicKey := d.Get("userRSAPublicKey").(string)
 	signatureRSA := d.Get("signatureRSA").(string)
 	signatureECDSA := d.Get("signatureECDSA").(string)
@@ -66,6 +67,7 @@ func (b *backend) pathBackupThirdShard(ctx context.Context, req *logical.Request
 	}
 
 	userData.WalletThirdShard = walletThirdShard
+	userData.RsaEncryptedMnemonicEncryptionAESKey = rsaEncryptedMnemonicEncryptionAESKey
 	userData.UserRSAPublicKey = userRSAPublicKey
 	userData.LastRecoverySavedAt.GoogleDriveFileId = ""
 	userData.LastRecoverySavedAt.IcloudFileId = ""
