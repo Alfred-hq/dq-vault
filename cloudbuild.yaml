@@ -25,7 +25,7 @@ steps:
           gsutil cp gs://$_PLUGIN_BUCKET/api-plugins/versions.txt versions.txt
         else
           echo "File does not exist"
-          echo 0 > versions.txt
+          echo 1 > versions.txt
         fi
 
         
