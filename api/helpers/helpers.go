@@ -43,34 +43,35 @@ var PurposeType = []string{
 }
 
 type UserDetails struct {
-	UserEmail                         string                   `json:"useremail"`
-	UnverifiedUserEmail               string                   `json:"tempuseremail"`
-	Guardians                         []string                 `json:"guardians"`
-	UnverifiedGuardians               []string                 `json:"unverifiedGuardians"`
-	GuardianEmailOTPGenerateTimestamp []int64                  `json:"guardianEmailOTPGenerateTimestamp"`
-	GuardiansAddLinkInitiation        []int64                  `json:"guardiansAddLinkInitiation"`
-	GuardiansUpdateStatus             []bool                   `json:"guardiansUpdateStatus"`
-	UserMobile                        string                   `json:"usermobile"`
-	UnverifiedUserMobile              string                   `json:"tempusermobile"`
-	UserRSAPublicKey                  string                   `json:"userRSAPublicKey"`
-	UserECDSAPublicKey                string                   `json:"userECDSAPublicKey"`
-	WalletThirdShard                  string                   `json:"secret"`
-	LastRecoverySavedAt               LastRecoverySaveLocation `json:"lastRecoverySavedAt"`
-	UnverifiedWalletThirdShard        string                   `json:"unverifiedSecret"`
-	Identifier                        string                   `json:"identifier"`
-	IsRestoreInProgress               bool                     `json:"isrestoreinprogress"`
-	EmailVerificationState            bool                     `json:"emailverificationstate"`
-	MobileVerificationState           bool                     `json:"mobileverificationstate"`
-	PrimaryEmailVerificationOTP       string                   `json:"primaryEmailVerificationOTP"`
-	GuardianIdentifiers               []string                 `json:"guardianIdentifiers"`
-	MobileVerificationOTP             string                   `json:"mobileverificationotp"`
-	PrimaryEmailOTPGenerateTimestamp  int64                    `json:"primaryEmailOTPGenerateTimestamp"`
-	MobileOTPGenerateTimestamp        int64                    `json:"mobileotpgeneratedtimestamp"`
-	RestoreInitiationTimestamp        int64                    `json:"restoreinitiationtimestamp"`
-	WalletIdentifierStoredAt          string                   `json:"walletIdentifierStoredAt"`
-	SignedConsentForPrivateKey        string                   `json:"signedConsentForPrivateKey"`
-	SignedConsentForMnemonics         string                   `json:"signedConsentForMnemonics"`
-	LastVetoedBy                      string                   `json:"lastVetoedBy"`
+	UserEmail                            string                   `json:"useremail"`
+	UnverifiedUserEmail                  string                   `json:"tempuseremail"`
+	Guardians                            []string                 `json:"guardians"`
+	UnverifiedGuardians                  []string                 `json:"unverifiedGuardians"`
+	GuardianEmailOTPGenerateTimestamp    []int64                  `json:"guardianEmailOTPGenerateTimestamp"`
+	GuardiansAddLinkInitiation           []int64                  `json:"guardiansAddLinkInitiation"`
+	GuardiansUpdateStatus                []bool                   `json:"guardiansUpdateStatus"`
+	UserMobile                           string                   `json:"usermobile"`
+	UnverifiedUserMobile                 string                   `json:"tempusermobile"`
+	UserRSAPublicKey                     string                   `json:"userRSAPublicKey"`
+	UserECDSAPublicKey                   string                   `json:"userECDSAPublicKey"`
+	WalletThirdShard                     string                   `json:"secret"`
+	LastRecoverySavedAt                  LastRecoverySaveLocation `json:"lastRecoverySavedAt"`
+	UnverifiedWalletThirdShard           string                   `json:"unverifiedSecret"`
+	Identifier                           string                   `json:"identifier"`
+	IsRestoreInProgress                  bool                     `json:"isrestoreinprogress"`
+	EmailVerificationState               bool                     `json:"emailverificationstate"`
+	MobileVerificationState              bool                     `json:"mobileverificationstate"`
+	PrimaryEmailVerificationOTP          string                   `json:"primaryEmailVerificationOTP"`
+	GuardianIdentifiers                  []string                 `json:"guardianIdentifiers"`
+	MobileVerificationOTP                string                   `json:"mobileverificationotp"`
+	PrimaryEmailOTPGenerateTimestamp     int64                    `json:"primaryEmailOTPGenerateTimestamp"`
+	MobileOTPGenerateTimestamp           int64                    `json:"mobileotpgeneratedtimestamp"`
+	RestoreInitiationTimestamp           int64                    `json:"restoreinitiationtimestamp"`
+	WalletIdentifierStoredAt             string                   `json:"walletIdentifierStoredAt"`
+	SignedConsentForPrivateKey           string                   `json:"signedConsentForPrivateKey"`
+	SignedConsentForMnemonics            string                   `json:"signedConsentForMnemonics"`
+	LastVetoedBy                         string                   `json:"lastVetoedBy"`
+	RsaEncryptedMnemonicEncryptionAESKey string                   `json:"rsaEncryptedMnemonicEncryptionAESKey"`
 }
 
 type LastRecoverySaveLocation struct {
@@ -99,6 +100,11 @@ type VaultStatus struct {
 	SignedConsentForPrivateKey bool                     `json:"signedConsentForPrivateKey"`
 	SignedConsentForMnemonics  bool                     `json:"signedConsentForMnemonics"`
 	LastVetoedBy               string                   `json:"lastVetoedBy"`
+}
+
+type RecoveryDetails struct {
+	ThirdShard                           string `json:"thirdShard"`
+	RsaEncryptedMnemonicEncryptionAESKey string `json:"rsaEncryptedMnemonicEncryptionAESKey"`
 }
 
 type WalletIdentifierStorage struct {
