@@ -111,6 +111,31 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 	t := client.Topic(pubsubTopic)
 	switch sourceType {
 	case "userEmail":
+		for _, guardian := range userData.Guardians {
+			if guardian == sourceValue {
+				return &logical.Response{
+					Data: map[string]interface{}{
+						"status":  false,
+						"remarks": "Cannot add guardian email as primary email!",
+					},
+				}, nil
+			}
+		}
+
+		for guardianIndex, guardian := range userData.UnverifiedGuardians {
+			if guardian == sourceValue {
+				expiryTime := userData.GuardiansAddLinkInitiation[guardianIndex] + 604800
+				if time.Now().Unix() < expiryTime {
+					return &logical.Response{
+						Data: map[string]interface{}{
+							"status":  false,
+							"remarks": "Cannot add unverified guardian email as primary email!",
+						},
+					}, nil
+				}
+			}
+		}
+		
 		mailFormat := &helpers.MailFormatVerification{sourceValue, otp, "VERIFICATION", "email"}
 		mailFormatJson, _ := json.Marshal(mailFormat)
 		res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
