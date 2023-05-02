@@ -326,6 +326,7 @@ type MailFormatGuardianAdditionLink struct {
 	MFASource        string
 	WalletIdentifier string
 	Path             string
+	UserEmail        string
 }
 
 type MailFormatGuardianVerified struct {
@@ -349,6 +350,7 @@ type MailFormatGuardian struct {
 	MFASource          string
 	TimeOfInitiation   string
 	TimeOfRestoration  string
+	UserEmail          string
 }
 
 type MailFormatVetoed struct {
@@ -356,4 +358,5 @@ type MailFormatVetoed struct {
 	Purpose        string
 	GuardianVetoed string
 	MFASource      string
+	VetoTime       string
 }

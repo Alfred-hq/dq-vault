@@ -168,17 +168,17 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			mailFormatUserJson, _ := json.Marshal(mailFormatUser)
 			res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatUserJson})
 			if userData.Guardians[0] != "" {
-				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[0], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[0], "email", currentTime, timeOfRestoration}
+				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[0], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[0], "email", currentTime, timeOfRestoration, userData.UserEmail}
 				mailFormatGuardianJson, _ := json.Marshal(mailFormatGuardian)
 				res = t.Publish(newCtx, &pubsub.Message{Data: mailFormatGuardianJson})
 			}
 			if userData.Guardians[1] != "" {
-				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[1], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[1], "email", currentTime, timeOfRestoration}
+				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[1], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[1], "email", currentTime, timeOfRestoration, userData.UserEmail}
 				mailFormatGuardianJson, _ := json.Marshal(mailFormatGuardian)
 				res = t.Publish(newCtx, &pubsub.Message{Data: mailFormatGuardianJson})
 			}
 			if userData.Guardians[2] != "" {
-				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[2], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[2], "email", currentTime, timeOfRestoration}
+				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[2], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[2], "email", currentTime, timeOfRestoration, userData.UserEmail}
 				mailFormatGuardianJson, _ := json.Marshal(mailFormatGuardian)
 				res = t.Publish(newCtx, &pubsub.Message{Data: mailFormatGuardianJson})
 			}
@@ -318,17 +318,17 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			mailFormatUserJson, _ := json.Marshal(mailFormatUser)
 			res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatUserJson})
 			if userData.Guardians[0] != "" {
-				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[0], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[0], "email", currentTime, timeOfRestoration}
+				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[0], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[0], "email", currentTime, timeOfRestoration, userData.UserEmail}
 				mailFormatGuardianJson, _ := json.Marshal(mailFormatGuardian)
 				res = t.Publish(newCtx, &pubsub.Message{Data: mailFormatGuardianJson})
 			}
 			if userData.Guardians[1] != "" {
-				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[1], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[1], "email", currentTime, timeOfRestoration}
+				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[1], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[1], "email", currentTime, timeOfRestoration, userData.UserEmail}
 				mailFormatGuardianJson, _ := json.Marshal(mailFormatGuardian)
 				res = t.Publish(newCtx, &pubsub.Message{Data: mailFormatGuardianJson})
 			}
 			if userData.Guardians[2] != "" {
-				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[2], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[2], "email", currentTime, timeOfRestoration}
+				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[2], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[2], "email", currentTime, timeOfRestoration, userData.UserEmail}
 				mailFormatGuardianJson, _ := json.Marshal(mailFormatGuardian)
 				res = t.Publish(newCtx, &pubsub.Message{Data: mailFormatGuardianJson})
 			}
