@@ -70,6 +70,14 @@ func (b *backend) pathInitiateWalletRestoration(ctx context.Context, req *logica
 	}
 
 	if sourceType == "EMAIL" {
+		if userData.UserEmail == "" {
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "no email is associated with this account",
+				},
+			}, nil
+		}
 		userData.PrimaryEmailVerificationOTP = otp
 		userData.PrimaryEmailOTPGenerateTimestamp = time.Now().Unix()
 		mailFormat := &helpers.MailFormatVerification{To: userData.UserEmail, Otp: otp, Purpose: "VERIFICATION", MFASource: "email"}
@@ -90,6 +98,14 @@ func (b *backend) pathInitiateWalletRestoration(ctx context.Context, req *logica
 			return nil, logical.CodedError(http.StatusUnprocessableEntity, pubsubErr.Error())
 		}
 	} else if sourceType == "MOBILE" {
+		if userData.UserMobile == "" {
+			return &logical.Response{
+				Data: map[string]interface{}{
+					"status":  false,
+					"remarks": "no mobile number is associated with this account",
+				},
+			}, nil
+		}
 		userData.MobileVerificationOTP = otp
 		userData.MobileOTPGenerateTimestamp = time.Now().Unix()
 
