@@ -97,10 +97,16 @@ func (b *backend) pathGetThirdShard(ctx context.Context, req *logical.Request, d
 		return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
 	}
 
+	recoveryDetails := &helpers.RecoveryDetails{
+		ThirdShard: userData.WalletThirdShard,
+		RsaEncryptedMnemonicEncryptionAESKey: userData.RsaEncryptedMnemonicEncryptionAESKey,
+	}
+
+
 	// return response
 	return &logical.Response{
 		Data: map[string]interface{}{
-			"remarks": userData.WalletThirdShard,
+			"remarks": recoveryDetails,
 			"status":  true,
 		},
 	}, nil

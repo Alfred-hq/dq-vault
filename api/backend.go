@@ -288,6 +288,11 @@ returns status of api plugin
 						Description: "wallet third shard",
 						Default:     "",
 					},
+					"rsaEncryptedMnemonicEncryptionAESKey": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "encrypted aes key",
+						Default:     "",
+					},
 				},
 				Callbacks: map[logical.Operation]framework.OperationFunc{
 					logical.UpdateOperation: b.pathBackupThirdShard,
