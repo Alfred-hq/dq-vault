@@ -109,7 +109,7 @@ func (b *backend) pathInitiateWalletRestoration(ctx context.Context, req *logica
 		userData.MobileVerificationOTP = otp
 		userData.MobileOTPGenerateTimestamp = time.Now().Unix()
 
-		mailFormat := &helpers.MailFormatVerification{userData.UserMobile, otp, "VERIFICATION", "mobile"}
+		mailFormat := &helpers.MailFormatVerification{userData.UserMobile, otp, "VERIFICATION", "mobile", userData.UserWalletAddress}
 		mailFormatJson, _ := json.Marshal(mailFormat)
 
 		pubsubTopic := os.Getenv("PUBSUB_TOPIC")

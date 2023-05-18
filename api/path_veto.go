@@ -87,7 +87,7 @@ func (b *backend) pathVeto(ctx context.Context, req *logical.Request, d *framewo
 			ct := time.Now()
 			currentTime := ct.Format("15:04:05")
 
-			mailFormatUser := &helpers.MailFormatVetoed{userData.UserEmail, "RESTORATION_VETOED", userData.Guardians[index], "email", currentTime}
+			mailFormatUser := &helpers.MailFormatVetoed{userData.UserEmail, "RESTORATION_VETOED", userData.Guardians[index], "email", currentTime, userData.UserWalletAddress}
 			mailFormatUserJson, _ := json.Marshal(mailFormatUser)
 			res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatUserJson})
 			_, err = res.Get(newCtx)

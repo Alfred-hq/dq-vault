@@ -209,6 +209,11 @@ returns status of api plugin
 						Description: "user ECDSA Public Key",
 						Default:     "",
 					},
+					"walletAddress": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "user WalletAddress",
+						Default:     "",
+					},
 				},
 				Callbacks: map[logical.Operation]framework.OperationFunc{
 					logical.UpdateOperation: b.pathNewUser,

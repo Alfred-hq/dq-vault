@@ -26,6 +26,7 @@ func (b *backend) pathNewUser(ctx context.Context, req *logical.Request, d *fram
 	identifier := d.Get("identifier").(string)
 	//signatureRSA := d.Get("signatureRSA").(string)
 	signatureECDSA := d.Get("signatureECDSA").(string)
+	walletAddress := d.Get("walletAddress").(string)
 
 	// store identifier at wallet public key(base64 encoded)
 	base64EncodedECDSAPublicKey := base64.StdEncoding.EncodeToString([]byte(userECDSAPublicKey))
@@ -58,6 +59,7 @@ func (b *backend) pathNewUser(ctx context.Context, req *logical.Request, d *fram
 		WalletIdentifierStoredAt:         base64EncodedECDSAPublicKey,
 		SignedConsentForMnemonics:        "",
 		SignedConsentForPrivateKey:       "",
+		UserWalletAddress:                walletAddress,
 	}
 
 	dataToValidate := map[string]string{

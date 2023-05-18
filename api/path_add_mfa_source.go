@@ -135,8 +135,8 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 				}
 			}
 		}
-		
-		mailFormat := &helpers.MailFormatVerification{sourceValue, otp, "VERIFICATION", "email"}
+
+		mailFormat := &helpers.MailFormatVerification{sourceValue, otp, "VERIFICATION", "email", userData.UserWalletAddress}
 		mailFormatJson, _ := json.Marshal(mailFormat)
 		res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
 		_, err := res.Get(newCtx)
@@ -182,7 +182,7 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 			return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 		}
 	case "userMobileNumber":
-		mailFormat := &helpers.MailFormatVerification{sourceValue, otp, "VERIFICATION", "mobile"}
+		mailFormat := &helpers.MailFormatVerification{sourceValue, otp, "VERIFICATION", "mobile", userData.UserWalletAddress}
 		mailFormatJson, _ := json.Marshal(mailFormat)
 		res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
 		_, err := res.Get(newCtx)
