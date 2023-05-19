@@ -72,6 +72,7 @@ type UserDetails struct {
 	SignedConsentForMnemonics            string                   `json:"signedConsentForMnemonics"`
 	LastVetoedBy                         string                   `json:"lastVetoedBy"`
 	RsaEncryptedMnemonicEncryptionAESKey string                   `json:"rsaEncryptedMnemonicEncryptionAESKey"`
+	UserWalletAddress                    string                   `json:"userWalletAddress"`
 }
 
 type LastRecoverySaveLocation struct {
@@ -320,10 +321,11 @@ func VerifyJWTSignature(jwtToken string, dataToValidate map[string]string, publi
 }
 
 type MailFormatVerification struct {
-	To        string
-	Otp       string
-	Purpose   string
-	MFASource string // enum
+	To            string
+	Otp           string
+	Purpose       string
+	MFASource     string // enum
+	WalletAddress string
 }
 
 type MailFormatGuardianAdditionLink struct {
@@ -333,12 +335,14 @@ type MailFormatGuardianAdditionLink struct {
 	WalletIdentifier string
 	Path             string
 	UserEmail        string
+	WalletAddress    string
 }
 
 type MailFormatGuardianVerified struct {
-	To        string
-	Purpose   string
-	MFASource string
+	To            string
+	Purpose       string
+	MFASource     string
+	WalletAddress string
 }
 
 type MAILFormatUpdates struct {
@@ -346,6 +350,7 @@ type MAILFormatUpdates struct {
 	Purpose          string
 	MFASource        string
 	TimeOfInitiation string
+	WalletAddress    string
 }
 
 type MailFormatGuardian struct {
@@ -357,6 +362,7 @@ type MailFormatGuardian struct {
 	TimeOfInitiation   string
 	TimeOfRestoration  string
 	UserEmail          string
+	WalletAddress      string
 }
 
 type MailFormatVetoed struct {
@@ -365,4 +371,5 @@ type MailFormatVetoed struct {
 	GuardianVetoed string
 	MFASource      string
 	VetoTime       string
+	WalletAddress  string
 }

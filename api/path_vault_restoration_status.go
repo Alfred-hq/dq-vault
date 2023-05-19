@@ -55,7 +55,7 @@ func (b *backend) pathGetUserVaultRestorationStatus(ctx context.Context, req *lo
 		"identifier": identifier,
 	}
 
-	rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userData.UserECDSAPublicKey, "RS256")
+	rsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureRSA, dataToValidate, userData.UserRSAPublicKey, "RS256")
 
 	if rsaVerificationState == false {
 		return &logical.Response{
