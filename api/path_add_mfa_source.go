@@ -174,7 +174,7 @@ func (b *backend) pathAddMFASource(ctx context.Context, req *logical.Request, d 
 		userData.UnverifiedGuardians[index] = sourceValue
 		userData.GuardiansAddLinkInitiation[index] = time.Now().Unix()
 		guardianLinkPath := base64.StdEncoding.EncodeToString([]byte(userData.Identifier + "_" + sourceValue))
-		mailFormat := &helpers.MailFormatGuardianAdditionLink{To: sourceValue, Purpose: "ADD_GUARDIAN", MFASource: "email", WalletIdentifier: identifier, Path: guardianLinkPath, UserEmail: userData.UserEmail}
+		mailFormat := &helpers.MailFormatGuardianAdditionLink{To: sourceValue, Purpose: "ADD_GUARDIAN", MFASource: "email", WalletIdentifier: identifier, Path: guardianLinkPath, UserEmail: userData.UserEmail, WalletAddress: userData.UserWalletAddress}
 		mailFormatJson, _ := json.Marshal(mailFormat)
 		res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatJson})
 		_, err = res.Get(newCtx)
