@@ -28,6 +28,7 @@ func (b *backend) pathSignTyped(ctx context.Context, req *logical.Request, d *fr
 	var message = d.Get("message").(map[string]interface{})
 	var typedData = d.Get("typedData").(map[string]string)
 	var domain = apitypes.TypedDataDomain{}
+	var primaryType = d.Get("primaryType").(string)
 	var types = d.Get("types").(string)
 
 	for key, value := range typedData {
@@ -51,7 +52,7 @@ func (b *backend) pathSignTyped(ctx context.Context, req *logical.Request, d *fr
 	}
 
 	var TypedData = apitypes.TypedData{
-		PrimaryType: "Permit",
+		PrimaryType: primaryType,
 		Domain:      domain,
 		Message:     message,
 		Types:       data,

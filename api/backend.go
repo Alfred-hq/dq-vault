@@ -155,6 +155,10 @@ Returns randomly generated user UUID
 						Type:        framework.TypeString,
 						Description: "Raw transaction payload",
 					},
+					"primaryType": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "Raw transaction payload",
+					},
 				},
 				Callbacks: map[logical.Operation]framework.OperationFunc{
 					logical.UpdateOperation: b.pathSignTyped,
