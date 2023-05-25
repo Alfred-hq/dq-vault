@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/deqode/dq-vault/config"
 	"github.com/hashicorp/vault/sdk/framework"
 	"github.com/hashicorp/vault/sdk/logical"
 	"github.com/rs/xid"
-	"github.com/deqode/dq-vault/config"
 )
 
 // User -- stores data related to user
