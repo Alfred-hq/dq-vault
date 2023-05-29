@@ -3,6 +3,10 @@ package api
 import (
 	"context"
 	"encoding/base64"
+	"os"
+	"strconv"
+	"time"
+
 	// "errors"
 	// "fmt"
 
@@ -55,6 +59,40 @@ func (b *backend) pathGetIdentifier(ctx context.Context, req *logical.Request, d
 			Data: map[string]interface{}{
 				"status":  false,
 				"remarks": remarks,
+			},
+		}, nil
+	}
+
+	identifierPath := config.StorageBasePath + walletIdentifier.WalletIdentifier
+	identifierEntry, err := req.Storage.Get(ctx, identifierPath)
+	if err != nil {
+		logger.Log(backendLogger, config.Error, "initiateWalletRestoration: could not get user data from storage", err.Error())
+		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+	}
+
+	// Get User data
+	var userData helpers.UserDetails
+	err = identifierEntry.DecodeJSON(&userData)
+	if err != nil {
+		logger.Log(backendLogger, config.Error, "initiateWalletRestoration: unable to get user data", err.Error())
+		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+	}
+
+	waitTimeAfterVetoStr := os.Getenv("WAIT_TIME_AFTER_VETO")
+
+	waitTimeAfterVeto, err := strconv.Atoi(waitTimeAfterVetoStr)
+	if err != nil {
+		logger.Log(backendLogger, config.Error, "intiateWalletRestoration: could not convert number to string", err.Error())
+		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+	}
+
+	currentTime := time.Now().Unix()
+
+	if (currentTime - userData.LastVetoedAt) < int64(waitTimeAfterVeto) {
+		return &logical.Response{
+			Data: map[string]interface{}{
+				"status":  false,
+				"remarks": "Vault restoration locked",
 			},
 		}, nil
 	}

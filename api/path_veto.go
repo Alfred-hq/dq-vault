@@ -81,6 +81,7 @@ func (b *backend) pathVeto(ctx context.Context, req *logical.Request, d *framewo
 			}
 			userData.IsRestoreInProgress = false
 			userData.RestoreInitiationTimestamp = int64(0)
+			userData.LastVetoedAt = time.Now().Unix()
 			userData.LastVetoedBy = userData.Guardians[index]
 			store, err := logical.StorageEntryJSON(path, userData)
 

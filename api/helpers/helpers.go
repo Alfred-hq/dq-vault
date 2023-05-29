@@ -73,6 +73,7 @@ type UserDetails struct {
 	LastVetoedBy                         string                   `json:"lastVetoedBy"`
 	RsaEncryptedMnemonicEncryptionAESKey string                   `json:"rsaEncryptedMnemonicEncryptionAESKey"`
 	UserWalletAddress                    string                   `json:"userWalletAddress"`
+	LastVetoedAt                         int64                    `json:"lastVetoedAt"`
 }
 
 type LastRecoverySaveLocation struct {
@@ -101,6 +102,7 @@ type VaultStatus struct {
 	SignedConsentForPrivateKey bool                     `json:"signedConsentForPrivateKey"`
 	SignedConsentForMnemonics  bool                     `json:"signedConsentForMnemonics"`
 	LastVetoedBy               string                   `json:"lastVetoedBy"`
+	LastVetoedAt               int64                    `json:"lastVetoedAt"`
 }
 
 type RecoveryDetails struct {
