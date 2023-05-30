@@ -84,6 +84,7 @@ func (b *backend) pathGetUserVaultRestorationStatus(ctx context.Context, req *lo
 		IsRestoreInProgress:        userData.IsRestoreInProgress,
 		RestoreInitiationTimestamp: userData.RestoreInitiationTimestamp,
 		RestoreCompletionTimestamp: userData.RestoreInitiationTimestamp + int64(waitPeriod),
+		LastVetoedAt:               userData.LastVetoedAt,
 	}
 
 	// return response

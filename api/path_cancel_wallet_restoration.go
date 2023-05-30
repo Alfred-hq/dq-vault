@@ -2,6 +2,8 @@ package api
 
 import (
 	"context"
+	"time"
+
 	// "errors"
 	// "fmt"
 
@@ -58,6 +60,7 @@ func (b *backend) pathCancelWalletRestoration(ctx context.Context, req *logical.
 
 	userData.IsRestoreInProgress = false
 	userData.RestoreInitiationTimestamp = int64(0)
+	userData.LastVetoedAt = time.Now().Unix()
 	store, err := logical.StorageEntryJSON(path, userData)
 	if err != nil {
 		logger.Log(backendLogger, config.Error, "cancelWalletRestoration: could not get storage entry", err.Error())
