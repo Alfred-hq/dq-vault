@@ -30,6 +30,7 @@ func (b *backend) pathVeto(ctx context.Context, req *logical.Request, d *framewo
 	// obtain details:
 	identifier := d.Get("identifier").(string)
 	guardianIdentifier := d.Get("guardianIdentifier").(string)
+	restorationIdentifier := d.Get("restorationIdentifier").(string)
 
 	// path where user data is stored
 	path := config.StorageBasePath + identifier
@@ -57,6 +58,14 @@ func (b *backend) pathVeto(ctx context.Context, req *logical.Request, d *framewo
 	t := client.Topic(pubsubTopic)
 	for index, guardian := range userData.GuardianIdentifiers {
 		if guardian == guardianIdentifier {
+			if userData.GuardianRestorationIdentifier[index] != restorationIdentifier {
+				return &logical.Response{
+					Data: map[string]interface{}{
+						"status":  false,
+						"remarks": "Link Expired",
+					},
+				}, nil
+			}
 			if !userData.IsRestoreInProgress {
 				return &logical.Response{
 					Data: map[string]interface{}{
@@ -86,7 +95,7 @@ func (b *backend) pathVeto(ctx context.Context, req *logical.Request, d *framewo
 			store, err := logical.StorageEntryJSON(path, userData)
 
 			ct := time.Now()
-			currentTime := ct.Format("15:04:05")
+			currentTime := ct.Format("3:04 PM")
 
 			mailFormatUser := &helpers.MailFormatVetoed{userData.UserEmail, "RESTORATION_VETOED", userData.Guardians[index], "email", currentTime, userData.UserWalletAddress}
 			mailFormatUserJson, _ := json.Marshal(mailFormatUser)

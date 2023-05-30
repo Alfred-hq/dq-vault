@@ -394,6 +394,28 @@ returns status of api plugin
 				},
 			},
 
+			// api/cancelWalletRestoration
+			&framework.Path{
+				Pattern:         "selfVeto",
+				HelpSynopsis:    "selfVeto",
+				HelpDescription: `self veto`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "uuid identifier for path",
+						Default:     "",
+					},
+					"restorationIdentifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "unique restoration identifier",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathSelfVeto,
+				},
+			},
+
 			// api/getThirdShard
 			&framework.Path{
 				Pattern:         "getThirdShard",
@@ -430,6 +452,11 @@ returns status of api plugin
 					"guardianIdentifier": &framework.FieldSchema{
 						Type:        framework.TypeString,
 						Description: "uuid identifier for guardian",
+						Default:     "",
+					},
+					"restorationIdentifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "unique restoration identifier for veto",
 						Default:     "",
 					},
 				},
