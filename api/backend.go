@@ -190,6 +190,19 @@ Returns randomly generated user UUID
 				},
 			},
 
+			&framework.Path{
+				Pattern:      "healthCheck",
+				HelpSynopsis: "checks if plugin is working correctly or not",
+				HelpDescription: `
+
+returns status of api plugin
+
+`,
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.ReadOperation: b.pathHealthCheck,
+				},
+			},
+
 			// api/info
 			&framework.Path{
 				Pattern:      "info",
