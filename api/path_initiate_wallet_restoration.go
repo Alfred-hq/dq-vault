@@ -81,6 +81,7 @@ func (b *backend) pathInitiateWalletRestoration(ctx context.Context, req *logica
 				"remarks": map[string]interface{}{
 					"message":                "Vault restoration locked",
 					"restorationLockedUntil": userData.LastVetoedAt + int64(waitTimeAfterVeto),
+					"vetoedBy":               userData.LastVetoedBy,
 				},
 			},
 		}, nil
