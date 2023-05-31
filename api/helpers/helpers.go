@@ -360,6 +360,7 @@ type MAILFormatUpdates struct {
 	TimeOfInitiation      string
 	WalletAddress         string
 	RestorationIdentifier string
+	WalletIdentifier      string
 }
 
 type MailFormatGuardian struct {
