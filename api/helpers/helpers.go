@@ -108,6 +108,7 @@ type VaultStatus struct {
 	SignedConsentForMnemonics  bool                     `json:"signedConsentForMnemonics"`
 	LastVetoedBy               string                   `json:"lastVetoedBy"`
 	LastVetoedAt               int64                    `json:"lastVetoedAt"`
+	RestorationLockedUntil     int64                    `json:"restorationLockedUntil"`
 }
 
 type RecoveryDetails struct {
