@@ -94,7 +94,7 @@ func (b *backend) pathSelfVeto(ctx context.Context, req *logical.Request, d *fra
 	userData.IsRestoreInProgress = false
 	userData.RestoreInitiationTimestamp = int64(0)
 	userData.LastVetoedAt = time.Now().Unix()
-	userData.LastVetoedBy = "SELF"
+	userData.LastVetoedBy = userData.UserEmail
 	store, err := logical.StorageEntryJSON(path, userData)
 
 	// put user information in store
