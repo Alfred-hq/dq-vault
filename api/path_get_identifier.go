@@ -91,8 +91,11 @@ func (b *backend) pathGetIdentifier(ctx context.Context, req *logical.Request, d
 	if (currentTime - userData.LastVetoedAt) < int64(waitTimeAfterVeto) {
 		return &logical.Response{
 			Data: map[string]interface{}{
-				"status":  false,
-				"remarks": "Vault restoration locked",
+				"status": false,
+				"remarks": map[string]interface{}{
+					"message":                "Vault restoration locked",
+					"restorationLockedUntil": userData.LastVetoedAt + int64(waitTimeAfterVeto),
+				},
 			},
 		}, nil
 	}
