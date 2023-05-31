@@ -61,8 +61,6 @@ func (b *backend) pathNewUser(ctx context.Context, req *logical.Request, d *fram
 		SignedConsentForPrivateKey:       "",
 		UserWalletAddress:                walletAddress,
 		LastVetoedAt:                     int64(0),
-		UserRestorationIdentifier:        "",
-		GuardianRestorationIdentifier:    []string{"", "", ""},
 	}
 
 	dataToValidate := map[string]string{

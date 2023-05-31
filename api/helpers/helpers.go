@@ -50,7 +50,6 @@ type UserDetails struct {
 	GuardianEmailOTPGenerateTimestamp    []int64                  `json:"guardianEmailOTPGenerateTimestamp"`
 	GuardiansAddLinkInitiation           []int64                  `json:"guardiansAddLinkInitiation"`
 	GuardiansUpdateStatus                []bool                   `json:"guardiansUpdateStatus"`
-	GuardianRestorationIdentifier        []string                 `json:"GuardianRestorationIdentifier"`
 	UserMobile                           string                   `json:"usermobile"`
 	UnverifiedUserMobile                 string                   `json:"tempusermobile"`
 	UserRSAPublicKey                     string                   `json:"userRSAPublicKey"`
@@ -75,13 +74,17 @@ type UserDetails struct {
 	RsaEncryptedMnemonicEncryptionAESKey string                   `json:"rsaEncryptedMnemonicEncryptionAESKey"`
 	UserWalletAddress                    string                   `json:"userWalletAddress"`
 	LastVetoedAt                         int64                    `json:"lastVetoedAt"`
-	UserRestorationIdentifier            string                   `json:"UserRestorationIdentifier"`
 }
 
 type LastRecoverySaveLocation struct {
 	GoogleDriveFileId string `json:"googleDriveFileId"`
 	IcloudFileId      string `json:"icloudFileId"`
 	LocalFileId       string `json:"localFileId"`
+}
+
+type RestorationIdentifiers struct {
+	UserRestorationIdentifier     string   `json:"userRestorationIdentifier"`
+	GuardianRestorationIdentifier []string `json:"guardianRestorationIdentifier"`
 }
 
 type GuardianEmails struct {
