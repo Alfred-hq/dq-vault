@@ -191,7 +191,7 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			ct := time.Now()
 			currentTime := ct.Format("3:04 PM")
 			timeOfRestoration := time.Unix(time.Now().Unix(), 0).Format(time.RFC3339)
-			mailFormatUser := &helpers.MAILFormatUpdates{userData.UserEmail, "RESTORATION_INITIATED", "email", currentTime, userData.UserWalletAddress, restorationId}
+			mailFormatUser := &helpers.MAILFormatUpdates{userData.UserEmail, "RESTORATION_INITIATED", "email", currentTime, userData.UserWalletAddress, restorationId, userData.Identifier}
 			mailFormatUserJson, _ := json.Marshal(mailFormatUser)
 			res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatUserJson})
 			if userData.Guardians[0] != "" {
@@ -358,7 +358,7 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 			ct := time.Now()
 			currentTime := ct.Format("3:04 PM")
 			timeOfRestoration := time.Unix(time.Now().Unix(), 0).Format(time.RFC3339)
-			mailFormatUser := &helpers.MAILFormatUpdates{userData.UserEmail, "RESTORATION_INITIATED", "email", currentTime, userData.UserWalletAddress, restorationId}
+			mailFormatUser := &helpers.MAILFormatUpdates{userData.UserEmail, "RESTORATION_INITIATED", "email", currentTime, userData.UserWalletAddress, restorationId, userData.Identifier}
 			mailFormatUserJson, _ := json.Marshal(mailFormatUser)
 			res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatUserJson})
 			if userData.Guardians[0] != "" {
