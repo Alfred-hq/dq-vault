@@ -166,14 +166,28 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 				},
 			}, nil
 		} else {
+			restorationIds := &helpers.RestorationIdentifiers{
+				UserRestorationIdentifier:     restorationId,
+				GuardianRestorationIdentifier: []string{gid1, gid2, gid3},
+			}
+
+			storagePath := config.StorageBasePath + identifier + "restorationIdentifiers"
+			store, err := logical.StorageEntryJSON(storagePath, restorationIds)
+			if err != nil {
+				logger.Log(backendLogger, config.Error, "restorationIdentifiers: could not create storage entry", err.Error())
+				return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
+			}
+
+			// put user information in store
+			if err = req.Storage.Put(ctx, store); err != nil {
+				logger.Log(backendLogger, config.Error, "restorationIdentifiers: could not put user info in storage", err.Error())
+				return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
+			}
+
 			userData.IsRestoreInProgress = true
 			userData.RestoreInitiationTimestamp = time.Now().Unix()
 			userData.PrimaryEmailVerificationOTP = "xxxxxx"
 			userData.PrimaryEmailOTPGenerateTimestamp = int64(0)
-			userData.UserRestorationIdentifier = restorationId
-			userData.GuardianRestorationIdentifier[0] = gid1
-			userData.GuardianRestorationIdentifier[1] = gid2
-			userData.GuardianRestorationIdentifier[2] = gid3
 			ct := time.Now()
 			currentTime := ct.Format("3:04 PM")
 			timeOfRestoration := time.Unix(time.Now().Unix(), 0).Format(time.RFC3339)
@@ -196,7 +210,7 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 				res = t.Publish(newCtx, &pubsub.Message{Data: mailFormatGuardianJson})
 			}
 
-			_, err := res.Get(newCtx)
+			_, err = res.Get(newCtx)
 			if err != nil {
 				return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 			}
@@ -320,10 +334,23 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 				},
 			}, nil
 		} else {
-			userData.UserRestorationIdentifier = restorationId
-			userData.GuardianRestorationIdentifier[0] = gid1
-			userData.GuardianRestorationIdentifier[1] = gid2
-			userData.GuardianRestorationIdentifier[2] = gid3
+			restorationIds := &helpers.RestorationIdentifiers{
+				UserRestorationIdentifier:     restorationId,
+				GuardianRestorationIdentifier: []string{gid1, gid2, gid3},
+			}
+
+			storagePath := config.StorageBasePath + identifier + "restorationIdentifiers"
+			store, err := logical.StorageEntryJSON(storagePath, restorationIds)
+			if err != nil {
+				logger.Log(backendLogger, config.Error, "restorationIdentifiers: could not create storage entry", err.Error())
+				return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
+			}
+
+			// put user information in store
+			if err = req.Storage.Put(ctx, store); err != nil {
+				logger.Log(backendLogger, config.Error, "restorationIdentifiers: could not put user info in storage", err.Error())
+				return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
+			}
 			userData.IsRestoreInProgress = true
 			userData.RestoreInitiationTimestamp = time.Now().Unix()
 			userData.MobileVerificationOTP = "xxxxxx"
@@ -350,7 +377,7 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 				res = t.Publish(newCtx, &pubsub.Message{Data: mailFormatGuardianJson})
 			}
 
-			_, err := res.Get(newCtx)
+			_, err = res.Get(newCtx)
 			if err != nil {
 				return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 			}

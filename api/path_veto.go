@@ -48,6 +48,20 @@ func (b *backend) pathVeto(ctx context.Context, req *logical.Request, d *framewo
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
+	restorationIdentifierPath := config.StorageBasePath + identifier + "restorationIdentifiers"
+	restorationEntry, err := req.Storage.Get(ctx, restorationIdentifierPath)
+	if err != nil {
+		logger.Log(backendLogger, config.Error, "veto: could not get storage entry", err.Error())
+		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+	}
+
+	var restorationIds helpers.RestorationIdentifiers
+	err = restorationEntry.DecodeJSON(&restorationIds)
+	if err != nil {
+		logger.Log(backendLogger, config.Error, "veto: could not get user details", err.Error())
+		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+	}
+
 	pubsubTopic := os.Getenv("PUBSUB_TOPIC")
 	gcpProject := os.Getenv("GCP_PROJECT")
 	newCtx := context.Background()
@@ -58,7 +72,7 @@ func (b *backend) pathVeto(ctx context.Context, req *logical.Request, d *framewo
 	t := client.Topic(pubsubTopic)
 	for index, guardian := range userData.GuardianIdentifiers {
 		if guardian == guardianIdentifier {
-			if userData.GuardianRestorationIdentifier[index] != restorationIdentifier {
+			if restorationIds.GuardianRestorationIdentifier[index] != restorationIdentifier {
 				return &logical.Response{
 					Data: map[string]interface{}{
 						"status":  false,

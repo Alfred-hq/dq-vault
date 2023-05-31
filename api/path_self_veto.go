@@ -45,7 +45,21 @@ func (b *backend) pathSelfVeto(ctx context.Context, req *logical.Request, d *fra
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
-	if userData.UserRestorationIdentifier != restorationIdentifier {
+	restorationIdentifierPath := config.StorageBasePath + identifier + "restorationIdentifiers"
+	restorationEntry, err := req.Storage.Get(ctx, restorationIdentifierPath)
+	if err != nil {
+		logger.Log(backendLogger, config.Error, "veto: could not get storage entry", err.Error())
+		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+	}
+
+	var restorationIds helpers.RestorationIdentifiers
+	err = restorationEntry.DecodeJSON(&restorationIds)
+	if err != nil {
+		logger.Log(backendLogger, config.Error, "veto: could not get user details", err.Error())
+		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+	}
+
+	if restorationIds.UserRestorationIdentifier != restorationIdentifier {
 		return &logical.Response{
 			Data: map[string]interface{}{
 				"status":  false,
