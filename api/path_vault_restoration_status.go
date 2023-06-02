@@ -69,6 +69,9 @@ func (b *backend) pathGetUserVaultRestorationStatus(ctx context.Context, req *lo
 	waitPeriodStr := os.Getenv("WAIT_PERIOD")
 	waitPeriod, _ := strconv.Atoi(waitPeriodStr)
 
+	waitTimeAfterVetoStr := os.Getenv("WAIT_TIME_AFTER_VETO")
+	waitTimeAfterVeto, err := strconv.Atoi(waitTimeAfterVetoStr)
+
 	vaultStatus := &helpers.VaultStatus{
 		Identifier:                 userData.Identifier,
 		UserEmail:                  userData.UserEmail,
@@ -84,6 +87,8 @@ func (b *backend) pathGetUserVaultRestorationStatus(ctx context.Context, req *lo
 		IsRestoreInProgress:        userData.IsRestoreInProgress,
 		RestoreInitiationTimestamp: userData.RestoreInitiationTimestamp,
 		RestoreCompletionTimestamp: userData.RestoreInitiationTimestamp + int64(waitPeriod),
+		LastVetoedAt:               userData.LastVetoedAt,
+		RestorationLockedUntil:     userData.LastVetoedAt + int64(waitTimeAfterVeto),
 	}
 
 	// return response
