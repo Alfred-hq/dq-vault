@@ -60,6 +60,7 @@ func (b *backend) pathNewUser(ctx context.Context, req *logical.Request, d *fram
 		SignedConsentForMnemonics:        "",
 		SignedConsentForPrivateKey:       "",
 		UserWalletAddress:                walletAddress,
+		LastVetoedAt:                     int64(0),
 	}
 
 	dataToValidate := map[string]string{

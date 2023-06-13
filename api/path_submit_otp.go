@@ -4,6 +4,7 @@ import (
 	"cloud.google.com/go/pubsub"
 	"context"
 	"encoding/json"
+	"github.com/google/uuid"
 	"net/http"
 	"os"
 	"strconv"
@@ -67,6 +68,14 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 		logger.Log(backendLogger, config.Error, "submitOTP: could not convert number to string", err.Error())
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
+
+	id := uuid.New()
+	restorationId := id.String()
+
+	gid1 := uuid.New().String()
+	gid2 := uuid.New().String()
+	gid3 := uuid.New().String()
+
 	switch purpose {
 	case helpers.PurposeType[0]:
 		ecdsaVerificationState, remarks := helpers.VerifyJWTSignature(signatureECDSA, dataToValidate, userData.UserECDSAPublicKey, "ES256")
@@ -157,33 +166,51 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 				},
 			}, nil
 		} else {
+			restorationIds := &helpers.RestorationIdentifiers{
+				UserRestorationIdentifier:     restorationId,
+				GuardianRestorationIdentifier: []string{gid1, gid2, gid3},
+			}
+
+			storagePath := config.StorageBasePath + identifier + "restorationIdentifiers"
+			store, err := logical.StorageEntryJSON(storagePath, restorationIds)
+			if err != nil {
+				logger.Log(backendLogger, config.Error, "restorationIdentifiers: could not create storage entry", err.Error())
+				return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
+			}
+
+			// put user information in store
+			if err = req.Storage.Put(ctx, store); err != nil {
+				logger.Log(backendLogger, config.Error, "restorationIdentifiers: could not put user info in storage", err.Error())
+				return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
+			}
+
 			userData.IsRestoreInProgress = true
 			userData.RestoreInitiationTimestamp = time.Now().Unix()
 			userData.PrimaryEmailVerificationOTP = "xxxxxx"
 			userData.PrimaryEmailOTPGenerateTimestamp = int64(0)
 			ct := time.Now()
-			currentTime := ct.Format("15:04:05")
+			currentTime := ct.Format("3:04 PM")
 			timeOfRestoration := time.Unix(time.Now().Unix(), 0).Format(time.RFC3339)
-			mailFormatUser := &helpers.MAILFormatUpdates{userData.UserEmail, "RESTORATION_INITIATED", "email", currentTime, userData.UserWalletAddress}
+			mailFormatUser := &helpers.MAILFormatUpdates{userData.UserEmail, "RESTORATION_INITIATED", "email", currentTime, userData.UserWalletAddress, restorationId, userData.Identifier}
 			mailFormatUserJson, _ := json.Marshal(mailFormatUser)
 			res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatUserJson})
 			if userData.Guardians[0] != "" {
-				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[0], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[0], "email", currentTime, timeOfRestoration, userData.UserEmail, userData.UserWalletAddress}
+				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[0], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[0], "email", currentTime, timeOfRestoration, userData.UserEmail, userData.UserWalletAddress, gid1}
 				mailFormatGuardianJson, _ := json.Marshal(mailFormatGuardian)
 				res = t.Publish(newCtx, &pubsub.Message{Data: mailFormatGuardianJson})
 			}
 			if userData.Guardians[1] != "" {
-				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[1], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[1], "email", currentTime, timeOfRestoration, userData.UserEmail, userData.UserWalletAddress}
+				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[1], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[1], "email", currentTime, timeOfRestoration, userData.UserEmail, userData.UserWalletAddress, gid2}
 				mailFormatGuardianJson, _ := json.Marshal(mailFormatGuardian)
 				res = t.Publish(newCtx, &pubsub.Message{Data: mailFormatGuardianJson})
 			}
 			if userData.Guardians[2] != "" {
-				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[2], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[2], "email", currentTime, timeOfRestoration, userData.UserEmail, userData.UserWalletAddress}
+				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[2], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[2], "email", currentTime, timeOfRestoration, userData.UserEmail, userData.UserWalletAddress, gid3}
 				mailFormatGuardianJson, _ := json.Marshal(mailFormatGuardian)
 				res = t.Publish(newCtx, &pubsub.Message{Data: mailFormatGuardianJson})
 			}
 
-			_, err := res.Get(newCtx)
+			_, err = res.Get(newCtx)
 			if err != nil {
 				return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 			}
@@ -307,33 +334,50 @@ func (b *backend) pathSubmitOTP(ctx context.Context, req *logical.Request, d *fr
 				},
 			}, nil
 		} else {
+			restorationIds := &helpers.RestorationIdentifiers{
+				UserRestorationIdentifier:     restorationId,
+				GuardianRestorationIdentifier: []string{gid1, gid2, gid3},
+			}
+
+			storagePath := config.StorageBasePath + identifier + "restorationIdentifiers"
+			store, err := logical.StorageEntryJSON(storagePath, restorationIds)
+			if err != nil {
+				logger.Log(backendLogger, config.Error, "restorationIdentifiers: could not create storage entry", err.Error())
+				return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
+			}
+
+			// put user information in store
+			if err = req.Storage.Put(ctx, store); err != nil {
+				logger.Log(backendLogger, config.Error, "restorationIdentifiers: could not put user info in storage", err.Error())
+				return nil, logical.CodedError(http.StatusExpectationFailed, err.Error())
+			}
 			userData.IsRestoreInProgress = true
 			userData.RestoreInitiationTimestamp = time.Now().Unix()
 			userData.MobileVerificationOTP = "xxxxxx"
 			userData.MobileOTPGenerateTimestamp = int64(0)
 			ct := time.Now()
-			currentTime := ct.Format("15:04:05")
+			currentTime := ct.Format("3:04 PM")
 			timeOfRestoration := time.Unix(time.Now().Unix(), 0).Format(time.RFC3339)
-			mailFormatUser := &helpers.MAILFormatUpdates{userData.UserEmail, "RESTORATION_INITIATED", "email", currentTime, userData.UserWalletAddress}
+			mailFormatUser := &helpers.MAILFormatUpdates{userData.UserEmail, "RESTORATION_INITIATED", "email", currentTime, userData.UserWalletAddress, restorationId, userData.Identifier}
 			mailFormatUserJson, _ := json.Marshal(mailFormatUser)
 			res := t.Publish(newCtx, &pubsub.Message{Data: mailFormatUserJson})
 			if userData.Guardians[0] != "" {
-				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[0], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[0], "email", currentTime, timeOfRestoration, userData.UserEmail, userData.UserWalletAddress}
+				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[0], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[0], "email", currentTime, timeOfRestoration, userData.UserEmail, userData.UserWalletAddress, gid1}
 				mailFormatGuardianJson, _ := json.Marshal(mailFormatGuardian)
 				res = t.Publish(newCtx, &pubsub.Message{Data: mailFormatGuardianJson})
 			}
 			if userData.Guardians[1] != "" {
-				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[1], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[1], "email", currentTime, timeOfRestoration, userData.UserEmail, userData.UserWalletAddress}
+				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[1], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[1], "email", currentTime, timeOfRestoration, userData.UserEmail, userData.UserWalletAddress, gid2}
 				mailFormatGuardianJson, _ := json.Marshal(mailFormatGuardian)
 				res = t.Publish(newCtx, &pubsub.Message{Data: mailFormatGuardianJson})
 			}
 			if userData.Guardians[2] != "" {
-				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[2], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[2], "email", currentTime, timeOfRestoration, userData.UserEmail, userData.UserWalletAddress}
+				mailFormatGuardian := &helpers.MailFormatGuardian{userData.Guardians[2], "GUARDIAN_VETO", userData.Identifier, userData.GuardianIdentifiers[2], "email", currentTime, timeOfRestoration, userData.UserEmail, userData.UserWalletAddress, gid3}
 				mailFormatGuardianJson, _ := json.Marshal(mailFormatGuardian)
 				res = t.Publish(newCtx, &pubsub.Message{Data: mailFormatGuardianJson})
 			}
 
-			_, err := res.Get(newCtx)
+			_, err = res.Get(newCtx)
 			if err != nil {
 				return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 			}
