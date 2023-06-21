@@ -9,4 +9,6 @@ const (
 	Ether uint16 = 60
 	//Bitshares coin id taken as one of the unoccupied values from https://github.com/satoshilabs/slips/blob/master/slip-0044.md
 	Bitshares uint16 = 240
+	//Starknet coin id
+	Starknet uint16 = 9004
 )
