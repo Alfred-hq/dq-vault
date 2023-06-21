@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/signer/core/apitypes"
 	"net/http"
+	"strconv"
 
 	"github.com/deqode/dq-vault/api/helpers"
 	"github.com/deqode/dq-vault/config"
@@ -37,7 +38,12 @@ func (b *backend) pathSignTyped(ctx context.Context, req *logical.Request, d *fr
 		} else if key == "version" {
 			domain.Version = value
 		} else if key == "chainId" {
-			domain.ChainId = math.NewHexOrDecimal256(42161)
+			intChainId, err := strconv.Atoi(value)
+			if err != nil {
+				logger.Log(backendLogger, config.Error, "Unable to convert chainId", err.Error())
+				return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+			}
+			domain.ChainId = math.NewHexOrDecimal256(int64(intChainId))
 		} else {
 			domain.VerifyingContract = value
 		}
