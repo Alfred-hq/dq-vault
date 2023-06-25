@@ -73,12 +73,18 @@ type UserDetails struct {
 	LastVetoedBy                         string                   `json:"lastVetoedBy"`
 	RsaEncryptedMnemonicEncryptionAESKey string                   `json:"rsaEncryptedMnemonicEncryptionAESKey"`
 	UserWalletAddress                    string                   `json:"userWalletAddress"`
+	LastVetoedAt                         int64                    `json:"lastVetoedAt"`
 }
 
 type LastRecoverySaveLocation struct {
 	GoogleDriveFileId string `json:"googleDriveFileId"`
 	IcloudFileId      string `json:"icloudFileId"`
 	LocalFileId       string `json:"localFileId"`
+}
+
+type RestorationIdentifiers struct {
+	UserRestorationIdentifier     string   `json:"userRestorationIdentifier"`
+	GuardianRestorationIdentifier []string `json:"guardianRestorationIdentifier"`
 }
 
 type GuardianEmails struct {
@@ -101,6 +107,8 @@ type VaultStatus struct {
 	SignedConsentForPrivateKey bool                     `json:"signedConsentForPrivateKey"`
 	SignedConsentForMnemonics  bool                     `json:"signedConsentForMnemonics"`
 	LastVetoedBy               string                   `json:"lastVetoedBy"`
+	LastVetoedAt               int64                    `json:"lastVetoedAt"`
+	RestorationLockedUntil     int64                    `json:"restorationLockedUntil"`
 }
 
 type RecoveryDetails struct {
@@ -346,23 +354,26 @@ type MailFormatGuardianVerified struct {
 }
 
 type MAILFormatUpdates struct {
-	To               string
-	Purpose          string
-	MFASource        string
-	TimeOfInitiation string
-	WalletAddress    string
+	To                    string
+	Purpose               string
+	MFASource             string
+	TimeOfInitiation      string
+	WalletAddress         string
+	RestorationIdentifier string
+	WalletIdentifier      string
 }
 
 type MailFormatGuardian struct {
-	To                 string
-	Purpose            string
-	WalletIdentifier   string
-	GuardianIdentifier string
-	MFASource          string
-	TimeOfInitiation   string
-	TimeOfRestoration  string
-	UserEmail          string
-	WalletAddress      string
+	To                    string
+	Purpose               string
+	WalletIdentifier      string
+	GuardianIdentifier    string
+	MFASource             string
+	TimeOfInitiation      string
+	TimeOfRestoration     string
+	UserEmail             string
+	WalletAddress         string
+	RestorationIdentifier string
 }
 
 type MailFormatVetoed struct {

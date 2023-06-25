@@ -30,6 +30,7 @@ func (b *backend) pathVeto(ctx context.Context, req *logical.Request, d *framewo
 	// obtain details:
 	identifier := d.Get("identifier").(string)
 	guardianIdentifier := d.Get("guardianIdentifier").(string)
+	restorationIdentifier := d.Get("restorationIdentifier").(string)
 
 	// path where user data is stored
 	path := config.StorageBasePath + identifier
@@ -47,6 +48,20 @@ func (b *backend) pathVeto(ctx context.Context, req *logical.Request, d *framewo
 		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
 	}
 
+	restorationIdentifierPath := config.StorageBasePath + identifier + "restorationIdentifiers"
+	restorationEntry, err := req.Storage.Get(ctx, restorationIdentifierPath)
+	if err != nil {
+		logger.Log(backendLogger, config.Error, "veto: could not get storage entry", err.Error())
+		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+	}
+
+	var restorationIds helpers.RestorationIdentifiers
+	err = restorationEntry.DecodeJSON(&restorationIds)
+	if err != nil {
+		logger.Log(backendLogger, config.Error, "veto: could not get user details", err.Error())
+		return nil, logical.CodedError(http.StatusUnprocessableEntity, err.Error())
+	}
+
 	pubsubTopic := os.Getenv("PUBSUB_TOPIC")
 	gcpProject := os.Getenv("GCP_PROJECT")
 	newCtx := context.Background()
@@ -57,6 +72,14 @@ func (b *backend) pathVeto(ctx context.Context, req *logical.Request, d *framewo
 	t := client.Topic(pubsubTopic)
 	for index, guardian := range userData.GuardianIdentifiers {
 		if guardian == guardianIdentifier {
+			if restorationIds.GuardianRestorationIdentifier[index] != restorationIdentifier {
+				return &logical.Response{
+					Data: map[string]interface{}{
+						"status":  false,
+						"remarks": "Link Expired",
+					},
+				}, nil
+			}
 			if !userData.IsRestoreInProgress {
 				return &logical.Response{
 					Data: map[string]interface{}{
@@ -81,11 +104,12 @@ func (b *backend) pathVeto(ctx context.Context, req *logical.Request, d *framewo
 			}
 			userData.IsRestoreInProgress = false
 			userData.RestoreInitiationTimestamp = int64(0)
+			userData.LastVetoedAt = time.Now().Unix()
 			userData.LastVetoedBy = userData.Guardians[index]
 			store, err := logical.StorageEntryJSON(path, userData)
 
 			ct := time.Now()
-			currentTime := ct.Format("15:04:05")
+			currentTime := ct.Format("3:04 PM")
 
 			mailFormatUser := &helpers.MailFormatVetoed{userData.UserEmail, "RESTORATION_VETOED", userData.Guardians[index], "email", currentTime, userData.UserWalletAddress}
 			mailFormatUserJson, _ := json.Marshal(mailFormatUser)
