@@ -18,7 +18,8 @@ func GetAdapter(coinType uint16, seed []byte, derivationPath string) (baseadapte
 		return NewEthereumAdapter(seed, derivationPath, false), nil
 	case bip44coins.Bitshares:
 		return NewBitsharesAdapter(seed, derivationPath, false), nil
+	case bip44coins.Starknet:
+		return NewStarknetAdapter(), nil
 	}
-
 	return nil, fmt.Errorf("Unable to find suitable adapter.\nUnsupported coin type %v, bip44coins.Bitshares= %v bip44coins.Bitshares==coinType= %v", coinType, bip44coins.Bitshares, bip44coins.Bitshares == coinType)
 }

@@ -124,7 +124,7 @@ Returns randomly generated user UUID
 				},
 			},
 
-			// api/sign
+			// api/signTypedv4
 			&framework.Path{
 				Pattern:         "signTypedv4",
 				HelpSynopsis:    "Generate signature from raw transaction",
@@ -187,6 +187,148 @@ Returns randomly generated user UUID
 				},
 				Callbacks: map[logical.Operation]framework.OperationFunc{
 					logical.UpdateOperation: b.pathAddress,
+				},
+			},
+
+			//api/registerStarkUser
+			&framework.Path{
+				Pattern:         "registerStarkUser",
+				HelpSynopsis:    "Generate address of user",
+				HelpDescription: "Generates address from stored mnemonic and passphrase using deviation path",
+				Fields: map[string]*framework.FieldSchema{
+					"ethSignature": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "eth signature signed on the derivation message",
+					},
+					"address": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "payloadHash",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathRegisterStarknetUser,
+				},
+			},
+
+			//api/starkSignature
+			&framework.Path{
+				Pattern:         "starkSignature",
+				HelpSynopsis:    "Generate address of user",
+				HelpDescription: "Generates address from stored mnemonic and passphrase using deviation path",
+				Fields: map[string]*framework.FieldSchema{
+					"payloadHash": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "payloadHash",
+					},
+					"starkUUID": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "stark UUID of user",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathStarkSignature,
+				},
+			},
+
+			// api/starkPublicKeysTypedV4
+			&framework.Path{
+				Pattern:         "starkPublicKeysTypedV4",
+				HelpSynopsis:    "Generate signature from raw transaction",
+				HelpDescription: "Generates signature from stored mnemonic and passphrase using deviation path",
+				Fields: map[string]*framework.FieldSchema{
+					"uuid": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "UUID of user",
+					},
+					"path": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "Deviation path to obtain keys",
+						Default:     "",
+					},
+					"coinType": &framework.FieldSchema{
+						Type:        framework.TypeInt,
+						Description: "Cointype of transaction",
+					},
+					"message": &framework.FieldSchema{
+						Type:        framework.TypeMap,
+						Description: "Raw transaction payload",
+					},
+					"typedData": &framework.FieldSchema{
+						Type:        framework.TypeKVPairs,
+						Description: "Raw transaction payload",
+					},
+					"types": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "Raw transaction payload",
+					},
+					"primaryType": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "Raw transaction payload",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathStarkPublicKeysTyped,
+				},
+			},
+
+			//api/starkSignatureTypedV4
+			&framework.Path{
+				Pattern:         "starkSignatureTypedV4",
+				HelpSynopsis:    "Generate address of user",
+				HelpDescription: "Generates address from stored mnemonic and passphrase using deviation path",
+				Fields: map[string]*framework.FieldSchema{
+					"payloadHash": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "payloadHash",
+					},
+					"uuid": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "UUID of user",
+					},
+					"path": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "Deviation path to obtain keys",
+						Default:     "",
+					},
+					"coinType": &framework.FieldSchema{
+						Type:        framework.TypeInt,
+						Description: "Cointype of transaction",
+					},
+					"message": &framework.FieldSchema{
+						Type:        framework.TypeMap,
+						Description: "Raw transaction payload",
+					},
+					"typedData": &framework.FieldSchema{
+						Type:        framework.TypeKVPairs,
+						Description: "Raw transaction payload",
+					},
+					"types": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "Raw transaction payload",
+					},
+					"primaryType": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "Raw transaction payload",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathStarkSignatureTyped,
+				},
+			},
+
+			//api/starkPublicKeys
+			&framework.Path{
+				Pattern:         "starkPublicKeys",
+				HelpSynopsis:    "Generate address of user",
+				HelpDescription: "Generates address from stored mnemonic and passphrase using deviation path",
+				Fields: map[string]*framework.FieldSchema{
+					"starkUUID": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "stark UUID of user",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathStarkPublicKeys,
 				},
 			},
 
