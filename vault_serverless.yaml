@@ -1,0 +1,23 @@
+# substitution _PLUGIN_BUCKET,_MIG_REGION, _MIG_NAME
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+steps:
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: vault image build
+    entrypoint: docker
+    args: ['build','--no-cache','-t', 'gcr.io/${PROJECT_ID}/vault:$SHORT_SHA', '-t', 'gcr.io/${PROJECT_ID}/vault:latest',"."]
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [ 'push', 'gcr.io/${PROJECT_ID}/vault:$SHORT_SHA' ]
+    id: push with sha tag
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [ 'push','gcr.io/${PROJECT_ID}/vault:latest' ]
+    id: push tagged with latest
+
+#  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+#    id: deploy vault with new image
+#    entrypoint: gcloud
+#    args: []
