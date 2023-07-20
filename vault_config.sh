@@ -39,5 +39,5 @@ sed -i 's/__KMS_LOCATION/'"${KMS_LOCATION}"'/g' /vault/config/config.hcl
 sed -i 's/__KMS_KEYRING/'"${KMS_KEYRING}"'/g' /vault/config/config.hcl
 sed -i 's/__KMS_CRYPTO_KEY/'"${KMS_CRYPTO_KEY}"'/g' /vault/config/config.hcl
 sed -i 's/__STORAGE_BUCKET/'"${STORAGE_BUCKET}"'/g' /vault/config/config.hcl
-
+echo $(cat /vault/config/config.hcl)
 vault server -config=/vault/config/config.hcl
