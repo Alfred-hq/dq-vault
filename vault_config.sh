@@ -1,8 +1,9 @@
 #!/bin/bash
-[[ $DEBUG ]] || exec >/vault.log
+[ $DEBUG ] || exec >/vault.log
 set -xe
-set -o pipefail
+#set -o pipefail
 echo "VAULT SERVER STARTUP"
+mkdir -p /vault/config
 touch /vault/config/config.hcl
 chmod 777 /vault/config/config.hcl
 

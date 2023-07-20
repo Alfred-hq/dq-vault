@@ -1,7 +1,7 @@
 #!/bin/bash
-[[ $DEBUG ]] || exec >/vault.log
+[ $DEBUG ] || exec >/vault.log
 set -xe
-set -o pipefail
+#set -o pipefail
 echo "STARTUP SCRIPT STARTED"
 echo ${ROOT_TOKEN_KEY}
 sleep 10
