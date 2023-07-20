@@ -16,11 +16,18 @@ RUN apk add --update supervisor
 RUN mkdir -p /etc/supervisor/conf.d
 # Make new directory for plugins
 RUN mkdir /vault/plugins
-#COPY config.hcl /vault/config/config.hcl
+COPY vault_config.sh /vault/vault_config.sh
 COPY vault_startup.sh /vault/vault_startup.sh
+RUN chmod +x /vault/vault_config.sh
 RUN chmod +x /vault/vault_startup.sh
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 ENV ROOT_TOKEN_KEY "dummy"
+ENV KMS_PROJECT "dummy"
+ENV KMS_LOCATION "dummy"
+ENV KMS_KEYRING "dummy"
+ENV KMS_CRYPTO_KEY "dummy"
+ENV VAULT_BUCKET "dummy"
+
 
 
 
