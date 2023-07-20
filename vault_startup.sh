@@ -9,7 +9,7 @@ export VAULT_ADDR="http://127.0.0.1:8200"
 export SHA256=$(shasum -a 256 "/vault/plugins/vault_plugin" | cut -d' ' -f1)
 root_token="THIS_IS_DUMMY"
 
-if [ $(vault status | grep 'Initialized'| awk '{print $NF}') == "false" ]
+if [ $(vault status | grep 'Initialized'| awk '{print $NF}') = "false" ]
 then
 #        root_token=$(vault operator init | grep 'Initial Root Token:' | awk '{print $NF}')
         output=$(vault operator init)
@@ -19,11 +19,11 @@ then
         touch /vault/token.txt
         touch chmod 777 /vault/token.txt
         echo $root_token >> /vault/token.txt
-        gcloud secrets versions add ${ROOT_TOKEN_KEY} --data-file=/vault/token.txt
+        gcloud secrets versions add ${ROOT_TOKEN_KEY} --data-file=/vault/token.txt --project=${PROJECT_ID}
 
 fi
-root_token=$(gcloud secrets versions access latest --secret=${ROOT_TOKEN_KEY} )
-if [ $(vault status | grep 'Initialized'| awk '{print $NF}') == "true" ]
+root_token=$(gcloud secrets versions access latest --secret=${ROOT_TOKEN_KEY} --project=${PROJECT_ID})
+if [ $(vault status | grep 'Initialized'| awk '{print $NF}') = "true" ]
 then
         sleep 30
         vault login $root_token

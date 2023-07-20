@@ -40,6 +40,7 @@ RUN apt-get update && apt-get install -y supervisor
 RUN mkdir -p /etc/supervisor/conf.d
 # Make new directory for plugins
 RUN mkdir -p /vault/plugins
+RUN chmod 777 /vault/plugins
 COPY vault_config.sh /vault/vault_config.sh
 COPY vault_startup.sh /vault/vault_startup.sh
 RUN chmod +x /vault/vault_config.sh
