@@ -9,13 +9,36 @@ WORKDIR /go/src/github.com/deqode/dq-vault/
 RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build
 
 # Stage 2 (to create a vault conatiner with executable)
-FROM vault:1.13.3
-RUN apk add perl-utils
-RUN apk add nano
-RUN apk add --update supervisor
+FROM debian:10
+RUN apt-get update && apt-get install -y \
+    curl \
+    gnupg \
+    lsb-release \
+    unzip
+
+# Download and install Vault 1.13.1
+RUN curl -fsSL https://releases.hashicorp.com/vault/1.13.1/vault_1.13.1_linux_amd64.zip -o vault.zip \
+    && unzip vault.zip \
+    && mv vault /usr/local/bin/ \
+    && rm vault.zip
+
+
+# Set up the Google Cloud SDK package repository
+RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | \
+    tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
+    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | \
+    apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+
+# Install the Google Cloud SDK
+RUN apt-get update && apt-get install -y google-cloud-sdk
+
+# Set up the Docker client to connect to the Docker daemon on the host system
+# Mount the Docker socket from the host system into the container (Be cautious with this step!)
+
+RUN apt-get update && apt-get install -y supervisor
 RUN mkdir -p /etc/supervisor/conf.d
 # Make new directory for plugins
-RUN mkdir /vault/plugins
+RUN mkdir -p /vault/plugins
 COPY vault_config.sh /vault/vault_config.sh
 COPY vault_startup.sh /vault/vault_startup.sh
 RUN chmod +x /vault/vault_config.sh
