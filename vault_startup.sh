@@ -5,7 +5,7 @@ set -xe
 echo "STARTUP SCRIPT STARTED"
 echo ${ROOT_TOKEN_KEY}
 sleep 30
-export VAULT_ADDR="http://127.0.0.1:8200"
+export VAULT_ADDR="http://127.0.0.1:8080"
 export SHA256=$(shasum -a 256 "/vault/plugins/vault_plugin" | cut -d' ' -f1)
 root_token="THIS_IS_DUMMY"
 echo $(vault status)
