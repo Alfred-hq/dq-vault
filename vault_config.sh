@@ -36,7 +36,7 @@ default_lease_ttl = "168h",
 max_lease_ttl     = "720h",
 
 disable_mlock=true
-api_addr          = "http://127.0.0.1:8200"
+#api_addr          = "http://127.0.0.1:8200"
 EOF
 sed -i 's/__KMS_PROJECT/'"${KMS_PROJECT}"'/g' /vault/config_/config.hcl
 sed -i 's/__KMS_LOCATION/'"${KMS_LOCATION}"'/g' /vault/config_/config.hcl
@@ -44,4 +44,4 @@ sed -i 's/__KMS_KEYRING/'"${KMS_KEYRING}"'/g' /vault/config_/config.hcl
 sed -i 's/__KMS_CRYPTO_KEY/'"${KMS_CRYPTO_KEY}"'/g' /vault/config_/config.hcl
 sed -i 's/__STORAGE_BUCKET/'"${STORAGE_BUCKET}"'/g' /vault/config_/config.hcl
 echo $(cat /vault/config_/config.hcl)
-vault server -config=/vault/config_/config.hcl
+echo $(vault server -config=/vault/config_/config.hcl)
