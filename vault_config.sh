@@ -13,13 +13,13 @@ echo "${KMS_KEYRING}"
 cat <<EOF > /vault/config_/config.hcl
 ui = false
 seal "gcpckms" {
-  project    = __KMS_PROJECT
-  region     = __KMS_LOCATION
-  key_ring   = __KMS_KEYRING
-  crypto_key = __KMS_CRYPTO_KEY
+  project    = "__KMS_PROJECT"
+  region     = "__KMS_LOCATION"
+  key_ring   = "__KMS_KEYRING"
+  crypto_key = "__KMS_CRYPTO_KEY"
 }
 storage "gcs" {
-  bucket     = __STORAGE_BUCKET
+  bucket     = "__STORAGE_BUCKET"
   ha_enabled = false
 }
 
