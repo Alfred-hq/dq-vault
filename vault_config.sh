@@ -11,7 +11,7 @@ echo "${KMS_LOCATION}"
 echo "${KMS_KEYRING}"
 
 cat <<EOF > /vault/config_/config.hcl
-ui = false
+ui = true
 seal "gcpckms" {
   project    = "__KMS_PROJECT"
   region     = "__KMS_LOCATION"
@@ -35,7 +35,7 @@ default_lease_ttl = "168h",
 max_lease_ttl     = "720h",
 
 disable_mlock=true
-#api_addr          = "http://127.0.0.1:8080"
+api_addr          = "http://127.0.0.1:8080"
 EOF
 sed -i 's/__KMS_PROJECT/'"${KMS_PROJECT}"'/g' /vault/config_/config.hcl
 sed -i 's/__KMS_LOCATION/'"${KMS_LOCATION}"'/g' /vault/config_/config.hcl
