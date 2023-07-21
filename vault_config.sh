@@ -26,7 +26,7 @@ storage "gcs" {
 
 
 listener "tcp" {
-  address     = "0.0.0.0:8200"
+  address     = "0.0.0.0:8080"
   tls_disable = 1
 }
 plugin_directory  = "/vault/plugins"
@@ -35,7 +35,7 @@ default_lease_ttl = "168h",
 max_lease_ttl     = "720h",
 
 disable_mlock=true
-api_addr          = "http://127.0.0.1:8200"
+#api_addr          = "http://127.0.0.1:8080"
 EOF
 sed -i 's/__KMS_PROJECT/'"${KMS_PROJECT}"'/g' /vault/config_/config.hcl
 sed -i 's/__KMS_LOCATION/'"${KMS_LOCATION}"'/g' /vault/config_/config.hcl
