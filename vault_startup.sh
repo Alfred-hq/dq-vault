@@ -8,7 +8,8 @@ sleep 30
 export VAULT_ADDR="http://127.0.0.1:8200"
 export SHA256=$(shasum -a 256 "/vault/plugins/vault_plugin" | cut -d' ' -f1)
 root_token="THIS_IS_DUMMY"
-
+echo $(vault status)
+export VAULT_CLIENT_TIMEOUT=300s
 if [ $(vault status | grep 'Initialized'| awk '{print $NF}') = "false" ]
 then
 #        root_token=$(vault operator init | grep 'Initial Root Token:' | awk '{print $NF}')
