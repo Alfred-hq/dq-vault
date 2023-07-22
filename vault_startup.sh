@@ -40,3 +40,7 @@ vault login $root_token
 vault plugin register -sha256=$SHA256 -command="vault_plugin" -version=1 secret secrets-api
 vault secrets tune -plugin-version=1 api
 vault plugin reload -plugin secrets-api
+while true; do
+  echo -e "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n" | nc -l -p 8200
+done
+
