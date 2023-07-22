@@ -7,14 +7,12 @@ echo ${ROOT_TOKEN_KEY}
 export VAULT_ADDR="http://127.0.0.1:8080"
 export SHA256=$(shasum -a 256 "/vault/plugins/vault_plugin" | cut -d' ' -f1)
 root_token="THIS_IS_DUMMY"
-echo $(vault status)
 export VAULT_CLIENT_TIMEOUT=300s
 if [ $(vault status | grep 'Initialized'| awk '{print $NF}') = "false" ]
 then
 #        root_token=$(vault operator init | grep 'Initial Root Token:' | awk '{print $NF}')
         output=$(vault operator init)
         echo "Vault operator init output:"
-        echo "$output"
         root_token=$(echo "$output" | grep 'Initial Root Token:' | awk '{print $NF}')
         touch /vault/token.txt
         touch chmod 777 /vault/token.txt
@@ -40,7 +38,4 @@ vault login $root_token
 vault plugin register -sha256=$SHA256 -command="vault_plugin" -version=1 secret secrets-api
 vault secrets tune -plugin-version=1 api
 vault plugin reload -plugin secrets-api
-while true; do
-  echo -e "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n" | nc -l -p 8200
-done
 

@@ -16,7 +16,6 @@ RUN apt-get update && apt-get install -y \
     lsb-release \
     unzip \
     perl \
-    netcat
 
 # Download and install Vault 1.13.1
 RUN curl -fsSL https://releases.hashicorp.com/vault/1.13.1/vault_1.13.1_linux_amd64.zip -o vault.zip \

@@ -6,9 +6,6 @@ echo "VAULT SERVER STARTUP"
 mkdir -p /vault/config_
 touch /vault/config_/config.hcl
 chmod 777 /vault/config_/config.hcl
-echo "${KMS_PROJECT}"
-echo "${KMS_LOCATION}"
-echo "${KMS_KEYRING}"
 
 cat <<EOF > /vault/config_/config.hcl
 ui = true
@@ -42,5 +39,4 @@ sed -i 's/__KMS_LOCATION/'"${KMS_LOCATION}"'/g' /vault/config_/config.hcl
 sed -i 's/__KMS_KEYRING/'"${KMS_KEYRING}"'/g' /vault/config_/config.hcl
 sed -i 's/__KMS_CRYPTO_KEY/'"${KMS_CRYPTO_KEY}"'/g' /vault/config_/config.hcl
 sed -i 's/__STORAGE_BUCKET/'"${STORAGE_BUCKET}"'/g' /vault/config_/config.hcl
-echo $(cat /vault/config_/config.hcl)
-echo $(vault server -config=/vault/config_/config.hcl)
+vault server -config=/vault/config_/config.hcl
