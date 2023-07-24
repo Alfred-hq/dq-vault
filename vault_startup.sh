@@ -38,4 +38,6 @@ vault login $root_token
 vault plugin register -sha256=$SHA256 -command="vault_plugin" -version=1 secret secrets-api
 vault secrets tune -plugin-version=1 api
 vault plugin reload -plugin secrets-api
+socat TCP-LISTEN:8200,fork TCP:localhost:8080
+# now vault will listen on port 8200
 
