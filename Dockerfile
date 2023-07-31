@@ -53,6 +53,7 @@ ENV KMS_LOCATION "dummy"
 ENV KMS_KEYRING "dummy"
 ENV KMS_CRYPTO_KEY "dummy"
 ENV VAULT_BUCKET "dummy"
+ENV ROOT_TOKEN "dummy"
 
 
 

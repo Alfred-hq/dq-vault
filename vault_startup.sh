@@ -20,13 +20,15 @@ then
         gcloud secrets versions add ${ROOT_TOKEN_KEY} --data-file=/vault/token.txt --project=${PROJECT_ID}
         sleep 30
 fi
-root_token=$(gcloud secrets versions access latest --secret=${ROOT_TOKEN_KEY} --project=${PROJECT_ID})
 if [ $(vault status | grep 'Initialized'| awk '{print $NF}') = "true" ]
 then
-        vault login $root_token
+        vault login ${ROOT_TOKEN}
         vault secrets disable /api
         vault write sys/plugins/catalog/secrets-api sha_256=$SHA256 command="vault_plugin"
         vault secrets enable -path="api" -plugin-name="secrets-api" plugin
+        vault plugin register -sha256=$SHA256 -command="vault_plugin" -version=1 secret secrets-api
+        vault secrets tune -plugin-version=1 api
+        vault plugin reload -plugin secrets-api
 else
         error "Vault is not initalized"
 fi
@@ -34,10 +36,7 @@ fi
 
 
 ## get root token from secret in root token
-vault login $root_token
-vault plugin register -sha256=$SHA256 -command="vault_plugin" -version=1 secret secrets-api
-vault secrets tune -plugin-version=1 api
-vault plugin reload -plugin secrets-api
+
 socat TCP-LISTEN:8200,fork TCP:localhost:8080
 # now vault will listen on port 8200
 
