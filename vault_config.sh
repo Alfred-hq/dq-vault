@@ -39,4 +39,17 @@ sed -i 's/__KMS_LOCATION/'"${KMS_LOCATION}"'/g' /vault/config_/config.hcl
 sed -i 's/__KMS_KEYRING/'"${KMS_KEYRING}"'/g' /vault/config_/config.hcl
 sed -i 's/__KMS_CRYPTO_KEY/'"${KMS_CRYPTO_KEY}"'/g' /vault/config_/config.hcl
 sed -i 's/__STORAGE_BUCKET/'"${STORAGE_BUCKET}"'/g' /vault/config_/config.hcl
+
+mkdir -p /vault/policy
+touch /vault/policy/policy.hcl
+chmod 777 /vault/policy/policy.hcl
+
+
+cat <<EOF > /vault/policy/policy.hcl
+ path "api/*"
+  {
+    capabilities = ["read", "update","create"]
+  }
+EOF
+
 vault server -config=/vault/config_/config.hcl

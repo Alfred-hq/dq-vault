@@ -26,6 +26,7 @@ then
         vault secrets disable /api
         vault write sys/plugins/catalog/secrets-api sha_256=$SHA256 command="vault_plugin"
         vault secrets enable -path="api" -plugin-name="secrets-api" plugin
+        vault policy write application /vault/policy/policy.hcl
         vault plugin register -sha256=$SHA256 -command="vault_plugin" -version=1 secret secrets-api
         vault plugin reload -plugin secrets-api
         vault secrets tune -plugin-version=1 api
