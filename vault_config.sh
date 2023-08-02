@@ -28,8 +28,8 @@ listener "tcp" {
 }
 plugin_directory  = "/vault/plugins"
 
-default_lease_ttl = "168h",
-max_lease_ttl     = "720h",
+#default_lease_ttl = "168h",
+#max_lease_ttl     = "720h",
 
 disable_mlock=true
 api_addr          = "http://127.0.0.1:8080"
