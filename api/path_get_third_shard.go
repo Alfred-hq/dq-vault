@@ -2,10 +2,6 @@ package api
 
 import (
 	"context"
-	"os"
-	"strconv"
-	"time"
-
 	// "errors"
 	// "fmt"
 
@@ -69,21 +65,21 @@ func (b *backend) pathGetThirdShard(ctx context.Context, req *logical.Request, d
 		}, nil
 	}
 
-	waitPeriodStr := os.Getenv("WAIT_PERIOD")
-	waitPeriod, _ := strconv.Atoi(waitPeriodStr)
-	currentUnixTime := time.Now().Unix()
-	if currentUnixTime-userData.RestoreInitiationTimestamp < int64(waitPeriod) {
-		waitUntil := time.Unix(userData.RestoreInitiationTimestamp+int64(waitPeriod), 0).Format(time.RFC3339)
-		return &logical.Response{
-			Data: map[string]interface{}{
-				"status":  false,
-				"remarks": "wait period not over, wait till " + waitUntil,
-			},
-		}, nil
-	}
+	//waitPeriodStr := os.Getenv("WAIT_PERIOD")
+	//waitPeriod, _ := strconv.Atoi(waitPeriodStr)
+	//currentUnixTime := time.Now().Unix()
+	//if currentUnixTime-userData.RestoreInitiationTimestamp < int64(waitPeriod) {
+	//	waitUntil := time.Unix(userData.RestoreInitiationTimestamp+int64(waitPeriod), 0).Format(time.RFC3339)
+	//	return &logical.Response{
+	//		Data: map[string]interface{}{
+	//			"status":  false,
+	//			"remarks": "wait period not over, wait till " + waitUntil,
+	//		},
+	//	}, nil
+	//}
 
-	userData.IsRestoreInProgress = false
-	userData.RestoreInitiationTimestamp = int64(0)
+	//userData.IsRestoreInProgress = false
+	//userData.RestoreInitiationTimestamp = int64(0)
 
 	store, err := logical.StorageEntryJSON(path, userData)
 	if err != nil {
