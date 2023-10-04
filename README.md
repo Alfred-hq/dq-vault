@@ -3,8 +3,8 @@
 <p align="center"><img src="https://deqode.github.io/dq-vault/assets/images/vault-dq-192x192-202df720d6d8d239d0fbf4cdc208c1c8.png"></p>
 
 ![GitHub](https://img.shields.io/github/license/deqode/dq-vault)
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/deqode/dq-vault)](https://pkg.go.dev/github.com/github.com/deqode/dq-vault)
-[![Go Report Card](https://goreportcard.com/badge/github.com/deqode/dq-vault)](https://goreportcard.com/report/github.com/deqode/dq-vault)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/alfred-hq/dq-vault)](https://pkg.go.dev/github.com/github.com/alfred-hq/dq-vault)
+[![Go Report Card](https://goreportcard.com/badge/github.com/alfred-hq/dq-vault)](https://goreportcard.com/report/github.com/alfred-hq/dq-vault)
 ![GitHub last commit](https://img.shields.io/github/last-commit/deqode/codeanalyser)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/deqode/dq-vault)
 

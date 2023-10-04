@@ -1,4 +1,4 @@
-package: github.com/deqode/dq-vault
+package: github.com/alfred-hq/dq-vault
 import:
 - package: github.com/btcsuite/btcd
   subpackages:

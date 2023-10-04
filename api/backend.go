@@ -217,6 +217,514 @@ get help.
 					logical.ReadOperation: b.pathInfo,
 				},
 			},
+
+			// api/healthCheck
+			&framework.Path{
+				Pattern:      "healthCheck",
+				HelpSynopsis: "checks if plugin is working correctly or not",
+				HelpDescription: `
+
+returns status of api plugin
+
+`,
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.ReadOperation: b.pathHealthCheck,
+				},
+			},
+
+			// api/addNewUser
+			&framework.Path{
+				Pattern:         "addNewUser",
+				HelpSynopsis:    "addNewUser",
+				HelpDescription: `Add new user details`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "uuid identifier for path",
+						Default:     "",
+					},
+					//"signatureRSA": &framework.FieldSchema{
+					//	Type:        framework.TypeString,
+					//	Description: "RSA signature",
+					//	Default:     "",
+					//},
+					//"userRSAPublicKey": &framework.FieldSchema{
+					//	Type:        framework.TypeString,
+					//	Description: "user RSA Public Key",
+					//	Default:     "",
+					//},
+					"signatureECDSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "ECDSA signature",
+						Default:     "",
+					},
+					"userECDSAPublicKey": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "user ECDSA Public Key",
+						Default:     "",
+					},
+					"walletAddress": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "user WalletAddress",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathNewUser,
+				},
+			},
+
+			// api/addMFASource
+			&framework.Path{
+				Pattern:         "addMFASource",
+				HelpSynopsis:    "addMFASource",
+				HelpDescription: `Add new mfa source`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "uuid identifier for path",
+						Default:     "",
+					},
+					//"signatureRSA": &framework.FieldSchema{
+					//	Type:        framework.TypeString,
+					//	Description: "RSA signature",
+					//	Default:     "",
+					//},
+					"signatureECDSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "ECDSA signature",
+						Default:     "",
+					},
+					"sourceType": &framework.FieldSchema{ // enum
+						Type:        framework.TypeString,
+						Description: "source type",
+						Default:     "",
+					},
+					"sourceValue": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "source value",
+						Default:     "",
+					},
+					"guardianIndex": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "guardian index",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathAddMFASource,
+				},
+			},
+
+			// api/backupThirdShard
+			&framework.Path{
+				Pattern:         "backupThirdShard",
+				HelpSynopsis:    "backupThirdShard",
+				HelpDescription: `backup third shard`,
+				Fields: map[string]*framework.FieldSchema{ // doubt
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "uuid identifier for path",
+						Default:     "",
+					},
+					"signatureRSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "RSA signature",
+						Default:     "",
+					},
+					"userRSAPublicKey": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "UserRSAPublicKey",
+						Default:     "",
+					},
+					"signatureECDSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "ECDSA signature",
+						Default:     "",
+					},
+					"walletThirdShard": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "wallet third shard",
+						Default:     "",
+					},
+					"rsaEncryptedMnemonicEncryptionAESKey": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "encrypted aes key",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathBackupThirdShard,
+				},
+			},
+			// api/submitOTP
+			&framework.Path{
+				Pattern:         "submitOTP",
+				HelpSynopsis:    "submitOTP",
+				HelpDescription: `submit otp`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "uuid identifier for path",
+						Default:     "",
+					},
+					"signatureRSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "RSA signature",
+						Default:     "",
+					},
+					"signatureECDSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "ECDSA signature",
+						Default:     "",
+					},
+					"purpose": &framework.FieldSchema{ // enum
+						Type:        framework.TypeString,
+						Description: "purpose of verification",
+						Default:     "",
+					},
+					"otp": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "otp received on mail",
+						Default:     "",
+					},
+					"guardianIndex": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "guardian index",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathSubmitOTP,
+				},
+			},
+
+			// api/initiateWalletRestoration
+			&framework.Path{
+				Pattern:         "initiateWalletRestoration",
+				HelpSynopsis:    "initiateWalletRestoration",
+				HelpDescription: `initiate wallet restoration`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "uuid identifier for path",
+						Default:     "",
+					},
+					"sourceType": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "type of source to be used for verification",
+						Default:     "",
+					},
+					"signatureRSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "RSA signature",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathInitiateWalletRestoration,
+				},
+			},
+
+			// api/cancelWalletRestoration
+			&framework.Path{
+				Pattern:         "cancelWalletRestoration",
+				HelpSynopsis:    "cancelWalletRestoration",
+				HelpDescription: `cancel wallet restoration`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "uuid identifier for path",
+						Default:     "",
+					},
+					"signatureRSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "RSA signature",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathCancelWalletRestoration,
+				},
+			},
+
+			// api/cancelWalletRestoration
+			&framework.Path{
+				Pattern:         "selfVeto",
+				HelpSynopsis:    "selfVeto",
+				HelpDescription: `self veto`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "uuid identifier for path",
+						Default:     "",
+					},
+					"restorationIdentifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "unique restoration identifier",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathSelfVeto,
+				},
+			},
+
+			// api/getThirdShard
+			&framework.Path{
+				Pattern:         "getThirdShard",
+				HelpSynopsis:    "getThirdShard",
+				HelpDescription: `returns third wallet shard for restoration`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "uuid identifier for path",
+						Default:     "",
+					},
+					"signatureRSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "RSA signature",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathGetThirdShard,
+				},
+			},
+
+			// api/veto
+			&framework.Path{
+				Pattern:         "veto",
+				HelpSynopsis:    "veto",
+				HelpDescription: `vetoes wallet restoration`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "uuid identifier for path",
+						Default:     "",
+					},
+					"guardianIdentifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "uuid identifier for guardian",
+						Default:     "",
+					},
+					"restorationIdentifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "unique restoration identifier for veto",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathVeto,
+				},
+			},
+
+			&framework.Path{
+				Pattern:         "guardians",
+				HelpSynopsis:    "guardians",
+				HelpDescription: `gets guardians`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "uuid identifier for path",
+						Default:     "",
+					},
+					"quest": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "uuid identifier for guardian",
+						Default:     "",
+					},
+					//"signatureRSA": &framework.FieldSchema{
+					//	Type:        framework.TypeString,
+					//	Description: "RSA signature",
+					//	Default:     "",
+					//},
+					"signatureECDSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "ECDSA signature",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathGuardians,
+				},
+			},
+
+			&framework.Path{
+				Pattern:         "verifyGuardian",
+				HelpSynopsis:    "verify guardian!",
+				HelpDescription: `verify guardian`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "uuid identifier for path",
+						Default:     "",
+					},
+					"path": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "encoded unique link path",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathVerifyGuardian,
+				},
+			},
+
+			&framework.Path{
+				Pattern:         "getIdentifier",
+				HelpSynopsis:    "provides the identifier of wallet",
+				HelpDescription: `provides the identifier of wallet`,
+				Fields: map[string]*framework.FieldSchema{
+					"userECDSAPublicKey": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "user ecdsa public key",
+						Default:     "",
+					},
+					"signatureECDSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "ECDSA signature",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathGetIdentifier,
+				},
+			},
+
+			&framework.Path{
+				Pattern:         "updateRSAKeys",
+				HelpSynopsis:    "updates user rsa key",
+				HelpDescription: `updates user rsa key`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "user identifier",
+						Default:     "",
+					},
+					"userRSAPublicKey": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "user rsa public key",
+						Default:     "",
+					},
+					"signatureECDSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "ECDSA signature",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathUpdateRSAKeys,
+				},
+			},
+			&framework.Path{
+				Pattern:         "saveUserConsent",
+				HelpSynopsis:    "saves user consent",
+				HelpDescription: `saves user consent`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "user identifier",
+						Default:     "",
+					},
+					"consent": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "user consent",
+						Default:     "",
+					},
+					"consentType": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "user consent type",
+						Default:     "",
+					},
+					//"signatureRSA": &framework.FieldSchema{
+					//	Type:        framework.TypeString,
+					//	Description: "signature rsa",
+					//	Default:     "",
+					//},
+					"signatureECDSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "ECDSA signature",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathSaveUserConsent,
+				},
+			},
+
+			&framework.Path{
+				Pattern:         "removeGuardian",
+				HelpSynopsis:    "removes guardian",
+				HelpDescription: `removes guardian`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "user identifier",
+						Default:     "",
+					},
+					"guardianEmail": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "email of guardian to remove",
+						Default:     "",
+					},
+					//"signatureRSA": &framework.FieldSchema{
+					//	Type:        framework.TypeString,
+					//	Description: "signature rsa",
+					//	Default:     "",
+					//},
+					"signatureECDSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "ECDSA signature",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathRemoveGuardian,
+				},
+			},
+
+			&framework.Path{
+				Pattern:         "getUserVaultStatus",
+				HelpSynopsis:    "getUserVaultStatus",
+				HelpDescription: `getUserVaultStatus`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "user identifier",
+						Default:     "",
+					},
+					"signatureECDSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "ECDSA signature",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathGetUserVaultStatus,
+				},
+			},
+
+			&framework.Path{
+				Pattern:         "getUserVaultRestorationStatus",
+				HelpSynopsis:    "getUserVaultRestorationStatus",
+				HelpDescription: `getUserVaultRestorationStatus`,
+				Fields: map[string]*framework.FieldSchema{
+					"identifier": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "user identifier",
+						Default:     "",
+					},
+					"signatureRSA": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "RSA signature",
+						Default:     "",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathGetUserVaultRestorationStatus,
+				},
+			},
 		},
 	}
 	return &b

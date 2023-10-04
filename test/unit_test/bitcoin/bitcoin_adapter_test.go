@@ -3,7 +3,7 @@ package tests
 import (
 	"testing"
 
-	"github.com/deqode/dq-vault/lib/adapter"
+	"github.com/alfred-hq/dq-vault/lib/adapter"
 	log "github.com/mgutz/logxi/v1"
 )
 
