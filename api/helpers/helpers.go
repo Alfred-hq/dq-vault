@@ -15,13 +15,14 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	goCrypt "github.com/ethereum/go-ethereum/crypto"
+	"github.com/ryadavDeqode/dq-vault/config"
+	"strings"
+	"time"
+	"net/http"
+	"github.com/deqode/dq-vault/config"
 	"github.com/hashicorp/vault/sdk/framework"
 	"github.com/hashicorp/vault/sdk/logical"
 	"github.com/rs/xid"
-	"github.com/ryadavDeqode/dq-vault/config"
-	"net/http"
-	"strings"
-	"time"
 )
 
 // User -- stores data related to user

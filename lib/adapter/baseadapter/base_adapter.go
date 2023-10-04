@@ -1,6 +1,7 @@
 package baseadapter
 
 import (
+	"github.com/ethereum/go-ethereum/signer/core/apitypes"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -13,6 +14,7 @@ type IBlockchainAdapter interface {
 	GetBlockchainNetwork() string
 	CreateSignedTransaction(string, log.Logger) (string, error)
 	CreateSignature(string, log.Logger) (string, error)
+	CreateEip712SignedTransaction(apitypes.TypedData, log.Logger) (string, error)
 }
 
 // BlockchainAdapter contains common fields for

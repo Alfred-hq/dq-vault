@@ -124,6 +124,47 @@ Returns randomly generated user UUID
 				},
 			},
 
+			// api/sign
+			&framework.Path{
+				Pattern:         "signTypedv4",
+				HelpSynopsis:    "Generate signature from raw transaction",
+				HelpDescription: "Generates signature from stored mnemonic and passphrase using deviation path",
+				Fields: map[string]*framework.FieldSchema{
+					"uuid": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "UUID of user",
+					},
+					"path": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "Deviation path to obtain keys",
+						Default:     "",
+					},
+					"coinType": &framework.FieldSchema{
+						Type:        framework.TypeInt,
+						Description: "Cointype of transaction",
+					},
+					"message": &framework.FieldSchema{
+						Type:        framework.TypeMap,
+						Description: "Raw transaction payload",
+					},
+					"typedData": &framework.FieldSchema{
+						Type:        framework.TypeKVPairs,
+						Description: "Raw transaction payload",
+					},
+					"types": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "Raw transaction payload",
+					},
+					"primaryType": &framework.FieldSchema{
+						Type:        framework.TypeString,
+						Description: "Raw transaction payload",
+					},
+				},
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.UpdateOperation: b.pathSignTyped,
+				},
+			},
+
 			// api/address
 			&framework.Path{
 				Pattern:         "address",
@@ -146,6 +187,19 @@ Returns randomly generated user UUID
 				},
 				Callbacks: map[logical.Operation]framework.OperationFunc{
 					logical.UpdateOperation: b.pathAddress,
+				},
+			},
+
+			&framework.Path{
+				Pattern:      "healthCheck",
+				HelpSynopsis: "checks if plugin is working correctly or not",
+				HelpDescription: `
+
+returns status of api plugin
+
+`,
+				Callbacks: map[logical.Operation]framework.OperationFunc{
+					logical.ReadOperation: b.pathHealthCheck,
 				},
 			},
 

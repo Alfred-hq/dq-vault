@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/itsahedge/go-cowswap/util/signature-scheme/eip712"
 	"math/big"
 	"reflect"
 	"strings"
@@ -19,6 +20,7 @@ import (
 	"github.com/ryadavDeqode/dq-vault/lib"
 	"github.com/ryadavDeqode/dq-vault/lib/adapter/baseadapter"
 	"github.com/ryadavDeqode/dq-vault/logger"
+	"github.com/ethereum/go-ethereum/signer/core/apitypes"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -139,6 +141,23 @@ func (e *EthereumAdapter) CreateSignedTransaction(payload string, backendLogger 
 	txHex := hexutil.Encode(signedTxBuff.Bytes())
 
 	return txHex, nil
+}
+
+func (e *EthereumAdapter) CreateEip712SignedTransaction(payload apitypes.TypedData, backendLogger log.Logger) (string, error) {
+	privateKey, err := crypto.HexToECDSA(e.PrivateKey)
+	if err != nil {
+		logger.Log(backendLogger, config.Error, "signature:", err.Error())
+		return err.Error(), err
+	}
+
+	bts, err := eip712.SignTypedData(payload, privateKey)
+
+	if err != nil {
+		logger.Log(backendLogger, config.Error, "signature:", err.Error())
+		return err.Error(), err
+	}
+
+	return common.Bytes2Hex(bts), nil
 }
 
 // CreateSignature creates and signs hex message from payload data + private key
