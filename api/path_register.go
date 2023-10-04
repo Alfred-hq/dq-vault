@@ -7,10 +7,10 @@ import (
 
 	"github.com/hashicorp/vault/sdk/framework"
 	"github.com/hashicorp/vault/sdk/logical"
-	"github.com/deqode/dq-vault/api/helpers"
-	"github.com/deqode/dq-vault/config"
-	"github.com/deqode/dq-vault/lib"
-	"github.com/deqode/dq-vault/logger"
+	"github.com/ryadavDeqode/dq-vault/api/helpers"
+	"github.com/ryadavDeqode/dq-vault/config"
+	"github.com/ryadavDeqode/dq-vault/lib"
+	"github.com/ryadavDeqode/dq-vault/logger"
 )
 
 // pathPassphrase corresponds to POST gen/passphrase.

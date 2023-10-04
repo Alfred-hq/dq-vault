@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"github.com/deqode/dq-vault/config"
+	"github.com/ryadavDeqode/dq-vault/config"
 	log "github.com/sirupsen/logrus"
 	"strings"
 	"time"

@@ -4,7 +4,8 @@ import (
 	"testing"
 
 	log "github.com/mgutz/logxi/v1"
-	"github.com/deqode/dq-vault/lib/adapter"
+	"github.com/ryadavDeqode/dq-vault/lib/adapter"
+	"github.com/sirupsen/logrus"
 )
 
 var logger = log.New("tests")
@@ -105,7 +106,7 @@ func TestETHPrivateKey(t *testing.T) {
 	for _, pair := range ethAdapterPrivateKeyTests {
 		adapter := adapter.NewEthereumAdapter(pair.input.seed, pair.input.derivationPath, pair.input.isDev)
 
-		privateKey, _ := adapter.DerivePrivateKey(logger)
+		privateKey, _ := adapter.DerivePrivateKey(logrus.Logger{})
 		if privateKey != pair.privateKey {
 			t.Error(
 				"Seed", pair.input.seed,
@@ -121,7 +122,7 @@ func TestETHPublicKey(t *testing.T) {
 	for _, pair := range ethAdapterPublicKeyTests {
 		adapter := adapter.NewEthereumAdapter(pair.input.seed, pair.input.derivationPath, pair.input.isDev)
 
-		publicKey, _ := adapter.DerivePublicKey(logger)
+		publicKey, _ := adapter.DerivePublicKey(logrus.Logger{})
 		if publicKey != pair.publicKey {
 			t.Error(
 				"Seed", pair.input.seed,
@@ -137,7 +138,7 @@ func TestETHAddress(t *testing.T) {
 	for _, pair := range ethAdapterAddressTests {
 		adapter := adapter.NewEthereumAdapter(pair.input.seed, pair.input.derivationPath, pair.input.isDev)
 
-		address, _ := adapter.DeriveAddress(logger)
+		address, _ := adapter.DeriveAddress(logrus.Logger{})
 		if address != pair.address {
 			t.Error(
 				"Seed", pair.input.seed,
@@ -153,8 +154,8 @@ func TestETHSignature(t *testing.T) {
 	for _, pair := range ethAdapterSignatureTests {
 		adapter := adapter.NewEthereumAdapter(pair.input.seed, pair.input.derivationPath, pair.input.isDev)
 
-		adapter.DerivePrivateKey(logger)
-		signature, _ := adapter.CreateSignedTransaction(pair.payload, logger)
+		adapter.DerivePrivateKey(logrus.Logger{})
+		signature, _ := adapter.CreateSignedTransaction(pair.payload, logrus.Logger{})
 		if signature != pair.signature {
 			t.Error(
 				"Seed", pair.input.seed,

@@ -3,10 +3,10 @@ FROM golang:1.17 AS source
 
 RUN curl https://glide.sh/get | sh
 
-COPY . /go/src/github.com/deqode/dq-vault/
-WORKDIR /go/src/github.com/deqode/dq-vault/
+COPY . /go/src/github.com/ryadavDeqode/dq-vault/
+WORKDIR /go/src/github.com/ryadavDeqode/dq-vault/
 
-RUN go build
+RUN go build -a -x
 
 # Stage 2 (to create a vault conatiner with executable)
 FROM vault:latest
@@ -21,7 +21,7 @@ RUN apk add glibc-2.28-r0.apk
 
 
 # Copy executable from source to vault
-COPY --from=source /go/src/github.com/deqode/dq-vault/dq-vault /vault/plugins/vault_plugin
+COPY --from=source /go/src/github.com/ryadavDeqode/dq-vault/dq-vault /vault/plugins/vault_plugin
 COPY ./Makefile .
 COPY ./setup/config.hcl /vault/config/config.hcl
 
