@@ -9,11 +9,11 @@ import (
 	// "fmt"
 	"net/http"
 
-	"github.com/hashicorp/vault/sdk/framework"
-	"github.com/hashicorp/vault/sdk/logical"
 	"github.com/alfred-hq/dq-vault/api/helpers"
 	"github.com/alfred-hq/dq-vault/config"
 	"github.com/alfred-hq/dq-vault/logger"
+	"github.com/hashicorp/vault/sdk/framework"
+	"github.com/hashicorp/vault/sdk/logical"
 )
 
 // pathPassphrase corresponds to POST gen/passphrase.
@@ -56,15 +56,6 @@ func (b *backend) pathGetThirdShard(ctx context.Context, req *logical.Request, d
 		}, nil
 	}
 
-	if !userData.IsRestoreInProgress {
-		return &logical.Response{
-			Data: map[string]interface{}{
-				"status":  false,
-				"remarks": "restoration is not started or vetoed by guardian", // who vetoed? when vetoed
-			},
-		}, nil
-	}
-
 	//waitPeriodStr := os.Getenv("WAIT_PERIOD")
 	//waitPeriod, _ := strconv.Atoi(waitPeriodStr)
 	//currentUnixTime := time.Now().Unix()
@@ -94,10 +85,9 @@ func (b *backend) pathGetThirdShard(ctx context.Context, req *logical.Request, d
 	}
 
 	recoveryDetails := &helpers.RecoveryDetails{
-		ThirdShard: userData.WalletThirdShard,
+		ThirdShard:                           userData.WalletThirdShard,
 		RsaEncryptedMnemonicEncryptionAESKey: userData.RsaEncryptedMnemonicEncryptionAESKey,
 	}
-
 
 	// return response
 	return &logical.Response{
